@@ -7,12 +7,10 @@
   
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2" />
 
-  <!-- Колір системної панелі iOS Safari та Android -->
   <meta name="theme-color" content="#F9F6F0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-  <!-- Open Graph та мета-теги для соцмереж -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="RIZDVIANA.ART" />
   <meta property="og:title" content="RIZDVIANA.ART — Традиційні та сучасні прикраси з бісеру" />
@@ -20,9 +18,7 @@
   <meta property="og:image" content="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/og-preview.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +46,6 @@
 </head>
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
-  <!-- Закріплена панель із 3-етапною анімацією -->
   <div id="sticky-header" class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
     <header id="main-header" class="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center text-center">
       <a href="#" class="inline-block transition hover:opacity-90">
@@ -64,12 +59,10 @@
       </a>
       <h1 class="sr-only">RIZDVIANA.ART</h1>
       
-      <!-- Традиційний підпис бренду -->
       <p id="header-tagline" class="uppercase tracking-[0.24em] text-stone-600 font-medium">
         Традиційні та сучасні прикраси з бісеру
       </p>
       
-      <!-- Навігаційне меню -->
       <nav id="header-nav" class="flex items-center justify-center uppercase tracking-wider font-semibold">
         <a href="#catalog" class="text-stoneDark hover:text-stone-500 transition">Каталог</a>
         <a href="#about" class="text-stoneDark hover:text-stone-500 transition">Про бренд</a>
@@ -77,7 +70,6 @@
       </nav>
     </header>
 
-    <!-- Панель фільтрів та сортування -->
     <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-2 pb-3.5">
       <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 px-1 border-b border-stone-300/40">
         <div class="flex items-center gap-1.5">
@@ -90,7 +82,6 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <!-- Випадаючий список сортування -->
           <select id="select-sort" onchange="applyFilters()" class="bg-white border border-craft rounded-lg px-2.5 py-1 text-[11px] font-medium text-stoneDark focus:outline-none focus:border-stoneDark transition cursor-pointer">
             <option value="newest">Спочатку нові</option>
             <option value="price_asc">Ціна: від дешевих</option>
@@ -106,7 +97,7 @@
       </div>
 
       <div class="flex sm:grid sm:grid-cols-5 gap-2.5 pt-2.5 pb-1.5 px-2 overflow-x-auto no-scrollbar">
-        <select id="select-type" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+        <select id="select-type" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
           <option value="">Усі типи</option>
           <option value="Силянка">Силянка</option>
           <option value="Гердан">Гердан</option>
@@ -114,27 +105,27 @@
           <option value="Браслет">Браслет</option>
         </select>
 
-        <select id="select-ornament" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+        <select id="select-ornament" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
           <option value="">Орнамент</option>
           <option value="Рослинний">Рослинний</option>
           <option value="Геометричний">Геометричний</option>
         </select>
 
-        <select id="select-shape" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+        <select id="select-shape" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
           <option value="">Форма</option>
           <option value="Стрічка">Стрічка</option>
           <option value="Заокруглена">Заокруглена</option>
           <option value="Зубчаста">Зубчаста</option>
         </select>
 
-        <select id="select-width" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+        <select id="select-width" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
           <option value="">Ширина</option>
           <option value="Вузька">Вузька</option>
           <option value="Середня">Середня</option>
           <option value="Широка">Широка</option>
         </select>
 
-        <select id="select-color" onchange="applyFilters()" class="filter-select col-span-2 md:col-span-1 bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+        <select id="select-color" onchange="applyFilters()" class="filter-select col-span-2 md:col-span-1 bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
           <option value="">Колір</option>
           <option value="Червоний">Червоний</option>
           <option value="Чорний">Чорний</option>
@@ -152,12 +143,10 @@
     </div>
   </div>
 
-  <!-- Каталог робіт -->
   <main id="catalog" class="max-w-6xl mx-auto px-4 py-8">
     <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"></div>
   </main>
 
-  <!-- Секція: Про бренд -->
   <section id="about" class="border-t border-craft bg-craft/30 py-16 px-4">
     <div class="max-w-4xl mx-auto text-center">
       <span class="text-xs uppercase tracking-[0.25em] text-stone-500 font-semibold block mb-2">Філософія майстерні</span>
@@ -192,7 +181,6 @@
     </div>
   </section>
 
-  <!-- Секція: Оплата та доставка -->
   <section id="delivery" class="py-16 px-4 max-w-5xl mx-auto">
     <div class="text-center mb-12">
       <span class="text-xs uppercase tracking-[0.25em] text-stone-500 font-semibold block mb-2">Умови замовлення</span>
@@ -217,9 +205,9 @@
           <h3 class="font-serif font-bold text-lg text-stoneDark mb-2">Доставка</h3>
           <ul class="text-xs text-stone-600 space-y-2 leading-relaxed">
             <li>• <b>По Україні:</b> доставка «Новою Поштою» (у відділення або поштомат) та «Укрпоштою».</li>
-            <li>• <b>Міжнародна доставка:</b> надійне відправлення по всьому світу через «Нову Пошту» (Nova Post) та «Укрпошту».</li>
+            <li>• <b>Міжнародна доставка:</b> відправлення по всьому світу через «Нову Пошту» (Nova Post) та «Укрпошту».</li>
             <li>• <b>Термін відправки з наявності:</b> 1 робочий день.</li>
-            <li>• Кожна прикраса надсилається в естетичному фірмовому крафтовому пакуванні, готовому на подарунок.</li>
+            <li>• Естетичне фірмове крафтове пакування, готове на подарунок.</li>
           </ul>
         </div>
       </div>
@@ -229,16 +217,15 @@
           <div class="w-10 h-10 rounded-full bg-craft flex items-center justify-center text-stoneDark mb-4 font-semibold text-sm">03</div>
           <h3 class="font-serif font-bold text-lg text-stoneDark mb-2">Під замовлення</h3>
           <ul class="text-xs text-stone-600 space-y-2 leading-relaxed">
-            <li>• Якщо потрібного виробу немає в наявності, я виготовлю його для вас.</li>
-            <li>• <b>Термін виконання:</b> від 3 днів залежно від складності схеми та черги.</li>
-            <li>• Можлива корекція довжини, кольорової палітри чи фурнітури під ваші мірки.</li>
+            <li>• Виготовлення прикрас під індивідуальні мірки.</li>
+            <li>• <b>Термін виконання:</b> від 3 днів залежно від черги.</li>
+            <li>• Можлива корекція довжини чи кольору.</li>
           </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Підвал сайту -->
   <footer class="border-t border-craft bg-linen/90 py-8 px-4 text-center">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
       <p>© 2026 RIZDVIANA.ART. Традиційні прикраси з бісеру ручної роботи.</p>
@@ -250,7 +237,7 @@
     </div>
   </footer>
 
-  <!-- Модальне вікно перегляду картки товару -->
+  <!-- МОДАЛЬНЕ ВІКНО КАРТКИ ТОВАРУ -->
   <div id="product-modal" class="fixed inset-0 z-50 hidden bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto" onclick="handleBackdropClick(event)">
     <div class="bg-linen w-full max-w-4xl rounded-2xl overflow-hidden border border-craft shadow-2xl relative flex flex-col md:flex-row my-auto max-h-[90vh]">
       <button onclick="closeModal()" class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stoneDark flex items-center justify-center shadow transition" aria-label="Закрити">✕</button>
@@ -286,15 +273,40 @@
           </div>
         </div>
 
-        <div class="space-y-2 pt-4 border-t border-craft">
-          <a id="modal-btn-instagram" href="#" target="_blank" class="w-full block text-center py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">Замовити в Instagram</a>
-          <a id="modal-btn-telegram" href="#" target="_blank" class="w-full block text-center py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">Замовити в Telegram</a>
+        <div class="border-t border-craft pt-4">
+          <!-- Стандартні соцмережі -->
+          <div id="modal-action-buttons" class="space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <a id="modal-btn-instagram" href="#" target="_blank" class="block text-center py-3 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">Instagram</a>
+              <a id="modal-btn-telegram" href="#" target="_blank" class="block text-center py-3 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">Telegram</a>
+            </div>
+            <button onclick="showQuickOrderForm()" class="w-full text-center py-2.5 px-3 rounded-xl text-xs font-medium text-stone-600 hover:text-stoneDark hover:bg-craft/40 border border-stone-300 transition">
+              📞 Замовити за номером / без соцмереж
+            </button>
+          </div>
+
+          <!-- Форма замовлення за номером -->
+          <div id="modal-quick-order" class="hidden space-y-2.5">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-stoneDark">Швидке замовлення</span>
+              <button onclick="hideQuickOrderForm()" class="text-xs text-stone-500 hover:text-stoneDark underline">Повернутися</button>
+            </div>
+            
+            <input type="text" id="order-cust-name" placeholder="Ваше ім'я *" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
+            <input type="tel" id="order-cust-phone" placeholder="Номер телефону (дзвінок / Viber) *" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
+            <input type="text" id="order-cust-comment" placeholder="Коментар або розмір (необов'язково)" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
+
+            <div id="order-form-alert" class="hidden text-xs py-1.5 px-2 rounded"></div>
+
+            <button id="btn-submit-order" onclick="submitQuickOrder()" class="w-full py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">
+              Підтвердити замовлення
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Повноекранна галерея (Lightbox) -->
   <div id="zoom-lightbox" class="zoom-overlay" onclick="handleZoomOverlayClick(event)">
     <button class="zoom-close-btn" onclick="closeZoom(event)">&times;</button>
     <button id="zoom-arrow-prev" class="zoom-arrow prev" onclick="prevZoomMedia(event)">&#10094;</button>
@@ -305,7 +317,6 @@
     <div id="zoom-hint" class="zoom-hint">Клікніть по фото для наближення деталей • Клік по фону для виходу</div>
   </div>
 
-  <!-- Кнопка повернення вгору -->
   <button id="btn-scroll-top" onclick="scrollToTop()" class="scroll-top-btn" title="Повернутися нагору" aria-label="Повернутися нагору">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
