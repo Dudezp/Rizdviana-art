@@ -50,7 +50,7 @@
 </head>
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
-  <!-- Закріплена панель із захистом від налізань під Dynamic Island -->
+  <!-- Закріплена панель із 3-етапною анімацією -->
   <div id="sticky-header" class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
     <header id="main-header" class="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center text-center">
       <a href="#" class="inline-block transition hover:opacity-90">
@@ -77,9 +77,9 @@
       </nav>
     </header>
 
-    <!-- Панель фільтрів із бічними відступами -->
+    <!-- Панель фільтрів та сортування -->
     <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-2 pb-3.5">
-      <div class="flex items-center justify-between gap-3 pb-2 px-1 border-b border-stone-300/40">
+      <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 px-1 border-b border-stone-300/40">
         <div class="flex items-center gap-1.5">
           <button id="filter-all" onclick="setStockFilter('all')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white">
             Усі роботи
@@ -89,8 +89,19 @@
           </button>
         </div>
 
-        <div id="items-count" class="text-[11px] text-stone-500 uppercase tracking-wider whitespace-nowrap">
-          Завантаження...
+        <div class="flex items-center gap-2">
+          <!-- Випадаючий список сортування -->
+          <select id="select-sort" onchange="applyFilters()" class="bg-white border border-craft rounded-lg px-2.5 py-1 text-[11px] font-medium text-stoneDark focus:outline-none focus:border-stoneDark transition cursor-pointer">
+            <option value="newest">Спочатку нові</option>
+            <option value="price_asc">Ціна: від дешевих</option>
+            <option value="price_desc">Ціна: від дорогих</option>
+            <option value="title_asc">Назва (А — Я)</option>
+            <option value="oldest">Спочатку давніші</option>
+          </select>
+
+          <div id="items-count" class="text-[11px] text-stone-500 uppercase tracking-wider whitespace-nowrap">
+            Завантаження...
+          </div>
         </div>
       </div>
 
