@@ -10,6 +10,7 @@ let allProducts = [];
 let currentStockFilter = 'all';
 let currentProductMedia = [];
 let activeMediaIndex = 0;
+let activeModalProduct = null;
 
 // Змінні масштабування та панорамування (Zoom & Pan)
 let isZoomed = false;
@@ -83,21 +84,11 @@ function applyFilters() {
         return true;
     });
 
-    // Логіка сортування робіт
     filtered.sort((a, b) => {
-        if (sortBy === 'price_asc') {
-            return (Number(a.price) || 0) - (Number(b.price) || 0);
-        }
-        if (sortBy === 'price_desc') {
-            return (Number(b.price) || 0) - (Number(a.price) || 0);
-        }
-        if (sortBy === 'title_asc') {
-            return (a.title || '').localeCompare(b.title || '', 'uk');
-        }
-        if (sortBy === 'oldest') {
-            return new Date(a.created_at) - new Date(b.created_at);
-        }
-        // За замовчуванням: 'newest' (найновіші першими)
+        if (sortBy === 'price_asc') return (Number(a.price) || 0) - (Number(b.price) || 0);
+        if (sortBy === 'price_desc') return (Number(b.price) || 0) - (Number(a.price) || 0);
+        if (sortBy === 'title_asc') return (a.title || '').localeCompare(b.title || '', 'uk');
+        if (sortBy === 'oldest') return new Date(a.created_at) - new Date(b.created_at);
         return new Date(b.created_at) - new Date(a.created_at);
     });
 
@@ -160,13 +151,18 @@ function renderProducts(items) {
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 pt-2">
-                        <a href="${directUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">
-                            Instagram
-                        </a>
-                        <a href="${telegramUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">
-                            Telegram
-                        </a>
+                    <div class="flex flex-col gap-2 pt-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="${directUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">
+                                Instagram
+                            </a>
+                            <a href="${telegramUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">
+                                Telegram
+                            </a>
+                        </div>
+                        <button onclick="openModalWithOrder('${product.id}')" class="w-full text-center py-2 px-3 rounded-xl text-xs font-medium text-stone-600 hover:text-stoneDark hover:bg-craft/50 border border-craft transition flex items-center justify-center gap-1.5">
+                            <span>📞</span> Швидке замовлення
+                        </button>
                     </div>
                 </div>
             </div>
@@ -174,11 +170,12 @@ function renderProducts(items) {
     }).join('');
 }
 
-// --- КАРТКА ВИРОБУ В МОДАЛЦІ ---
+// --- КАРТКА ТОВАРУ ТА ШВИДКЕ ЗАМОВЛЕННЯ ---
 function openModal(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
 
+    activeModalProduct = product;
     const isInStock = product.status === 'in_stock';
     
     document.getElementById('modal-title').innerText = product.title;
@@ -213,6 +210,8 @@ function openModal(productId) {
     document.getElementById('modal-btn-instagram').href = `https://ig.me/m/${INSTAGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
     document.getElementById('modal-btn-telegram').href = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
 
+    hideQuickOrderForm();
+
     currentProductMedia = product.media && product.media.length > 0 
         ? [...product.media].sort((a, b) => a.display_order - b.display_order)
         : [{ url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80', media_type: 'image' }];
@@ -222,6 +221,90 @@ function openModal(productId) {
 
     document.getElementById('product-modal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+}
+
+function openModalWithOrder(productId) {
+    openModal(productId);
+    showQuickOrderForm();
+}
+
+function showQuickOrderForm() {
+    document.getElementById('modal-action-buttons').classList.add('hidden');
+    document.getElementById('modal-quick-order').classList.remove('hidden');
+    const alertBox = document.getElementById('order-form-alert');
+    alertBox.className = 'hidden text-xs py-1.5 px-2 rounded';
+    alertBox.innerText = '';
+}
+
+function hideQuickOrderForm() {
+    document.getElementById('modal-action-buttons').classList.remove('hidden');
+    document.getElementById('modal-quick-order').classList.add('hidden');
+}
+
+async function submitQuickOrder() {
+    if (!activeModalProduct) return;
+
+    const nameInput = document.getElementById('order-cust-name');
+    const phoneInput = document.getElementById('order-cust-phone');
+    const commInput = document.getElementById('order-cust-comment');
+    const alertBox = document.getElementById('order-form-alert');
+    const submitBtn = document.getElementById('btn-submit-order');
+
+    const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim();
+    const comment = commInput.value.trim();
+
+    if (!name) {
+        alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
+        alertBox.innerText = "Будь ласка, вкажіть ваше ім'я.";
+        return;
+    }
+
+    const digitsCount = (phone.match(/\d/g) || []).length;
+    if (digitsCount < 9) {
+        alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
+        alertBox.innerText = "Введіть коректний номер телефону (від 9 цифр).";
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Відправляємо...";
+
+    try {
+        const { error } = await supabaseClient
+            .from('orders')
+            .insert({
+                product_id: activeModalProduct.id,
+                product_title: activeModalProduct.title,
+                product_price: activeModalProduct.price,
+                customer_name: name,
+                customer_phone: phone,
+                customer_comment: comment || null
+            });
+
+        if (error) throw error;
+
+        alertBox.className = 'text-xs py-2 px-2.5 rounded bg-emerald-100 text-emerald-800 block';
+        alertBox.innerText = "✅ Дякуємо! Замовлення прийнято. Майстриня зв'яжеться з вами найближчим часом.";
+        
+        nameInput.value = '';
+        phoneInput.value = '';
+        commInput.value = '';
+        submitBtn.classList.add('hidden');
+
+        setTimeout(() => {
+            closeModal();
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Підтвердити замовлення";
+            submitBtn.classList.remove('hidden');
+        }, 3500);
+
+    } catch (err) {
+        alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
+        alertBox.innerText = `Помилка: ${err.message}`;
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Підтвердити замовлення";
+    }
 }
 
 function renderModalCardMedia() {
@@ -271,13 +354,14 @@ function closeModal() {
     document.body.style.overflow = 'auto';
     const videoEl = document.querySelector('#modal-main-media video');
     if (videoEl) videoEl.pause();
+    activeModalProduct = null;
 }
 
 function handleBackdropClick(e) {
     if (e.target.id === 'product-modal') closeModal();
 }
 
-// --- ПОВНОЕКРАННА ГАЛЕРЕЯ (LIGHTBOX) ---
+// --- ПОКРАЩЕНА ГАЛЕРЕЯ ТА ЗУМ ---
 function openZoom(index = 0) {
     activeMediaIndex = index;
     renderZoomGallery();
@@ -551,7 +635,7 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// --- 3-СТАДІЙНИЙ СКРОЛ З БУФЕРНИМИ ЗОНАМИ ---
+// СКРОЛ ШАПКИ
 const stickyHeader = document.getElementById('sticky-header');
 const btnScrollTop = document.getElementById('btn-scroll-top');
 
@@ -603,10 +687,7 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 loadCatalog();
