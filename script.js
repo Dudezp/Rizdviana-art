@@ -1,0 +1,593 @@
+const INSTAGRAM_USERNAME = "rizdviana.art";
+const TELEGRAM_USERNAME = "tatianata91";
+
+const SUPABASE_URL = "https://jvckjrzcvfonucagpecu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Gp7u0i4jGzMUJuhiZ6_j_Q_HV3ndPXK";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let allProducts = [];
+let currentStockFilter = 'all';
+let currentProductMedia = [];
+let activeMediaIndex = 0;
+
+// Змінні масштабування та панорамування (Zoom & Pan)
+let isZoomed = false;
+const zoomScale = 2.6;
+let panX = 0;
+let panY = 0;
+let startX = 0;
+let startY = 0;
+let isDragging = false;
+let hasDragged = false;
+let wasJustDragging = false;
+let mousedownTargetOnBackdrop = false;
+
+// --- ЗАВАНТАЖЕННЯ КАТАЛОГУ ---
+async function loadCatalog() {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = '<div class="col-span-full py-12 text-center text-stone-400">Завантажуємо вироби...</div>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('products')
+            .select(`
+                *,
+                media:product_media(url, media_type, display_order)
+            `)
+            .neq('status', 'archived')
+            .order('status', { ascending: true })
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        allProducts = data || [];
+        renderProducts(allProducts);
+    } catch (err) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-red-600 text-sm">
+            Помилка завантаження каталогу: ${err.message}
+        </div>`;
+    }
+}
+
+function setStockFilter(mode) {
+    currentStockFilter = mode;
+    const btnAll = document.getElementById('filter-all');
+    const btnStock = document.getElementById('filter-stock');
+
+    if (mode === 'all') {
+        btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
+        btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
+    } else {
+        btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
+        btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
+    }
+    applyFilters();
+}
+
+function applyFilters() {
+    const type = document.getElementById('select-type').value;
+    const ornament = document.getElementById('select-ornament').value;
+    const shape = document.getElementById('select-shape').value;
+    const width = document.getElementById('select-width').value;
+    const color = document.getElementById('select-color').value;
+
+    const filtered = allProducts.filter(item => {
+        if (currentStockFilter === 'in_stock' && item.status !== 'in_stock') return false;
+        if (type && item.product_type !== type) return false;
+        if (ornament && item.ornament !== ornament) return false;
+        if (shape && item.shape !== shape) return false;
+        if (width && item.width_size !== width) return false;
+        if (color && (!item.colors || !item.colors.includes(color))) return false;
+        return true;
+    });
+
+    renderProducts(filtered);
+}
+
+function renderProducts(items) {
+    const grid = document.getElementById('products-grid');
+    const countEl = document.getElementById('items-count');
+    countEl.innerText = `Знайдено робіт: ${items.length}`;
+
+    if (items.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-16 text-center text-stone-400">Виробів за обраними критеріями не знайдено</div>';
+        return;
+    }
+
+    grid.innerHTML = items.map(product => {
+        const isInStock = product.status === 'in_stock';
+        const sortedMedia = product.media ? [...product.media].sort((a, b) => a.display_order - b.display_order) : [];
+        const coverMedia = sortedMedia.length > 0
+            ? sortedMedia[0].url
+            : 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80';
+
+        const messageText = isInStock 
+            ? `Вітаю! Хочу придбати виріб "${product.title}" (${product.price} грн, в наявності).`
+            : `Вітаю! Мене зацікавив виріб "${product.title}" під замовлення. Хочу дізнатися деталі виготовлення.`;
+
+        const directUrl = `https://ig.me/m/${INSTAGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
+        const telegramUrl = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
+
+        return `
+            <div class="group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col transition hover:shadow-lg">
+                <div onclick="openModal('${product.id}')" class="relative aspect-square overflow-hidden bg-craft/30 cursor-pointer">
+                    <img src="${coverMedia}" alt="${product.title}" loading="lazy" class="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
+                    
+                    <span class="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                        isInStock 
+                            ? 'bg-emerald-900/80 backdrop-blur text-emerald-100' 
+                            : 'bg-stone-800/80 backdrop-blur text-stone-300'
+                    }">
+                        ${isInStock ? 'В наявності' : 'Під замовлення'}
+                    </span>
+
+                    ${sortedMedia.length > 1 ? `
+                        <div class="absolute bottom-3 right-3 bg-stone-900/70 backdrop-blur px-2 py-0.5 rounded-full text-[10px] text-white">
+                            +${sortedMedia.length - 1} фото/відео
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="p-5 flex flex-col flex-grow justify-between gap-4">
+                    <div onclick="openModal('${product.id}')" class="cursor-pointer">
+                        <div class="flex items-baseline justify-between gap-2 mb-1">
+                            <h3 class="font-serif font-bold text-lg text-stoneDark group-hover:text-stone-600 transition">${product.title}</h3>
+                            <span class="font-semibold text-base whitespace-nowrap text-stoneDark">${product.price} ₴</span>
+                        </div>
+                        <p class="text-xs text-stone-500 line-clamp-2 mb-3">${product.description || ''}</p>
+                        <div class="text-[11px] text-stone-400 space-y-1 border-t border-craft pt-3">
+                            <div><strong class="text-stone-600">Розміри:</strong> ${product.dimensions || '—'}</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <a href="${directUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">
+                            Instagram
+                        </a>
+                        <a href="${telegramUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">
+                            Telegram
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// --- КАРТКА ВИРОБУ В МОДАЛЦІ ---
+function openModal(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    const isInStock = product.status === 'in_stock';
+    
+    document.getElementById('modal-title').innerText = product.title;
+    document.getElementById('modal-price').innerText = `${product.price} ₴`;
+    document.getElementById('modal-description').innerText = product.description || 'Опис відсутній.';
+    document.getElementById('modal-materials').innerText = product.materials || '—';
+    document.getElementById('modal-dimensions').innerText = product.dimensions || '—';
+    document.getElementById('modal-shape-type').innerText = `${product.product_type || ''} (${product.shape || 'Стандартна'}, ширина: ${product.width_size || '—'})`;
+
+    const statusBadge = document.getElementById('modal-status-badge');
+    if (isInStock) {
+        statusBadge.className = 'text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-900/80 text-emerald-100';
+        statusBadge.innerText = 'В наявності';
+    } else {
+        statusBadge.className = 'text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-stone-800/80 text-stone-300';
+        statusBadge.innerText = 'Під замовлення';
+    }
+
+    const colorsBox = document.getElementById('modal-colors');
+    if (product.colors && product.colors.length > 0) {
+        colorsBox.innerHTML = product.colors.map(c => `
+            <span class="bg-craft px-2 py-0.5 rounded text-[10px] text-stone-700">${c}</span>
+        `).join('');
+    } else {
+        colorsBox.innerHTML = '<span class="text-stone-400">—</span>';
+    }
+
+    const messageText = isInStock 
+        ? `Вітаю! Хочу придбати виріб "${product.title}" (${product.price} грн, в наявності).`
+        : `Вітаю! Мене зацікавив виріб "${product.title}" під замовлення. Хочу дізнатися деталі виготовлення.`;
+
+    document.getElementById('modal-btn-instagram').href = `https://ig.me/m/${INSTAGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
+    document.getElementById('modal-btn-telegram').href = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
+
+    currentProductMedia = product.media && product.media.length > 0 
+        ? [...product.media].sort((a, b) => a.display_order - b.display_order)
+        : [{ url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80', media_type: 'image' }];
+
+    activeMediaIndex = 0;
+    renderModalCardMedia();
+
+    document.getElementById('product-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function renderModalCardMedia() {
+    const mainContainer = document.getElementById('modal-main-media');
+    const thumbsContainer = document.getElementById('modal-thumbnails');
+    const counterEl = document.getElementById('modal-media-counter');
+    
+    const total = currentProductMedia.length;
+    const activeItem = currentProductMedia[activeMediaIndex];
+
+    counterEl.innerText = `${activeMediaIndex + 1} / ${total}`;
+
+    if (activeItem.media_type === 'video' || activeItem.url.endsWith('.mp4')) {
+        mainContainer.innerHTML = `
+            <video src="${activeItem.url}" controls autoplay loop muted playsinline class="w-full h-full object-contain"></video>
+        `;
+    } else {
+        mainContainer.innerHTML = `
+            <img src="${activeItem.url}" class="w-full h-full object-contain" alt="Прикраса RIZDVIANA.ART" />
+        `;
+    }
+
+    if (total > 1) {
+        thumbsContainer.classList.remove('hidden');
+        thumbsContainer.innerHTML = currentProductMedia.map((m, idx) => `
+            <button onclick="event.stopPropagation(); setActiveMedia(${idx})" class="w-12 h-12 rounded-lg overflow-hidden border-2 flex-shrink-0 relative transition ${
+                idx === activeMediaIndex ? 'border-stoneDark ring-1 ring-stoneDark opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+            }">
+                ${m.media_type === 'video' || m.url.endsWith('.mp4')
+                    ? `<div class="w-full h-full bg-stone-800 text-white flex items-center justify-center text-[9px]">▶</div>`
+                    : `<img src="${m.url}" class="w-full h-full object-cover" />`
+                }
+            </button>
+        `).join('');
+    } else {
+        thumbsContainer.classList.add('hidden');
+    }
+}
+
+function setActiveMedia(index) {
+    activeMediaIndex = index;
+    renderModalCardMedia();
+}
+
+function closeModal() {
+    document.getElementById('product-modal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    const videoEl = document.querySelector('#modal-main-media video');
+    if (videoEl) videoEl.pause();
+}
+
+function handleBackdropClick(e) {
+    if (e.target.id === 'product-modal') closeModal();
+}
+
+// --- ПОВНОЕКРАННА ГАЛЕРЕЯ (LIGHTBOX) ---
+function openZoom(index = 0) {
+    activeMediaIndex = index;
+    renderZoomGallery();
+
+    const zoomLightbox = document.getElementById('zoom-lightbox');
+    zoomLightbox.style.display = 'flex';
+    setTimeout(() => zoomLightbox.classList.add('active'), 10);
+}
+
+function renderZoomGallery() {
+    const container = document.getElementById('zoom-container');
+    const thumbs = document.getElementById('zoom-thumbnails');
+    const prevBtn = document.getElementById('zoom-arrow-prev');
+    const nextBtn = document.getElementById('zoom-arrow-next');
+
+    resetZoomState();
+
+    const total = currentProductMedia.length;
+    const activeItem = currentProductMedia[activeMediaIndex];
+
+    prevBtn.style.display = total > 1 ? 'flex' : 'none';
+    nextBtn.style.display = total > 1 ? 'flex' : 'none';
+
+    if (activeItem.media_type === 'video' || activeItem.url.endsWith('.mp4')) {
+        container.innerHTML = `
+            <video src="${activeItem.url}" controls autoplay playsinline class="zoom-video" onclick="event.stopPropagation()"></video>
+        `;
+    } else {
+        container.innerHTML = `
+            <img src="${activeItem.url}" id="activeZoomImg" class="zoom-img" alt="Збільшений бісер" draggable="false">
+        `;
+        const img = document.getElementById('activeZoomImg');
+        setupZoomAndPan(img);
+    }
+
+    if (total > 1) {
+        thumbs.style.display = 'flex';
+        thumbs.innerHTML = currentProductMedia.map((m, idx) => `
+            <button onclick="setZoomMedia(${idx})" class="zoom-thumb-btn ${idx === activeMediaIndex ? 'active' : ''}">
+                ${m.media_type === 'video' || m.url.endsWith('.mp4')
+                    ? `<div class="w-full h-full bg-stone-900 text-white flex items-center justify-center text-[10px]">▶</div>`
+                    : `<img src="${m.url}" draggable="false" />`
+                }
+            </button>
+        `).join('');
+    } else {
+        thumbs.style.display = 'none';
+    }
+
+    renderModalCardMedia();
+}
+
+function setupZoomAndPan(img) {
+    img.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (hasDragged || wasJustDragging) return;
+
+        if (isZoomed) {
+            resetZoomImg(img);
+        } else {
+            zoomInImg(e, img);
+        }
+    });
+
+    img.addEventListener('mousedown', (e) => {
+        if (!isZoomed) return;
+        e.preventDefault();
+        isDragging = true;
+        hasDragged = false;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+        img.style.transition = 'none';
+    });
+
+    img.addEventListener('touchstart', (e) => {
+        if (!isZoomed || e.touches.length !== 1) return;
+        isDragging = true;
+        hasDragged = false;
+        startX = e.touches[0].clientX - panX;
+        startY = e.touches[0].clientY - panY;
+        img.style.transition = 'none';
+    }, { passive: true });
+}
+
+function zoomInImg(e, img) {
+    isZoomed = true;
+    img.classList.add('magnified');
+
+    const rect = img.getBoundingClientRect();
+    const clickX = e.clientX - rect.left - rect.width / 2;
+    const clickY = e.clientY - rect.top - rect.height / 2;
+
+    panX = -clickX * (zoomScale - 1);
+    panY = -clickY * (zoomScale - 1);
+
+    applyPanBounds(img);
+
+    img.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+    img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+
+    const hint = document.getElementById('zoom-hint');
+    if (hint) hint.innerText = 'Перетягуйте мишкою або пальцем, щоб оглянути плетіння • Клік для виходу з зуму';
+}
+
+function resetZoomImg(img) {
+    if (!img) return;
+    isZoomed = false;
+    panX = 0;
+    panY = 0;
+    img.classList.remove('magnified');
+    img.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+    img.style.transform = 'translate(0px, 0px) scale(1)';
+
+    const hint = document.getElementById('zoom-hint');
+    if (hint) hint.innerText = 'Клікніть по фото для наближення деталей • Клік по фону для виходу';
+}
+
+function resetZoomState() {
+    isZoomed = false;
+    panX = 0;
+    panY = 0;
+    isDragging = false;
+    hasDragged = false;
+    wasJustDragging = false;
+}
+
+function applyPanBounds(img) {
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    const limitX = Math.max(120, (rect.width * (zoomScale - 1)) / 1.5);
+    const limitY = Math.max(120, (rect.height * (zoomScale - 1)) / 1.5);
+
+    panX = Math.max(-limitX, Math.min(limitX, panX));
+    panY = Math.max(-limitY, Math.min(limitY, panY));
+}
+
+const zoomLightboxEl = document.getElementById('zoom-lightbox');
+if (zoomLightboxEl) {
+    zoomLightboxEl.addEventListener('mousedown', (e) => {
+        mousedownTargetOnBackdrop = (e.target.id === 'zoom-lightbox' || e.target.id === 'zoom-container');
+    });
+}
+
+window.addEventListener('mousemove', (e) => {
+    if (!isDragging || !isZoomed) return;
+    const img = document.getElementById('activeZoomImg');
+    if (!img) return;
+
+    const currentPanX = e.clientX - startX;
+    const currentPanY = e.clientY - startY;
+
+    if (Math.hypot(currentPanX - panX, currentPanY - panY) > 4) {
+        hasDragged = true;
+    }
+
+    panX = currentPanX;
+    panY = currentPanY;
+    applyPanBounds(img);
+
+    img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+});
+
+window.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        if (hasDragged) {
+            wasJustDragging = true;
+            setTimeout(() => {
+                wasJustDragging = false;
+                hasDragged = false;
+            }, 120);
+        }
+        const img = document.getElementById('activeZoomImg');
+        if (img) img.style.transition = 'transform 0.2s ease-out';
+    }
+});
+
+window.addEventListener('touchmove', (e) => {
+    if (!isDragging || !isZoomed || e.touches.length !== 1) return;
+    const img = document.getElementById('activeZoomImg');
+    if (!img) return;
+
+    const currentPanX = e.touches[0].clientX - startX;
+    const currentPanY = e.touches[0].clientY - startY;
+
+    if (Math.hypot(currentPanX - panX, currentPanY - panY) > 4) {
+        hasDragged = true;
+    }
+
+    panX = currentPanX;
+    panY = currentPanY;
+    applyPanBounds(img);
+
+    img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+}, { passive: true });
+
+window.addEventListener('touchend', () => {
+    if (isDragging) {
+        isDragging = false;
+        if (hasDragged) {
+            wasJustDragging = true;
+            setTimeout(() => {
+                wasJustDragging = false;
+                hasDragged = false;
+            }, 120);
+        }
+    }
+});
+
+function handleZoomOverlayClick(e) {
+    if (wasJustDragging || hasDragged) return;
+    if (mousedownTargetOnBackdrop && (e.target.id === 'zoom-lightbox' || e.target.id === 'zoom-container')) {
+        closeZoom(e);
+    }
+}
+
+function setZoomMedia(index) {
+    activeMediaIndex = index;
+    renderZoomGallery();
+}
+
+function prevZoomMedia(e) {
+    if (e) e.stopPropagation();
+    const total = currentProductMedia.length;
+    activeMediaIndex = (activeMediaIndex - 1 + total) % total;
+    renderZoomGallery();
+}
+
+function nextZoomMedia(e) {
+    if (e) e.stopPropagation();
+    const total = currentProductMedia.length;
+    activeMediaIndex = (activeMediaIndex + 1) % total;
+    renderZoomGallery();
+}
+
+function closeZoom(e) {
+    if (e) e.stopPropagation();
+    const zoomLightbox = document.getElementById('zoom-lightbox');
+    const video = document.querySelector('#zoom-container video');
+    if (video) video.pause();
+
+    resetZoomState();
+    zoomLightbox.classList.remove('active');
+    setTimeout(() => {
+        zoomLightbox.style.display = 'none';
+        document.getElementById('zoom-container').innerHTML = '';
+    }, 200);
+}
+
+// Керування клавіатурою
+window.addEventListener('keydown', (e) => {
+    const zoomLightbox = document.getElementById('zoom-lightbox');
+    const isZoomOpen = zoomLightbox && zoomLightbox.classList.contains('active');
+
+    if (isZoomOpen) {
+        if (e.key === 'ArrowLeft') prevZoomMedia();
+        if (e.key === 'ArrowRight') nextZoomMedia();
+        if (e.key === 'Escape') {
+            if (isZoomed) {
+                resetZoomImg(document.getElementById('activeZoomImg'));
+            } else {
+                closeZoom();
+            }
+        }
+        return;
+    }
+
+    const productModal = document.getElementById('product-modal');
+    if (productModal && !productModal.classList.contains('hidden')) {
+        if (e.key === 'Escape') closeModal();
+    }
+});
+
+// --- 3-СТАДІЙНИЙ СКРОЛ З БУФЕРНИМИ ЗОНАМИ ---
+const stickyHeader = document.getElementById('sticky-header');
+const btnScrollTop = document.getElementById('btn-scroll-top');
+
+let currentStage = 0;
+let scrollTicking = false;
+
+window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+        window.requestAnimationFrame(() => {
+            const scrollY = window.scrollY;
+
+            if (stickyHeader) {
+                if (currentStage === 0) {
+                    if (scrollY > 60) {
+                        currentStage = 1;
+                        stickyHeader.classList.add('step-1');
+                        stickyHeader.classList.remove('step-2');
+                    }
+                } else if (currentStage === 1) {
+                    if (scrollY > 150) {
+                        currentStage = 2;
+                        stickyHeader.classList.remove('step-1');
+                        stickyHeader.classList.add('step-2');
+                    } else if (scrollY < 25) {
+                        currentStage = 0;
+                        stickyHeader.classList.remove('step-1', 'step-2');
+                    }
+                } else if (currentStage === 2) {
+                    if (scrollY < 110) {
+                        currentStage = 1;
+                        stickyHeader.classList.add('step-1');
+                        stickyHeader.classList.remove('step-2');
+                    }
+                }
+            }
+
+            if (btnScrollTop) {
+                if (scrollY > 400) {
+                    btnScrollTop.classList.add('visible');
+                } else {
+                    btnScrollTop.classList.remove('visible');
+                }
+            }
+
+            scrollTicking = false;
+        });
+        scrollTicking = true;
+    }
+}, { passive: true });
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+loadCatalog();

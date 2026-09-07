@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RIZDVIANA.ART — Традиційні та сучасні прикраси з бісеру</title>
+  
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2" />
+
+  <!-- Open Graph та мета-теги для соцмереж (Telegram, Instagram, Viber) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RIZDVIANA.ART" />
+  <meta property="og:title" content="RIZDVIANA.ART — Традиційні та сучасні прикраси з бісеру" />
+  <meta property="og:description" content="Авторські силянки, гердани та чокери ручної роботи з якісного чеського та японського бісеру. Збереження українських традицій." />
+  <meta property="og:image" content="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/og-preview.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            linen: '#F9F6F0',
+            craft: '#F0EAE1',
+            stoneDark: '#2C2825',
+          },
+          fontFamily: {
+            serif: ['Cinzel', 'serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-linen text-stoneDark font-sans min-h-screen">
+
+  <!-- Закріплена панель із 3-етапною плавною анімацією -->
+  <div id="sticky-header" class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
+    <header id="main-header" class="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center text-center">
+      <a href="#" class="inline-block transition hover:opacity-90">
+        <img 
+          id="header-logo"
+          src="logo.svg" 
+          alt="RIZDVIANA.ART" 
+          class="w-auto object-contain"
+          onerror="this.style.display='none'" 
+        />
+      </a>
+      <h1 class="sr-only">RIZDVIANA.ART</h1>
+      
+      <!-- Традиційний підпис бренду -->
+      <p id="header-tagline" class="uppercase tracking-[0.24em] text-stone-600 font-medium">
+        Традиційні та сучасні прикраси з бісеру
+      </p>
+      
+      <!-- Навігаційне меню -->
+      <nav id="header-nav" class="flex items-center justify-center uppercase tracking-wider font-semibold">
+        <a href="#catalog" class="text-stoneDark hover:text-stone-500 transition">Каталог</a>
+        <a href="#about" class="text-stoneDark hover:text-stone-500 transition">Про бренд</a>
+        <a href="#delivery" class="text-stoneDark hover:text-stone-500 transition">Оплата та доставка</a>
+      </nav>
+    </header>
+
+    <!-- Панель фільтрів із бічними відступами -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-2 pb-3.5">
+      <div class="flex items-center justify-between gap-3 pb-2 px-1 border-b border-stone-300/40">
+        <div class="flex items-center gap-1.5">
+          <button id="filter-all" onclick="setStockFilter('all')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white">
+            Усі роботи
+          </button>
+          <button id="filter-stock" onclick="setStockFilter('in_stock')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100">
+            В наявності
+          </button>
+        </div>
+
+        <div id="items-count" class="text-[11px] text-stone-500 uppercase tracking-wider whitespace-nowrap">
+          Завантаження...
+        </div>
+      </div>
+
+      <div class="flex sm:grid sm:grid-cols-5 gap-2.5 pt-2.5 pb-1.5 px-2 overflow-x-auto no-scrollbar">
+        <select id="select-type" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+          <option value="">Усі типи</option>
+          <option value="Силянка">Силянка</option>
+          <option value="Гердан">Гердан</option>
+          <option value="Чокер">Чокер</option>
+          <option value="Браслет">Браслет</option>
+        </select>
+
+        <select id="select-ornament" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+          <option value="">Орнамент</option>
+          <option value="Рослинний">Рослинний</option>
+          <option value="Геометричний">Геометричний</option>
+        </select>
+
+        <select id="select-shape" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+          <option value="">Форма</option>
+          <option value="Стрічка">Стрічка</option>
+          <option value="Заокруглена">Заокруглена</option>
+          <option value="Зубчаста">Зубчаста</option>
+        </select>
+
+        <select id="select-width" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+          <option value="">Ширина</option>
+          <option value="Вузька">Вузька</option>
+          <option value="Середня">Середня</option>
+          <option value="Широка">Широка</option>
+        </select>
+
+        <select id="select-color" onchange="applyFilters()" class="filter-select col-span-2 md:col-span-1 bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark focus:ring-1 focus:ring-stoneDark whitespace-nowrap flex-shrink-0 transition">
+          <option value="">Колір</option>
+          <option value="Червоний">Червоний</option>
+          <option value="Чорний">Чорний</option>
+          <option value="Білий">Білий</option>
+          <option value="Синій">Синій</option>
+          <option value="Зелений">Зелений</option>
+          <option value="Жовтий">Жовтий</option>
+          <option value="Помаранчевий">Помаранчевий</option>
+          <option value="Рожевий">Рожевий</option>
+          <option value="Фіолетовий">Фіолетовий</option>
+          <option value="Коричневий">Коричневий</option>
+          <option value="Золотий">Золотий</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Каталог робіт -->
+  <main id="catalog" class="max-w-6xl mx-auto px-4 py-8">
+    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"></div>
+  </main>
+
+  <!-- Секція: Про бренд -->
+  <section id="about" class="border-t border-craft bg-craft/30 py-16 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <span class="text-xs uppercase tracking-[0.25em] text-stone-500 font-semibold block mb-2">Філософія майстерні</span>
+      <h2 class="font-serif font-bold text-2xl sm:text-3xl text-stoneDark mb-6">Про RIZDVIANA.ART</h2>
+      
+      <div class="space-y-4 text-sm sm:text-base text-stone-600 leading-relaxed max-w-2xl mx-auto font-normal">
+        <p>
+          RIZDVIANA.ART — це простір переосмислення української автентики через призму сучасного дизайну. Кожна силянка, гердан чи чокер створюються вручну, поєднуючи багатовікові закодовані орнаменти з сучасною витонченістю.
+        </p>
+        <p>
+          Я використовую виключно якісний відкалібрований чеський та японський бісер і якісну фурнітуру, аби кожна лінія візерунка лягала бездоганно. Це прикраси, що мають голос, оберігають спогади та стають акцентною деталлю як святкового строю, так і повсякденного образу.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-10 max-w-3xl mx-auto text-left">
+        <div class="bg-linen p-5 rounded-xl border border-craft">
+          <div class="text-lg mb-1">🧵</div>
+          <h3 class="font-semibold text-stoneDark text-xs uppercase tracking-wider mb-1">Ручна робота</h3>
+          <p class="text-xs text-stone-500 leading-normal">Плетіння з увагою до кожного стібка та ідеального натягу нитки.</p>
+        </div>
+        <div class="bg-linen p-5 rounded-xl border border-craft">
+          <div class="text-lg mb-1">✨</div>
+          <h3 class="font-semibold text-stoneDark text-xs uppercase tracking-wider mb-1">Чеський та японський бісер</h3>
+          <p class="text-xs text-stone-500 leading-normal">Стійке покриття, стійкість до вигорання та збереження форми на роки.</p>
+        </div>
+        <div class="bg-linen p-5 rounded-xl border border-craft">
+          <div class="text-lg mb-1">🌿</div>
+          <h3 class="font-semibold text-stoneDark text-xs uppercase tracking-wider mb-1">Сенси та пам'ять</h3>
+          <p class="text-xs text-stone-500 leading-normal">Традиційні регіональні мотиви всієї України.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Секція: Оплата та доставка -->
+  <section id="delivery" class="py-16 px-4 max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="text-xs uppercase tracking-[0.25em] text-stone-500 font-semibold block mb-2">Умови замовлення</span>
+      <h2 class="font-serif font-bold text-2xl sm:text-3xl text-stoneDark">Оплата та доставка</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="bg-white p-6 sm:p-7 rounded-2xl border border-craft shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-full bg-craft flex items-center justify-center text-stoneDark mb-4 font-semibold text-sm">01</div>
+          <h3 class="font-serif font-bold text-lg text-stoneDark mb-2">Оплата</h3>
+          <ul class="text-xs text-stone-600 space-y-2 leading-relaxed">
+            <li>• Оплата за реквізитами на картку або через PayPal.</li>
+            <li>• Оплата замовлення доступна як за повною передплатою, так і післяплатою на пошті при отриманні.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 sm:p-7 rounded-2xl border border-craft shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-full bg-craft flex items-center justify-center text-stoneDark mb-4 font-semibold text-sm">02</div>
+          <h3 class="font-serif font-bold text-lg text-stoneDark mb-2">Доставка</h3>
+          <ul class="text-xs text-stone-600 space-y-2 leading-relaxed">
+            <li>• <b>По Україні:</b> доставка «Новою Поштою» (у відділення або поштомат) та «Укрпоштою».</li>
+            <li>• <b>Міжнародна доставка:</b> надійне відправлення по всьому світу через «Нову Пошту» (Nova Post) та «Укрпошту».</li>
+            <li>• <b>Термін відправки з наявності:</b> 1 робочий день.</li>
+            <li>• Кожна прикраса надсилається в естетичному фірмовому крафтовому пакуванні, готовому на подарунок.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 sm:p-7 rounded-2xl border border-craft shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-full bg-craft flex items-center justify-center text-stoneDark mb-4 font-semibold text-sm">03</div>
+          <h3 class="font-serif font-bold text-lg text-stoneDark mb-2">Під замовлення</h3>
+          <ul class="text-xs text-stone-600 space-y-2 leading-relaxed">
+            <li>• Якщо потрібного виробу немає в наявності, я виготовлю його для вас.</li>
+            <li>• <b>Термін виконання:</b> від 3 днів залежно від складності схеми та черги.</li>
+            <li>• Можлива корекція довжини, кольорової палітри чи фурнітури під ваші мірки.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Підвал сайту -->
+  <footer class="border-t border-craft bg-linen/90 py-8 px-4 text-center">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
+      <p>© 2026 RIZDVIANA.ART. Традиційні прикраси з бісеру ручної роботи.</p>
+      <div class="flex items-center gap-4">
+        <a href="https://instagram.com/rizdviana.art" target="_blank" class="hover:text-stoneDark transition">Instagram</a>
+        <span>•</span>
+        <a href="https://t.me/tatianata91" target="_blank" class="hover:text-stoneDark transition">Telegram</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Модальне вікно перегляду картки товару -->
+  <div id="product-modal" class="fixed inset-0 z-50 hidden bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto" onclick="handleBackdropClick(event)">
+    <div class="bg-linen w-full max-w-4xl rounded-2xl overflow-hidden border border-craft shadow-2xl relative flex flex-col md:flex-row my-auto max-h-[90vh]">
+      <button onclick="closeModal()" class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stoneDark flex items-center justify-center shadow transition" aria-label="Закрити">✕</button>
+
+      <div class="w-full md:w-1/2 p-4 sm:p-6 flex flex-col justify-between bg-craft/20 border-b md:border-b-0 md:border-r border-craft">
+        <div class="relative aspect-square w-full bg-white rounded-xl shadow-sm flex items-center justify-center overflow-hidden border border-craft/80 cursor-pointer group" onclick="openZoom(activeMediaIndex)">
+          <div id="modal-media-counter" class="media-counter">1 / 1</div>
+          <div id="modal-main-media" class="w-full h-full flex items-center justify-center"></div>
+          <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none">
+            <span class="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium text-stoneDark shadow">🔍 Натисніть для перегляду</span>
+          </div>
+        </div>
+        <div id="modal-thumbnails" class="mt-4 flex gap-2 overflow-x-auto"></div>
+      </div>
+
+      <div class="w-full md:w-1/2 p-6 overflow-y-auto flex flex-col justify-between space-y-6">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span id="modal-status-badge" class="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"></span>
+          </div>
+          <h2 id="modal-title" class="font-serif font-bold text-2xl text-stoneDark mb-2"></h2>
+          <div id="modal-price" class="font-semibold text-xl text-stoneDark mb-4"></div>
+          <p id="modal-description" class="text-xs md:text-sm text-stone-600 leading-relaxed mb-6"></p>
+
+          <div class="space-y-2 border-t border-craft pt-4 text-xs">
+            <div><strong class="text-stone-800">Матеріали:</strong> <span id="modal-materials" class="text-stone-600"></span></div>
+            <div><strong class="text-stone-800">Розміри:</strong> <span id="modal-dimensions" class="text-stone-600"></span></div>
+            <div><strong class="text-stone-800">Форма / Тип:</strong> <span id="modal-shape-type" class="text-stone-600"></span></div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1">
+              <strong class="text-stone-800 mr-1">Кольори:</strong>
+              <div id="modal-colors" class="flex flex-wrap gap-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-4 border-t border-craft">
+          <a id="modal-btn-instagram" href="#" target="_blank" class="w-full block text-center py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">Замовити в Instagram</a>
+          <a id="modal-btn-telegram" href="#" target="_blank" class="w-full block text-center py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">Замовити в Telegram</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Повноекранна галерея (Lightbox) -->
+  <div id="zoom-lightbox" class="zoom-overlay" onclick="handleZoomOverlayClick(event)">
+    <button class="zoom-close-btn" onclick="closeZoom(event)">&times;</button>
+    <button id="zoom-arrow-prev" class="zoom-arrow prev" onclick="prevZoomMedia(event)">&#10094;</button>
+    <button id="zoom-arrow-next" class="zoom-arrow next" onclick="nextZoomMedia(event)">&#10095;</button>
+
+    <div class="zoom-container" id="zoom-container"></div>
+    <div id="zoom-thumbnails" class="zoom-thumbnails" onclick="event.stopPropagation()"></div>
+    <div id="zoom-hint" class="zoom-hint">Клікніть по фото для наближення деталей • Клік по фону для виходу</div>
+  </div>
+
+  <!-- Кнопка повернення вгору -->
+  <button id="btn-scroll-top" onclick="scrollToTop()" class="scroll-top-btn" title="Повернутися нагору" aria-label="Повернутися нагору">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+    </svg>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
