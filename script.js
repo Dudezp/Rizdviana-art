@@ -42,7 +42,7 @@ async function loadCatalog() {
         if (error) throw error;
 
         allProducts = data || [];
-        renderProducts(allProducts);
+        applyFilters();
     } catch (err) {
         grid.innerHTML = `<div class="col-span-full py-12 text-center text-red-600 text-sm">
             Помилка завантаження каталогу: ${err.message}
@@ -71,8 +71,9 @@ function applyFilters() {
     const shape = document.getElementById('select-shape').value;
     const width = document.getElementById('select-width').value;
     const color = document.getElementById('select-color').value;
+    const sortBy = document.getElementById('select-sort')?.value || 'newest';
 
-    const filtered = allProducts.filter(item => {
+    let filtered = allProducts.filter(item => {
         if (currentStockFilter === 'in_stock' && item.status !== 'in_stock') return false;
         if (type && item.product_type !== type) return false;
         if (ornament && item.ornament !== ornament) return false;
@@ -80,6 +81,24 @@ function applyFilters() {
         if (width && item.width_size !== width) return false;
         if (color && (!item.colors || !item.colors.includes(color))) return false;
         return true;
+    });
+
+    // Логіка сортування робіт
+    filtered.sort((a, b) => {
+        if (sortBy === 'price_asc') {
+            return (Number(a.price) || 0) - (Number(b.price) || 0);
+        }
+        if (sortBy === 'price_desc') {
+            return (Number(b.price) || 0) - (Number(a.price) || 0);
+        }
+        if (sortBy === 'title_asc') {
+            return (a.title || '').localeCompare(b.title || '', 'uk');
+        }
+        if (sortBy === 'oldest') {
+            return new Date(a.created_at) - new Date(b.created_at);
+        }
+        // За замовчуванням: 'newest' (найновіші першими)
+        return new Date(b.created_at) - new Date(a.created_at);
     });
 
     renderProducts(filtered);
