@@ -60,7 +60,8 @@
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
   <div id="sticky-header" class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
-    <header id="main-header" class="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center text-center">
+    <!-- Додано pt-6 sm:pt-8 pb-3 для комфортного відступу логотипу від верхньої панелі браузера -->
+    <header id="main-header" class="max-w-6xl mx-auto px-4 pt-6 sm:pt-8 pb-3 flex flex-col items-center justify-center text-center">
       <a href="#" class="inline-block transition hover:opacity-90">
         <img 
           id="header-logo"
@@ -72,11 +73,11 @@
       </a>
       <h1 class="sr-only">RIZDVIANA.ART</h1>
       
-      <p id="header-tagline" class="uppercase tracking-[0.24em] text-stone-600 font-medium">
+      <p id="header-tagline" class="uppercase tracking-[0.24em] text-stone-600 font-medium mt-1">
         Традиційні та сучасні прикраси з бісеру
       </p>
       
-      <nav id="header-nav" class="flex items-center justify-center uppercase tracking-wider font-semibold">
+      <nav id="header-nav" class="flex items-center justify-center uppercase tracking-wider font-semibold mt-2">
         <a href="#catalog" class="text-stoneDark hover:text-stone-500 transition">Каталог</a>
         <a href="#about" class="text-stoneDark hover:text-stone-500 transition">Про бренд</a>
         <a href="#delivery" class="text-stoneDark hover:text-stone-500 transition">Оплата та доставка</a>
@@ -253,7 +254,12 @@
   <!-- МОДАЛЬНЕ ВІКНО КАРТКИ ТОВАРУ -->
   <div id="product-modal" class="fixed inset-0 z-50 hidden bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto" onclick="handleBackdropClick(event)">
     <div class="bg-linen w-full max-w-4xl rounded-2xl overflow-hidden border border-craft shadow-2xl relative flex flex-col md:flex-row my-auto max-h-[90vh]">
-      <button onclick="closeModal()" class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stoneDark flex items-center justify-center shadow transition" aria-label="Закрити">✕</button>
+      <!-- Хрестик модального вікна замінено на чіткий векторний SVG з флекс-центруванням -->
+      <button onclick="closeModal()" class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stoneDark flex items-center justify-center shadow transition focus:outline-none" aria-label="Закрити">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
       <div class="w-full md:w-1/2 p-4 sm:p-6 flex flex-col justify-between bg-craft/20 border-b md:border-b-0 md:border-r border-craft">
         <div class="relative aspect-square w-full bg-white rounded-xl shadow-sm flex items-center justify-center overflow-hidden border border-craft/80 cursor-pointer group" onclick="openZoom(activeMediaIndex)">
@@ -320,8 +326,14 @@
     </div>
   </div>
 
+  <!-- ПОВНОЕКРАННИЙ ПЕРЕГЛЯД ФОТО (ЛАЙТБОКС) -->
   <div id="zoom-lightbox" class="zoom-overlay" onclick="handleZoomOverlayClick(event)">
-    <button class="zoom-close-btn" onclick="closeZoom(event)">&times;</button>
+    <!-- Кнопку закриття перегляду фото переведено на flex-центрування з чітким векторним SVG замість символу &times; -->
+    <button class="zoom-close-btn flex items-center justify-center p-0 leading-none focus:outline-none" onclick="closeZoom(event)" aria-label="Закрити">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
     <button id="zoom-arrow-prev" class="zoom-arrow prev" onclick="prevZoomMedia(event)">&#10094;</button>
     <button id="zoom-arrow-next" class="zoom-arrow next" onclick="nextZoomMedia(event)">&#10095;</button>
 
