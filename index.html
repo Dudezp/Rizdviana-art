@@ -30,6 +30,24 @@
   <meta name="twitter:description" content="Авторські силянки, гердани та чокери ручної роботи з якісного чеського та японського бісеру." />
   <meta name="twitter:image" content="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/og-preview.png" />
 
+  <!-- Структуровані дані Schema.org (JSON-LD) для Google -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "JewelryStore",
+    "name": "RIZDVIANA.ART",
+    "url": "https://rizdviana.art/",
+    "logo": "https://rizdviana.art/logo.svg",
+    "image": "https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/og-preview.png",
+    "description": "Авторські силянки, гердани та чокери ручної роботи з якісного бісеру від майстерні RIZDVIANA.ART.",
+    "priceRange": "₴₴",
+    "sameAs": [
+      "https://instagram.com/rizdviana.art",
+      "https://t.me/tatianata91"
+    ]
+  }
+  </script>
+
   <!-- Бібліотеки та стилі -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -60,7 +78,6 @@
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
   <div id="sticky-header" class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
-    <!-- Додано pt-6 sm:pt-8 pb-3 для комфортного відступу логотипу від верхньої панелі браузера -->
     <header id="main-header" class="max-w-6xl mx-auto px-4 pt-6 sm:pt-8 pb-3 flex flex-col items-center justify-center text-center">
       <a href="#" class="inline-block transition hover:opacity-90">
         <img 
@@ -254,7 +271,6 @@
   <!-- МОДАЛЬНЕ ВІКНО КАРТКИ ТОВАРУ -->
   <div id="product-modal" class="fixed inset-0 z-50 hidden bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto" onclick="handleBackdropClick(event)">
     <div class="bg-linen w-full max-w-4xl rounded-2xl overflow-hidden border border-craft shadow-2xl relative flex flex-col md:flex-row my-auto max-h-[90vh]">
-      <!-- Хрестик модального вікна замінено на чіткий векторний SVG з флекс-центруванням -->
       <button onclick="closeModal()" class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stoneDark flex items-center justify-center shadow transition focus:outline-none" aria-label="Закрити">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -293,7 +309,6 @@
         </div>
 
         <div class="border-t border-craft pt-4">
-          <!-- Стандартні соцмережі -->
           <div id="modal-action-buttons" class="space-y-2">
             <div class="grid grid-cols-2 gap-2">
               <a id="modal-btn-instagram" href="#" target="_blank" class="block text-center py-3 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">Instagram</a>
@@ -304,7 +319,6 @@
             </button>
           </div>
 
-          <!-- Форма замовлення за номером -->
           <div id="modal-quick-order" class="hidden space-y-2.5">
             <div class="flex items-center justify-between mb-1">
               <span class="text-xs font-semibold uppercase tracking-wider text-stoneDark">Швидке замовлення</span>
@@ -328,7 +342,6 @@
 
   <!-- ПОВНОЕКРАННИЙ ПЕРЕГЛЯД ФОТО (ЛАЙТБОКС) -->
   <div id="zoom-lightbox" class="zoom-overlay" onclick="handleZoomOverlayClick(event)">
-    <!-- Кнопку закриття перегляду фото переведено на flex-центрування з чітким векторним SVG замість символу &times; -->
     <button class="zoom-close-btn flex items-center justify-center p-0 leading-none focus:outline-none" onclick="closeZoom(event)" aria-label="Закрити">
       <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
