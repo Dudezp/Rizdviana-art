@@ -119,10 +119,23 @@ function renderProducts(items) {
         const directUrl = `https://ig.me/m/${INSTAGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
         const telegramUrl = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
 
+        // Формування оптимізованого опису для пошуковика та зображень
+        const itemType = product.product_type ? product.product_type.toLowerCase() : 'прикраса';
+        const seoAlt = `${product.title} — авторська ${itemType} з бісеру ручної роботи, бренд RIZDVIANA.ART`;
+
         return `
             <div class="group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col transition hover:shadow-lg">
                 <div onclick="openModal('${product.id}')" class="relative aspect-square overflow-hidden bg-craft/30 cursor-pointer">
-                    <img src="${coverMedia}" alt="${product.title}" loading="lazy" class="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
+                    <img 
+                        src="${coverMedia}" 
+                        alt="${seoAlt}" 
+                        title="${product.title} — RIZDVIANA.ART"
+                        loading="lazy" 
+                        decoding="async"
+                        width="400"
+                        height="400"
+                        class="w-full h-full object-cover transition duration-500 group-hover:scale-105" 
+                    />
                     
                     <span class="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                         isInStock 
@@ -317,13 +330,21 @@ function renderModalCardMedia() {
 
     counterEl.innerText = `${activeMediaIndex + 1} / ${total}`;
 
+    const itemTitle = activeModalProduct ? activeModalProduct.title : 'Прикраса з бісеру';
+    const itemType = activeModalProduct?.product_type ? activeModalProduct.product_type.toLowerCase() : 'прикраса';
+
     if (activeItem.media_type === 'video' || activeItem.url.endsWith('.mp4')) {
         mainContainer.innerHTML = `
             <video src="${activeItem.url}" controls autoplay loop muted playsinline class="w-full h-full object-contain"></video>
         `;
     } else {
         mainContainer.innerHTML = `
-            <img src="${activeItem.url}" class="w-full h-full object-contain" alt="Прикраса RIZDVIANA.ART" />
+            <img 
+                src="${activeItem.url}" 
+                class="w-full h-full object-contain" 
+                alt="${itemTitle} — ${itemType} ручної роботи RIZDVIANA.ART" 
+                decoding="async"
+            />
         `;
     }
 
@@ -335,7 +356,7 @@ function renderModalCardMedia() {
             }">
                 ${m.media_type === 'video' || m.url.endsWith('.mp4')
                     ? `<div class="w-full h-full bg-stone-800 text-white flex items-center justify-center text-[9px]">▶</div>`
-                    : `<img src="${m.url}" class="w-full h-full object-cover" />`
+                    : `<img src="${m.url}" class="w-full h-full object-cover" alt="Ракурс ${idx + 1}" loading="lazy" decoding="async" />`
                 }
             </button>
         `).join('');
@@ -381,6 +402,7 @@ function renderZoomGallery() {
 
     const total = currentProductMedia.length;
     const activeItem = currentProductMedia[activeMediaIndex];
+    const itemTitle = activeModalProduct ? activeModalProduct.title : 'Виріб';
 
     prevBtn.style.display = total > 1 ? 'flex' : 'none';
     nextBtn.style.display = total > 1 ? 'flex' : 'none';
@@ -391,7 +413,7 @@ function renderZoomGallery() {
         `;
     } else {
         container.innerHTML = `
-            <img src="${activeItem.url}" id="activeZoomImg" class="zoom-img" alt="Збільшений бісер" draggable="false">
+            <img src="${activeItem.url}" id="activeZoomImg" class="zoom-img" alt="${itemTitle} — детальне макро-фото бісерного плетіння" draggable="false">
         `;
         const img = document.getElementById('activeZoomImg');
         setupZoomAndPan(img);
@@ -403,7 +425,7 @@ function renderZoomGallery() {
             <button onclick="setZoomMedia(${idx})" class="zoom-thumb-btn ${idx === activeMediaIndex ? 'active' : ''}">
                 ${m.media_type === 'video' || m.url.endsWith('.mp4')
                     ? `<div class="w-full h-full bg-stone-900 text-white flex items-center justify-center text-[10px]">▶</div>`
-                    : `<img src="${m.url}" draggable="false" />`
+                    : `<img src="${m.url}" draggable="false" alt="Мініатюра деталізації ${idx + 1}" />`
                 }
             </button>
         `).join('');
