@@ -44,6 +44,13 @@ async function loadCatalog() {
 
         allProducts = data || [];
         applyFilters();
+
+        // Автоматичне відкриття прикраси за прямим посиланням у URL (?item=ID)
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedItemId = urlParams.get('item');
+        if (sharedItemId && allProducts.some(p => p.id === sharedItemId)) {
+            openModal(sharedItemId);
+        }
     } catch (err) {
         grid.innerHTML = `<div class="col-span-full py-12 text-center text-red-600 text-sm">
             Помилка завантаження каталогу: ${err.message}
@@ -119,7 +126,6 @@ function renderProducts(items) {
         const directUrl = `https://ig.me/m/${INSTAGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
         const telegramUrl = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
 
-        // Формування оптимізованого опису для пошуковика та зображень
         const itemType = product.product_type ? product.product_type.toLowerCase() : 'прикраса';
         const seoAlt = `${product.title} — авторська ${itemType} з бісеру ручної роботи, бренд RIZDVIANA.ART`;
 
@@ -187,6 +193,12 @@ function renderProducts(items) {
 function openModal(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
+
+    // Синхронізуємо URL браузера при відкритті картки
+    const currentParam = new URLSearchParams(window.location.search).get('item');
+    if (currentParam !== productId) {
+        window.history.pushState({ productId }, '', `?item=${productId}`);
+    }
 
     activeModalProduct = product;
     const isInStock = product.status === 'in_stock';
@@ -376,11 +388,64 @@ function closeModal() {
     const videoEl = document.querySelector('#modal-main-media video');
     if (videoEl) videoEl.pause();
     activeModalProduct = null;
+
+    // Очищуємо параметр ?item= з URL при закритті вікна
+    if (new URLSearchParams(window.location.search).has('item')) {
+        window.history.pushState({}, '', window.location.pathname);
+    }
 }
 
 function handleBackdropClick(e) {
     if (e.target.id === 'product-modal') closeModal();
 }
+
+// --- ФУНКЦІЯ «ПОДІЛИТИСЯ ПРИКРАСОЮ» ---
+function shareCurrentProduct() {
+    if (!activeModalProduct) return;
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?item=${activeModalProduct.id}`;
+    const shareTitle = `${activeModalProduct.title} — RIZDVIANA.ART`;
+    const shareText = `Авторська прикраса з бісеру «${activeModalProduct.title}» від RIZDVIANA.ART`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: shareTitle,
+            text: shareText,
+            url: shareUrl
+        }).catch((err) => {
+            if (err.name !== 'AbortError') copyLinkFallback(shareUrl);
+        });
+    } else {
+        copyLinkFallback(shareUrl);
+    }
+}
+
+function copyLinkFallback(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        const btnText = document.getElementById('share-btn-text');
+        if (btnText) {
+            const oldText = btnText.innerText;
+            btnText.innerText = "✅ Посилання скопійовано!";
+            setTimeout(() => {
+                btnText.innerText = oldText;
+            }, 2500);
+        }
+    }).catch(() => {
+        prompt("Скопіюйте посилання на виріб:", url);
+    });
+}
+
+// Обробка навігації кнопками браузера Вперед/Назад
+window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.productId) {
+        openModal(e.state.productId);
+    } else {
+        const productModal = document.getElementById('product-modal');
+        if (productModal && !productModal.classList.contains('hidden')) {
+            closeModal();
+        }
+    }
+});
 
 // --- ПОКРАЩЕНА ГАЛЕРЕЯ ТА ЗУМ ---
 function openZoom(index = 0) {
