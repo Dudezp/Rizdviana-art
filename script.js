@@ -27,7 +27,29 @@ let mousedownTargetOnBackdrop = false;
 // --- ЗАВАНТАЖЕННЯ КАТАЛОГУ ---
 async function loadCatalog() {
     const grid = document.getElementById('products-grid');
-    grid.innerHTML = '<div class="col-span-full py-12 text-center text-stone-400">Завантажуємо вироби...</div>';
+
+    // Скелетони замість текстового рядка, щоб уникнути різкого зсуву висоти сторінки (CLS)
+    const skeletonCards = Array(6).fill(0).map(() => `
+        <div class="bg-white rounded-2xl overflow-hidden border border-craft flex flex-col animate-pulse">
+            <div class="aspect-square bg-craft/50"></div>
+            <div class="p-5 flex flex-col justify-between gap-4">
+                <div class="space-y-2.5">
+                    <div class="h-5 bg-craft/70 rounded w-3/4"></div>
+                    <div class="h-3 bg-craft/40 rounded w-full"></div>
+                    <div class="h-3 bg-craft/40 rounded w-2/3"></div>
+                </div>
+                <div class="pt-2">
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <div class="h-9 bg-craft/60 rounded-xl"></div>
+                        <div class="h-9 bg-craft/60 rounded-xl"></div>
+                    </div>
+                    <div class="h-8 bg-craft/40 rounded-xl"></div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    grid.innerHTML = skeletonCards;
 
     try {
         const { data, error } = await supabaseClient
@@ -194,7 +216,6 @@ function openModal(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
 
-    // Синхронізуємо URL браузера при відкритті картки
     const currentParam = new URLSearchParams(window.location.search).get('item');
     if (currentParam !== productId) {
         window.history.pushState({ productId }, '', `?item=${productId}`);
@@ -389,7 +410,6 @@ function closeModal() {
     if (videoEl) videoEl.pause();
     activeModalProduct = null;
 
-    // Очищуємо параметр ?item= з URL при закритті вікна
     if (new URLSearchParams(window.location.search).has('item')) {
         window.history.pushState({}, '', window.location.pathname);
     }
@@ -435,7 +455,6 @@ function copyLinkFallback(url) {
     });
 }
 
-// Обробка навігації кнопками браузера Вперед/Назад
 window.addEventListener('popstate', (e) => {
     if (e.state && e.state.productId) {
         openModal(e.state.productId);
