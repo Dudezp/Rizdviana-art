@@ -172,6 +172,7 @@
           <option value="Фіолетовий">Фіолетовий</option>
           <option value="Коричневий">Коричневий</option>
           <option value="Золотий">Золотий</option>
+          <option value="Сріблястий">Сріблястий</option>
         </select>
       </div>
     </div>
@@ -313,6 +314,17 @@
 
         <div class="border-t border-craft pt-4">
           <div id="modal-action-buttons" class="space-y-2">
+            <!-- Кнопка "Поділитися прикрасою" -->
+            <button 
+              type="button" 
+              onclick="shareCurrentProduct()" 
+              class="w-full py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white text-stoneDark hover:bg-craft/60 border border-craft shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+              <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+              <span id="share-btn-text">Поділитися прикрасою</span>
+            </button>
+
             <div class="grid grid-cols-2 gap-2">
               <a id="modal-btn-instagram" href="#" target="_blank" class="block text-center py-3 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">Instagram</a>
               <a id="modal-btn-telegram" href="#" target="_blank" class="block text-center py-3 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">Telegram</a>
