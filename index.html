@@ -124,7 +124,8 @@
             <option value="oldest">Спочатку давніші</option>
           </select>
 
-          <div id="items-count" class="text-[11px] text-stone-500 uppercase tracking-wider whitespace-nowrap">
+          <!-- Фіксована мінімальна ширина блоку запобігає зсуву елементів поруч -->
+          <div id="items-count" class="text-[11px] text-stone-500 uppercase tracking-wider whitespace-nowrap min-w-[125px] text-right">
             Завантаження...
           </div>
         </div>
@@ -178,8 +179,9 @@
     </div>
   </div>
 
-  <main id="catalog" class="max-w-6xl mx-auto px-4 py-8">
-    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"></div>
+  <!-- min-h-[75vh] резервує простір під каталог і не дає блоку #about смикатися -->
+  <main id="catalog" class="max-w-6xl mx-auto px-4 py-8 min-h-[75vh]">
+    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 min-h-[500px]"></div>
   </main>
 
   <section id="about" class="border-t border-craft bg-craft/30 py-16 px-4">
@@ -314,7 +316,6 @@
 
         <div class="border-t border-craft pt-4">
           <div id="modal-action-buttons" class="space-y-2">
-            <!-- Кнопка "Поділитися прикрасою" -->
             <button 
               type="button" 
               onclick="shareCurrentProduct()" 
