@@ -338,11 +338,14 @@
           <div id="modal-quick-order" class="hidden space-y-2.5">
             <div class="flex items-center justify-between mb-1">
               <span class="text-xs font-semibold uppercase tracking-wider text-stoneDark">Швидке замовлення</span>
-              <button onclick="hideQuickOrderForm()" class="text-xs text-stone-500 hover:text-stoneDark underline">Повернутися</button>
+              <button type="button" onclick="hideQuickOrderForm()" class="text-xs text-stone-500 hover:text-stoneDark underline">Повернутися</button>
             </div>
             
-            <input type="text" id="order-cust-name" placeholder="Ваше ім'я *" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
-            <input type="tel" id="order-cust-phone" placeholder="Номер телефону (дзвінок / Viber) *" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
+            <!-- Поле-пастка для спам-ботів (Honeypot) -->
+            <input type="text" id="order-cust-hp" name="order_hp_check" style="display:none!important;position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+            <input type="text" id="order-cust-name" placeholder="Ваше ім'я *" autocomplete="name" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
+            <input type="tel" id="order-cust-phone" placeholder="Номер телефону (дзвінок / Viber) *" autocomplete="tel" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
             <input type="text" id="order-cust-comment" placeholder="Коментар або розмір (необов'язково)" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
 
             <div id="order-form-alert" class="hidden text-xs py-1.5 px-2 rounded"></div>

@@ -8,6 +8,27 @@ const DEFAULT_PAGE_TITLE = "RIZDVIANA.ART — Традиційні та суча
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Допоміжні функції захисту від XSS та безпечного виведення
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 let allProducts = [];
 let currentStockFilter = 'all';
 let currentProductMedia = [];
@@ -80,7 +101,7 @@ async function loadCatalog() {
         }
     } catch (err) {
         grid.innerHTML = `<div class="col-span-full py-12 text-center text-red-600 text-sm">
-            Помилка завантаження каталогу: ${err.message}
+            Помилка завантаження каталогу: ${escapeHtml(err.message)}
         </div>`;
     }
 }
@@ -159,13 +180,22 @@ function renderProducts(items) {
         const itemType = product.product_type ? product.product_type.toLowerCase() : 'прикраса';
         const seoAlt = `${product.title} — авторська ${itemType} з бісеру ручної роботи, бренд RIZDVIANA.ART`;
 
+        const safeId = escapeAttr(product.id);
+        const safeTitle = escapeHtml(product.title);
+        const safePrice = escapeHtml(product.price);
+        const safeDesc = escapeHtml(product.description || '');
+        const safeDimensions = escapeHtml(product.dimensions || '—');
+        const safeAlt = escapeAttr(seoAlt);
+        const safeTitleAttr = escapeAttr(`${product.title} — RIZDVIANA.ART`);
+        const safeCoverMedia = escapeAttr(coverMedia);
+
         return `
             <div class="group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col transition hover:shadow-lg">
-                <div onclick="openModal('${product.id}')" class="relative aspect-square overflow-hidden bg-craft/30 cursor-pointer">
+                <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="relative aspect-square overflow-hidden bg-craft/30 cursor-pointer focus:outline-none">
                     <img 
-                        src="${coverMedia}" 
-                        alt="${seoAlt}" 
-                        title="${product.title} — RIZDVIANA.ART"
+                        src="${safeCoverMedia}" 
+                        alt="${safeAlt}" 
+                        title="${safeTitleAttr}"
                         loading="lazy" 
                         decoding="async"
                         width="400"
@@ -189,14 +219,14 @@ function renderProducts(items) {
                 </div>
 
                 <div class="p-5 flex flex-col flex-grow justify-between gap-4">
-                    <div onclick="openModal('${product.id}')" class="cursor-pointer">
+                    <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="cursor-pointer focus:outline-none">
                         <div class="flex items-baseline justify-between gap-2 mb-1">
-                            <h3 class="font-serif font-bold text-lg text-stoneDark group-hover:text-stone-600 transition">${product.title}</h3>
-                            <span class="font-semibold text-base whitespace-nowrap text-stoneDark">${product.price} ₴</span>
+                            <h3 class="font-serif font-bold text-lg text-stoneDark group-hover:text-stone-600 transition">${safeTitle}</h3>
+                            <span class="font-semibold text-base whitespace-nowrap text-stoneDark">${safePrice} ₴</span>
                         </div>
-                        <p class="text-xs text-stone-500 line-clamp-2 mb-3">${product.description || ''}</p>
+                        <p class="text-xs text-stone-500 line-clamp-2 mb-3">${safeDesc}</p>
                         <div class="text-[11px] text-stone-400 space-y-1 border-t border-craft pt-3">
-                            <div><strong class="text-stone-600">Розміри:</strong> ${product.dimensions || '—'}</div>
+                            <div><strong class="text-stone-600">Розміри:</strong> ${safeDimensions}</div>
                         </div>
                     </div>
 
@@ -209,7 +239,7 @@ function renderProducts(items) {
                                 Telegram
                             </a>
                         </div>
-                        <button onclick="openModalWithOrder('${product.id}')" class="w-full text-center py-2 px-3 rounded-xl text-xs font-medium text-stone-600 hover:text-stoneDark hover:bg-craft/50 border border-craft transition flex items-center justify-center gap-1.5">
+                        <button onclick="openModalWithOrder('${safeId}')" class="w-full text-center py-2 px-3 rounded-xl text-xs font-medium text-stone-600 hover:text-stoneDark hover:bg-craft/50 border border-craft transition flex items-center justify-center gap-1.5">
                             <span>📞</span> Швидке замовлення
                         </button>
                     </div>
@@ -256,7 +286,7 @@ function openModal(productId) {
     const colorsBox = document.getElementById('modal-colors');
     if (product.colors && product.colors.length > 0) {
         colorsBox.innerHTML = product.colors.map(c => `
-            <span class="bg-craft px-2 py-0.5 rounded text-[10px] text-stone-700">${c}</span>
+            <span class="bg-craft px-2 py-0.5 rounded text-[10px] text-stone-700">${escapeHtml(c)}</span>
         `).join('');
     } else {
         colorsBox.innerHTML = '<span class="text-stone-400">—</span>';
@@ -303,11 +333,25 @@ function hideQuickOrderForm() {
 async function submitQuickOrder() {
     if (!activeModalProduct) return;
 
+    const hpInput = document.getElementById('order-cust-hp');
     const nameInput = document.getElementById('order-cust-name');
     const phoneInput = document.getElementById('order-cust-phone');
     const commInput = document.getElementById('order-cust-comment');
     const alertBox = document.getElementById('order-form-alert');
     const submitBtn = document.getElementById('btn-submit-order');
+
+    // Антиспам-пастка: якщо бот заповнив приховане поле, імітуємо успіх без запису в базу
+    if (hpInput && hpInput.value.trim() !== '') {
+        alertBox.className = 'text-xs py-2 px-2.5 rounded bg-emerald-100 text-emerald-800 block';
+        alertBox.innerText = "✅ Дякуємо! Замовлення прийнято. Майстриня зв'яжеться з вами найближчим часом.";
+        nameInput.value = '';
+        phoneInput.value = '';
+        commInput.value = '';
+        setTimeout(() => {
+            closeModal();
+        }, 1500);
+        return;
+    }
 
     const name = nameInput.value.trim();
     const phone = phoneInput.value.trim();
@@ -319,14 +363,14 @@ async function submitQuickOrder() {
         return;
     }
 
-    // Надійна валідація номера
+    // Надійна валідація номера (Україна або міжнародний)
     const digits = phone.replace(/\D/g, '');
     const isUaValid = digits.startsWith('380') && digits.length === 12;
     const isIntlValid = !digits.startsWith('380') && digits.length >= 10 && digits.length <= 15;
 
     if (!isUaValid && !isIntlValid) {
         alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
-        alertBox.innerText = "Введіть повний номер: +380 (XX) XXX-XX-XX";
+        alertBox.innerText = "Введіть коректний номер: +380 (XX) XXX-XX-XX або міжнародний (+48...)";
         return;
     }
 
@@ -382,17 +426,19 @@ function renderModalCardMedia() {
 
     const itemTitle = activeModalProduct ? activeModalProduct.title : 'Прикраса з бісеру';
     const itemType = activeModalProduct?.product_type ? activeModalProduct.product_type.toLowerCase() : 'прикраса';
+    const safeItemAlt = escapeAttr(`${itemTitle} — ${itemType} ручної роботи RIZDVIANA.ART`);
+    const safeUrl = escapeAttr(activeItem.url);
 
     if (activeItem.media_type === 'video' || activeItem.url.endsWith('.mp4')) {
         mainContainer.innerHTML = `
-            <video src="${activeItem.url}" controls autoplay loop muted playsinline class="w-full h-full object-contain"></video>
+            <video src="${safeUrl}" controls autoplay loop muted playsinline class="w-full h-full object-contain"></video>
         `;
     } else {
         mainContainer.innerHTML = `
             <img 
-                src="${activeItem.url}" 
+                src="${safeUrl}" 
                 class="w-full h-full object-contain" 
-                alt="${itemTitle} — ${itemType} ручної роботи RIZDVIANA.ART" 
+                alt="${safeItemAlt}" 
                 decoding="async"
             />
         `;
@@ -406,7 +452,7 @@ function renderModalCardMedia() {
             }">
                 ${m.media_type === 'video' || m.url.endsWith('.mp4')
                     ? `<div class="w-full h-full bg-stone-800 text-white flex items-center justify-center text-[9px]">▶</div>`
-                    : `<img src="${m.url}" class="w-full h-full object-cover" alt="Ракурс ${idx + 1}" loading="lazy" decoding="async" />`
+                    : `<img src="${escapeAttr(m.url)}" class="w-full h-full object-cover" alt="Ракурс ${idx + 1}" loading="lazy" decoding="async" />`
                 }
             </button>
         `).join('');
@@ -422,7 +468,7 @@ function setActiveMedia(index) {
 
 function closeModal() {
     document.getElementById('product-modal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = '';
     const videoEl = document.querySelector('#modal-main-media video');
     if (videoEl) videoEl.pause();
     activeModalProduct = null;
@@ -517,13 +563,16 @@ function renderZoomGallery() {
     prevBtn.style.display = total > 1 ? 'flex' : 'none';
     nextBtn.style.display = total > 1 ? 'flex' : 'none';
 
+    const safeZoomTitle = escapeAttr(activeModalProduct ? activeModalProduct.title : 'Виріб');
+    const safeZoomUrl = escapeAttr(activeItem.url);
+
     if (activeItem.media_type === 'video' || activeItem.url.endsWith('.mp4')) {
         container.innerHTML = `
-            <video src="${activeItem.url}" controls autoplay playsinline class="zoom-video" onclick="event.stopPropagation()"></video>
+            <video src="${safeZoomUrl}" controls autoplay playsinline class="zoom-video" onclick="event.stopPropagation()"></video>
         `;
     } else {
         container.innerHTML = `
-            <img src="${activeItem.url}" id="activeZoomImg" class="zoom-img" alt="${itemTitle} — детальне макро-фото бісерного плетіння" draggable="false">
+            <img src="${safeZoomUrl}" id="activeZoomImg" class="zoom-img" alt="${safeZoomTitle} — детальне макро-фото бісерного плетіння" draggable="false">
         `;
         const img = document.getElementById('activeZoomImg');
         setupZoomAndPan(img);
@@ -535,7 +584,7 @@ function renderZoomGallery() {
             <button onclick="setZoomMedia(${idx})" class="zoom-thumb-btn ${idx === activeMediaIndex ? 'active' : ''}">
                 ${m.media_type === 'video' || m.url.endsWith('.mp4')
                     ? `<div class="w-full h-full bg-stone-900 text-white flex items-center justify-center text-[10px]">▶</div>`
-                    : `<img src="${m.url}" draggable="false" alt="Мініатюра деталізації ${idx + 1}" />`
+                    : `<img src="${escapeAttr(m.url)}" draggable="false" alt="Мініатюра деталізації ${idx + 1}" />`
                 }
             </button>
         `).join('');
@@ -822,13 +871,21 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- АВТОМАТИЧНА МАСКА НОМЕРА ТЕЛЕФОНУ ---
+// --- РОЗУМНА МАСКА НОМЕРА ТЕЛЕФОНУ (УКРАЇНА ТА МІЖНАРОДНИЙ ФОРМАТ) ---
 function initPhoneMask() {
     const phoneInput = document.getElementById('order-cust-phone');
     if (!phoneInput) return;
 
     phoneInput.addEventListener('input', function(e) {
         let val = e.target.value;
+
+        // Якщо користувач вводить або вставляє міжнародний номер з "+", що не є кодом України
+        // (наприклад +48, +1, +49), дозволяємо вільний міжнародний ввід без примусу до +380
+        if (val.startsWith('+') && !val.startsWith('+380') && !val.startsWith('+38') && !val.startsWith('+3')) {
+            e.target.value = '+' + val.replace(/[^\d\s-]/g, '').substring(1, 18);
+            return;
+        }
+
         let digits = val.replace(/\D/g, '');
 
         if (digits.startsWith('0')) {
@@ -858,8 +915,9 @@ function initPhoneMask() {
     });
 
     phoneInput.addEventListener('blur', function(e) {
-        const digits = e.target.value.replace(/\D/g, '');
-        if (digits === '380' || digits === '38' || digits === '3' || digits === '') {
+        const val = e.target.value.trim();
+        const digits = val.replace(/\D/g, '');
+        if (digits === '380' || digits === '38' || digits === '3' || digits === '' || val === '+') {
             e.target.value = '';
         }
     });
