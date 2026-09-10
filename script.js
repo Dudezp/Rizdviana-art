@@ -4,6 +4,8 @@ const TELEGRAM_USERNAME = "tatianata91";
 const SUPABASE_URL = "https://jvckjrzcvfonucagpecu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Gp7u0i4jGzMUJuhiZ6_j_Q_HV3ndPXK";
 
+const DEFAULT_PAGE_TITLE = "RIZDVIANA.ART — Традиційні та сучасні прикраси з бісеру";
+
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let allProducts = [];
@@ -141,7 +143,7 @@ function renderProducts(items) {
         const isInStock = product.status === 'in_stock';
         const sortedMedia = product.media ? [...product.media].sort((a, b) => a.display_order - b.display_order) : [];
         
-        // Знаходимо перше фото для обкладинки (якщо першим у базі було відео, обкладинка не зламається)
+        // Знаходимо перше фото для обкладинки
         const firstImage = sortedMedia.find(m => m.media_type === 'image' && !m.url.endsWith('.mp4'));
         const coverMedia = firstImage 
             ? firstImage.url 
@@ -219,7 +221,6 @@ function renderProducts(items) {
 
 // --- КАРТКА ТОВАРУ ТА ШВИДКЕ ЗАМОВЛЕННЯ ---
 function openModal(productId) {
-    // Шукаємо за ID або за красивим Slug
     const product = allProducts.find(p => p.id === productId || p.slug === productId);
     if (!product) return;
 
@@ -229,6 +230,9 @@ function openModal(productId) {
     if (currentParam !== itemIdentifier) {
         window.history.pushState({ productId: product.id }, '', `?item=${itemIdentifier}`);
     }
+
+    // Динамічна зміна назви вкладки браузера
+    document.title = `${product.title} — RIZDVIANA.ART`;
 
     activeModalProduct = product;
     const isInStock = product.status === 'in_stock';
@@ -315,7 +319,7 @@ async function submitQuickOrder() {
         return;
     }
 
-    // Надійна валідація номера: український (12 цифр, 380...) або міжнародний (10-15 цифр)
+    // Надійна валідація номера
     const digits = phone.replace(/\D/g, '');
     const isUaValid = digits.startsWith('380') && digits.length === 12;
     const isIntlValid = !digits.startsWith('380') && digits.length >= 10 && digits.length <= 15;
@@ -423,6 +427,9 @@ function closeModal() {
     if (videoEl) videoEl.pause();
     activeModalProduct = null;
 
+    // Відновлюємо оригінальний заголовок вкладки
+    document.title = DEFAULT_PAGE_TITLE;
+
     if (new URLSearchParams(window.location.search).has('item')) {
         window.history.pushState({}, '', window.location.pathname);
     }
@@ -436,7 +443,6 @@ function handleBackdropClick(e) {
 function shareCurrentProduct() {
     if (!activeModalProduct) return;
 
-    // Формуємо красиве посилання зі слагом (якщо є) або ID
     const itemIdentifier = activeModalProduct.slug || activeModalProduct.id;
     const shareUrl = `${window.location.origin}${window.location.pathname}?item=${itemIdentifier}`;
     const shareTitle = `${activeModalProduct.title} — RIZDVIANA.ART`;
@@ -825,7 +831,6 @@ function initPhoneMask() {
         let val = e.target.value;
         let digits = val.replace(/\D/g, '');
 
-        // Якщо користувач почав введення з 0 (наприклад, 097...), підставляємо 380...
         if (digits.startsWith('0')) {
             digits = '38' + digits;
         } else if (!digits.startsWith('380') && digits.length > 0) {
@@ -834,7 +839,6 @@ function initPhoneMask() {
             }
         }
 
-        // Обмежуємо 12 цифрами (380XXXXXXXXX)
         digits = digits.substring(0, 12);
 
         let formatted = '';
