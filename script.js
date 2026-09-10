@@ -306,10 +306,14 @@ async function submitQuickOrder() {
         return;
     }
 
-    const digitsCount = (phone.match(/\d/g) || []).length;
-    if (digitsCount < 9) {
+    // Надійна перевірка номера: український (12 цифр, 380...) або міжнародний (10-15 цифр)
+    const digits = phone.replace(/\D/g, '');
+    const isUaValid = digits.startsWith('380') && digits.length === 12;
+    const isIntlValid = !digits.startsWith('380') && digits.length >= 10 && digits.length <= 15;
+
+    if (!isUaValid && !isIntlValid) {
         alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
-        alertBox.innerText = "Введіть коректний номер телефону (від 9 цифр).";
+        alertBox.innerText = "Введіть повний номер: +380 (XX) XXX-XX-XX";
         return;
     }
 
@@ -794,6 +798,58 @@ window.addEventListener('scroll', () => {
 
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- АВТОМАТИЧНА МАСКА НОМЕРА ТЕЛЕФОНУ ---
+function initPhoneMask() {
+    const phoneInput = document.getElementById('order-cust-phone');
+    if (!phoneInput) return;
+
+    phoneInput.addEventListener('input', function(e) {
+        let val = e.target.value;
+        let digits = val.replace(/\D/g, '');
+
+        // Якщо користувач почав введення з 0 (наприклад, 097...), підставляємо 380...
+        if (digits.startsWith('0')) {
+            digits = '38' + digits;
+        } else if (!digits.startsWith('380') && digits.length > 0) {
+            if (!digits.startsWith('38') && !digits.startsWith('3')) {
+                digits = '380' + digits;
+            }
+        }
+
+        // Обмежуємо 12 цифрами (380XXXXXXXXX)
+        digits = digits.substring(0, 12);
+
+        let formatted = '';
+        if (digits.length > 0) formatted = '+' + digits.substring(0, 3);
+        if (digits.length > 3) formatted += ' (' + digits.substring(3, 5);
+        if (digits.length >= 5) formatted += ') ' + digits.substring(5, 8);
+        if (digits.length >= 8) formatted += '-' + digits.substring(8, 10);
+        if (digits.length >= 10) formatted += '-' + digits.substring(10, 12);
+
+        e.target.value = formatted;
+    });
+
+    phoneInput.addEventListener('focus', function(e) {
+        if (!e.target.value.trim()) {
+            e.target.value = '+380 (';
+        }
+    });
+
+    phoneInput.addEventListener('blur', function(e) {
+        const digits = e.target.value.replace(/\D/g, '');
+        if (digits === '380' || digits === '38' || digits === '3' || digits === '') {
+            e.target.value = '';
+        }
+    });
+}
+
+// Ініціалізація після завантаження сторінки
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPhoneMask);
+} else {
+    initPhoneMask();
 }
 
 loadCatalog();
