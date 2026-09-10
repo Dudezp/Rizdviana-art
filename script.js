@@ -585,4 +585,287 @@ function zoomInImg(e, img) {
 
     applyPanBounds(img);
 
-    img.style.transition = 'transform 0.3s cubic-bezier(0.2, 0,
+    img.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+    img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+
+    const hint = document.getElementById('zoom-hint');
+    if (hint) hint.innerText = 'Перетягуйте мишкою або пальцем, щоб оглянути плетіння • Клік для виходу з зуму';
+}
+
+function resetZoomImg(img) {
+    if (!img) return;
+    isZoomed = false;
+    panX = 0;
+    panY = 0;
+    img.classList.remove('magnified');
+    img.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+    img.style.transform = 'translate(0px, 0px) scale(1)';
+
+    const hint = document.getElementById('zoom-hint');
+    if (hint) hint.innerText = 'Клікніть по фото для наближення деталей • Клік по фону для виходу';
+}
+
+function resetZoomState() {
+    isZoomed = false;
+    panX = 0;
+    panY = 0;
+    isDragging = false;
+    hasDragged = false;
+    wasJustDragging = false;
+}
+
+function applyPanBounds(img) {
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    const limitX = Math.max(120, (rect.width * (zoomScale - 1)) / 1.5);
+    const limitY = Math.max(120, (rect.height * (zoomScale - 1)) / 1.5);
+
+    panX = Math.max(-limitX, Math.min(limitX, panX));
+    panY = Math.max(-limitY, Math.min(limitY, panY));
+}
+
+const zoomLightboxEl = document.getElementById('zoom-lightbox');
+if (zoomLightboxEl) {
+    zoomLightboxEl.addEventListener('mousedown', (e) => {
+        mousedownTargetOnBackdrop = (e.target.id === 'zoom-lightbox' || e.target.id === 'zoom-container');
+    });
+}
+
+window.addEventListener('mousemove', (e) => {
+    if (!isDragging || !isZoomed) return;
+    const img = document.getElementById('activeZoomImg');
+    if (!img) return;
+
+    const currentPanX = e.clientX - startX;
+    const currentPanY = e.clientY - startY;
+
+    if (Math.hypot(currentPanX - panX, currentPanY - panY) > 4) {
+        hasDragged = true;
+    }
+
+    panX = currentPanX;
+    panY = currentPanY;
+    applyPanBounds(img);
+
+    img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+});
+
+window.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        if (hasDragged) {
+            wasJustDragging = true;
+            setTimeout(() => {
+                wasJustDragging = false;
+                hasDragged = false;
+            }, 120);
+        }
+        const img = document.getElementById('activeZoomImg');
+        if (img) img.style.transition = 'transform 0.2s ease-out';
+    }
+});
+
+window.addEventListener('touchmove', (e) => {
+    if (!isDragging || !isZoomed || e.touches.length !== 1) return;
+    const img = document.getElementById('activeZoomImg');
+    if (!img) return;
+
+    const currentPanX = e.touches[0].clientX - startX;
+    const currentPanY = e.touches[0].clientY - startY;
+
+    if (Math.hypot(currentPanX - panX, currentPanY - panY) > 4) {
+        hasDragged = true;
+    }
+
+    panX = currentPanX;
+    panY = currentPanY;
+    applyPanBounds(img);
+
+    img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+}, { passive: true });
+
+window.addEventListener('touchend', () => {
+    if (isDragging) {
+        isDragging = false;
+        if (hasDragged) {
+            wasJustDragging = true;
+            setTimeout(() => {
+                wasJustDragging = false;
+                hasDragged = false;
+            }, 120);
+        }
+    }
+});
+
+function handleZoomOverlayClick(e) {
+    if (wasJustDragging || hasDragged) return;
+    if (mousedownTargetOnBackdrop && (e.target.id === 'zoom-lightbox' || e.target.id === 'zoom-container')) {
+        closeZoom(e);
+    }
+}
+
+function setZoomMedia(index) {
+    activeMediaIndex = index;
+    renderZoomGallery();
+}
+
+function prevZoomMedia(e) {
+    if (e) e.stopPropagation();
+    const total = currentProductMedia.length;
+    activeMediaIndex = (activeMediaIndex - 1 + total) % total;
+    renderZoomGallery();
+}
+
+function nextZoomMedia(e) {
+    if (e) e.stopPropagation();
+    const total = currentProductMedia.length;
+    activeMediaIndex = (activeMediaIndex + 1) % total;
+    renderZoomGallery();
+}
+
+function closeZoom(e) {
+    if (e) e.stopPropagation();
+    const zoomLightbox = document.getElementById('zoom-lightbox');
+    const video = document.querySelector('#zoom-container video');
+    if (video) video.pause();
+
+    resetZoomState();
+    zoomLightbox.classList.remove('active');
+    setTimeout(() => {
+        zoomLightbox.style.display = 'none';
+        document.getElementById('zoom-container').innerHTML = '';
+    }, 200);
+}
+
+// Керування клавіатурою
+window.addEventListener('keydown', (e) => {
+    const zoomLightbox = document.getElementById('zoom-lightbox');
+    const isZoomOpen = zoomLightbox && zoomLightbox.classList.contains('active');
+
+    if (isZoomOpen) {
+        if (e.key === 'ArrowLeft') prevZoomMedia();
+        if (e.key === 'ArrowRight') nextZoomMedia();
+        if (e.key === 'Escape') {
+            if (isZoomed) {
+                resetZoomImg(document.getElementById('activeZoomImg'));
+            } else {
+                closeZoom();
+            }
+        }
+        return;
+    }
+
+    const productModal = document.getElementById('product-modal');
+    if (productModal && !productModal.classList.contains('hidden')) {
+        if (e.key === 'Escape') closeModal();
+    }
+});
+
+// СКРОЛ ШАПКИ
+const stickyHeader = document.getElementById('sticky-header');
+const btnScrollTop = document.getElementById('btn-scroll-top');
+
+let currentStage = 0;
+let scrollTicking = false;
+
+window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+        window.requestAnimationFrame(() => {
+            const scrollY = window.scrollY;
+
+            if (stickyHeader) {
+                if (currentStage === 0) {
+                    if (scrollY > 60) {
+                        currentStage = 1;
+                        stickyHeader.classList.add('step-1');
+                        stickyHeader.classList.remove('step-2');
+                    }
+                } else if (currentStage === 1) {
+                    if (scrollY > 150) {
+                        currentStage = 2;
+                        stickyHeader.classList.remove('step-1');
+                        stickyHeader.classList.add('step-2');
+                    } else if (scrollY < 25) {
+                        currentStage = 0;
+                        stickyHeader.classList.remove('step-1', 'step-2');
+                    }
+                } else if (currentStage === 2) {
+                    if (scrollY < 110) {
+                        currentStage = 1;
+                        stickyHeader.classList.add('step-1');
+                        stickyHeader.classList.remove('step-2');
+                    }
+                }
+            }
+
+            if (btnScrollTop) {
+                if (scrollY > 400) {
+                    btnScrollTop.classList.add('visible');
+                } else {
+                    btnScrollTop.classList.remove('visible');
+                }
+            }
+
+            scrollTicking = false;
+        });
+        scrollTicking = true;
+    }
+}, { passive: true });
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- АВТОМАТИЧНА МАСКА НОМЕРА ТЕЛЕФОНУ ---
+function initPhoneMask() {
+    const phoneInput = document.getElementById('order-cust-phone');
+    if (!phoneInput) return;
+
+    phoneInput.addEventListener('input', function(e) {
+        let val = e.target.value;
+        let digits = val.replace(/\D/g, '');
+
+        // Якщо користувач почав введення з 0 (наприклад, 097...), підставляємо 380...
+        if (digits.startsWith('0')) {
+            digits = '38' + digits;
+        } else if (!digits.startsWith('380') && digits.length > 0) {
+            if (!digits.startsWith('38') && !digits.startsWith('3')) {
+                digits = '380' + digits;
+            }
+        }
+
+        // Обмежуємо 12 цифрами (380XXXXXXXXX)
+        digits = digits.substring(0, 12);
+
+        let formatted = '';
+        if (digits.length > 0) formatted = '+' + digits.substring(0, 3);
+        if (digits.length > 3) formatted += ' (' + digits.substring(3, 5);
+        if (digits.length >= 5) formatted += ') ' + digits.substring(5, 8);
+        if (digits.length >= 8) formatted += '-' + digits.substring(8, 10);
+        if (digits.length >= 10) formatted += '-' + digits.substring(10, 12);
+
+        e.target.value = formatted;
+    });
+
+    phoneInput.addEventListener('focus', function(e) {
+        if (!e.target.value.trim()) {
+            e.target.value = '+380 (';
+        }
+    });
+
+    phoneInput.addEventListener('blur', function(e) {
+        const digits = e.target.value.replace(/\D/g, '');
+        if (digits === '380' || digits === '38' || digits === '3' || digits === '') {
+            e.target.value = '';
+        }
+    });
+}
+
+// Ініціалізація після завантаження сторінки
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPhoneMask);
+} else {
+    initPhoneMask();
+}
+
+loadCatalog();
