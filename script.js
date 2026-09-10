@@ -29,6 +29,15 @@ function escapeAttr(str) {
         .replace(/>/g, '&gt;');
 }
 
+// Автоматична оптимізація розміру обкладинки для каталогу через Supabase Image Render API
+function getOptimizedImageUrl(url, width = 550, quality = 85) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.includes('.supabase.co/storage/v1/object/public/')) {
+        return url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + `?width=${width}&quality=${quality}`;
+    }
+    return url;
+}
+
 let allProducts = [];
 let currentStockFilter = 'all';
 let currentProductMedia = [];
@@ -52,7 +61,7 @@ async function loadCatalog() {
     const grid = document.getElementById('products-grid');
 
     // Скелетони замість текстового рядка, щоб уникнути різкого зсуву висоти сторінки (CLS)
-    const skeletonCards = Array(6).fill(0).map(() => `
+    const skeletonCards = Array(12).fill(0).map(() => `
         <div class="bg-white rounded-2xl overflow-hidden border border-craft flex flex-col animate-pulse">
             <div class="aspect-square bg-craft/50"></div>
             <div class="p-5 flex flex-col justify-between gap-4">
@@ -160,7 +169,7 @@ function renderProducts(items) {
         return;
     }
 
-    grid.innerHTML = items.map(product => {
+    grid.innerHTML = items.map((product, index) => {
         const isInStock = product.status === 'in_stock';
         const sortedMedia = product.media ? [...product.media].sort((a, b) => a.display_order - b.display_order) : [];
         
@@ -187,16 +196,25 @@ function renderProducts(items) {
         const safeDimensions = escapeHtml(product.dimensions || '—');
         const safeAlt = escapeAttr(seoAlt);
         const safeTitleAttr = escapeAttr(`${product.title} — RIZDVIANA.ART`);
-        const safeCoverMedia = escapeAttr(coverMedia);
+
+        // Оптимізація розміру обкладинки для вітрини (швидкий рендер)
+        const optimizedCover = getOptimizedImageUrl(coverMedia, 550, 85);
+        const safeCoverMedia = escapeAttr(optimizedCover);
+
+        // LCP оптимізація: перші 3 картки першого екрана вантажаться миттєво
+        const isAboveFold = index < 3;
+        const loadingAttr = isAboveFold ? 'loading="eager"' : 'loading="lazy"';
+        const priorityAttr = isAboveFold ? 'fetchpriority="high"' : 'fetchpriority="auto"';
 
         return `
-            <div class="group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col transition hover:shadow-lg">
+            <div class="product-card group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col transition hover:shadow-lg">
                 <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="relative aspect-square overflow-hidden bg-craft/30 cursor-pointer focus:outline-none">
                     <img 
                         src="${safeCoverMedia}" 
                         alt="${safeAlt}" 
                         title="${safeTitleAttr}"
-                        loading="lazy" 
+                        ${loadingAttr}
+                        ${priorityAttr}
                         decoding="async"
                         width="400"
                         height="400"

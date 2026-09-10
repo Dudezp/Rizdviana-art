@@ -296,3 +296,10 @@ input:focus-visible,
   outline-offset: 2px;
 }
 
+/* Оптимізація рендерингу карток та стабілізація макета (CLS) */
+.product-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 380px;
+}
+
+

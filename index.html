@@ -179,9 +179,9 @@
     </div>
   </div>
 
-  <!-- min-h-[75vh] резервує простір під каталог і не дає блоку #about смикатися -->
-  <main id="catalog" class="max-w-6xl mx-auto px-4 py-8 min-h-[75vh]">
-    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 min-h-[500px]"></div>
+  <!-- Резервування висоти під каталог запобігає різкому зсуву блоку #about (CLS) -->
+  <main id="catalog" class="max-w-6xl mx-auto px-4 py-8 min-h-[1000px] md:min-h-[1300px]">
+    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 min-h-[800px]"></div>
   </main>
 
   <section id="about" class="border-t border-craft bg-craft/30 py-16 px-4">
