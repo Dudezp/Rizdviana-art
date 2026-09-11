@@ -941,11 +941,69 @@ function initPhoneMask() {
     });
 }
 
+// --- СМАРТ-ПІДКАЗКА ВСТАНОВЛЕННЯ ДЛЯ IOS SAFARI (PWA) ---
+function showIosBanner(immediate = false) {
+    const banner = document.getElementById('pwa-ios-banner');
+    if (!banner) return;
+    if (immediate) {
+        banner.style.transition = 'none';
+    }
+    banner.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+    banner.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+}
+
+function dismissIosBanner(forever = true) {
+    const banner = document.getElementById('pwa-ios-banner');
+    if (!banner) return;
+    banner.style.transition = '';
+    banner.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+    banner.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+    if (forever) {
+        localStorage.setItem('rizdviana_ios_pwa_dismissed', 'true');
+    }
+}
+
+function initIosInstallPrompt() {
+    const banner = document.getElementById('pwa-ios-banner');
+    if (!banner) return;
+
+    // Перевірка пристрою Apple (iPhone, iPad, iPod)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // Чи сайт уже запущено як встановлений додаток (Standalone)
+    const isStandalone = window.navigator.standalone === true || 
+                         window.matchMedia('(display-mode: standalone)').matches;
+
+    // Чи користувач закривав підказку раніше
+    const isDismissed = localStorage.getItem('rizdviana_ios_pwa_dismissed') === 'true';
+
+    // Тестовий режим через URL (?pwa_test=1), щоб можна було протестувати банер у будь-якому браузері
+    const urlParams = new URLSearchParams(window.location.search);
+    const isTestMode = urlParams.has('pwa_test');
+
+    if (isTestMode) {
+        showIosBanner(true);
+        return;
+    }
+
+    // Показуємо тільки для відвідувачів на iOS Safari, якщо додаток ще не встановлено
+    if (isIOS && !isStandalone && !isDismissed) {
+        setTimeout(showIosBanner, 3500);
+    }
+}
+
+window.showIosInstallPrompt = showIosBanner;
+
 // Ініціалізація після завантаження сторінки
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPhoneMask);
+    document.addEventListener('DOMContentLoaded', () => {
+        initPhoneMask();
+        initIosInstallPrompt();
+    });
 } else {
     initPhoneMask();
+    initIosInstallPrompt();
 }
 
 loadCatalog();
