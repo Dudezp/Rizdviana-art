@@ -1,5 +1,7 @@
 # Боти та серверний код (працюють ізольовано в Docker)
 *.py
+*.pyc
+__pycache__/
 *.bat
 requirements.txt
 bot*
