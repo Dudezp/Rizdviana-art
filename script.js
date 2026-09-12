@@ -138,13 +138,23 @@ function applyFilters() {
     const color = document.getElementById('select-color').value;
     const sortBy = document.getElementById('select-sort')?.value || 'newest';
 
+    const cleanColor = color ? color.trim().toLowerCase() : '';
+    const cleanType = type ? type.trim().toLowerCase() : '';
+    const cleanOrnament = ornament ? ornament.trim().toLowerCase() : '';
+    const cleanShape = shape ? shape.trim().toLowerCase() : '';
+    const cleanWidth = width ? width.trim().toLowerCase() : '';
+
     let filtered = allProducts.filter(item => {
         if (currentStockFilter === 'in_stock' && item.status !== 'in_stock') return false;
-        if (type && item.product_type !== type) return false;
-        if (ornament && item.ornament !== ornament) return false;
-        if (shape && item.shape !== shape) return false;
-        if (width && item.width_size !== width) return false;
-        if (color && (!item.colors || !item.colors.includes(color))) return false;
+        if (cleanType && (!item.product_type || item.product_type.trim().toLowerCase() !== cleanType)) return false;
+        if (cleanOrnament && (!item.ornament || item.ornament.trim().toLowerCase() !== cleanOrnament)) return false;
+        if (cleanShape && (!item.shape || item.shape.trim().toLowerCase() !== cleanShape)) return false;
+        if (cleanWidth && (!item.width_size || item.width_size.trim().toLowerCase() !== cleanWidth)) return false;
+        if (cleanColor) {
+            if (!item.colors || !Array.isArray(item.colors)) return false;
+            const hasColor = item.colors.some(c => String(c).trim().toLowerCase() === cleanColor);
+            if (!hasColor) return false;
+        }
         return true;
     });
 
@@ -159,13 +169,34 @@ function applyFilters() {
     renderProducts(filtered);
 }
 
+function resetFilters() {
+    const typeEl = document.getElementById('select-type');
+    const ornamentEl = document.getElementById('select-ornament');
+    const shapeEl = document.getElementById('select-shape');
+    const widthEl = document.getElementById('select-width');
+    const colorEl = document.getElementById('select-color');
+    if (typeEl) typeEl.value = '';
+    if (ornamentEl) ornamentEl.value = '';
+    if (shapeEl) shapeEl.value = '';
+    if (widthEl) widthEl.value = '';
+    if (colorEl) colorEl.value = '';
+    setStockFilter('all');
+}
+
 function renderProducts(items) {
     const grid = document.getElementById('products-grid');
     const countEl = document.getElementById('items-count');
     countEl.innerText = `Знайдено робіт: ${items.length}`;
 
     if (items.length === 0) {
-        grid.innerHTML = '<div class="col-span-full py-16 text-center text-stone-400">Виробів за обраними критеріями не знайдено</div>';
+        grid.innerHTML = `
+            <div class="col-span-full py-16 text-center">
+                <p class="text-stone-400 text-sm mb-3">Виробів за обраними критеріями не знайдено</p>
+                <button onclick="resetFilters()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-stoneDark text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm">
+                    🔄 Скинути фільтри
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -303,9 +334,11 @@ function openModal(productId) {
 
     const colorsBox = document.getElementById('modal-colors');
     if (product.colors && product.colors.length > 0) {
-        colorsBox.innerHTML = product.colors.map(c => `
-            <span class="bg-craft px-2 py-0.5 rounded text-[10px] text-stone-700">${escapeHtml(c)}</span>
-        `).join('');
+        colorsBox.innerHTML = product.colors.map(c => {
+            const str = String(c).trim();
+            const cap = str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+            return `<span class="bg-craft px-2 py-0.5 rounded text-[10px] text-stone-700">${escapeHtml(cap)}</span>`;
+        }).join('');
     } else {
         colorsBox.innerHTML = '<span class="text-stone-400">—</span>';
     }
