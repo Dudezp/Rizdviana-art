@@ -208,7 +208,7 @@ function renderProducts(items) {
 
         return `
             <div class="product-card group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col transition hover:shadow-lg">
-                <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="relative aspect-square overflow-hidden bg-craft/30 cursor-pointer focus:outline-none">
+                <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="relative aspect-square overflow-hidden bg-craft/20 flex items-center justify-center p-1.5 cursor-pointer focus:outline-none">
                     <img 
                         src="${safeCoverMedia}" 
                         alt="${safeAlt}" 
@@ -218,7 +218,7 @@ function renderProducts(items) {
                         decoding="async"
                         width="400"
                         height="400"
-                        class="w-full h-full object-cover transition duration-500 group-hover:scale-105" 
+                        class="w-full h-full object-contain transition duration-500 group-hover:scale-105" 
                     />
                     
                     <span class="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
