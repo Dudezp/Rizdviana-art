@@ -30,10 +30,10 @@ function escapeAttr(str) {
 }
 
 // Автоматична оптимізація розміру обкладинки для каталогу через Supabase Image Render API
-function getOptimizedImageUrl(url, width = 550, quality = 85) {
+function getOptimizedImageUrl(url, width = 600, quality = 85) {
     if (!url || typeof url !== 'string') return url;
     if (url.includes('.supabase.co/storage/v1/object/public/')) {
-        return url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + `?width=${width}&quality=${quality}`;
+        return url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + `?width=${width}&resize=contain&quality=${quality}`;
     }
     return url;
 }
@@ -198,7 +198,7 @@ function renderProducts(items) {
         const safeTitleAttr = escapeAttr(`${product.title} — RIZDVIANA.ART`);
 
         // Оптимізація розміру обкладинки для вітрини (швидкий рендер)
-        const optimizedCover = getOptimizedImageUrl(coverMedia, 550, 85);
+        const optimizedCover = getOptimizedImageUrl(coverMedia, 600, 85);
         const safeCoverMedia = escapeAttr(optimizedCover);
 
         // LCP оптимізація: перші 3 картки першого екрана вантажаться миттєво
