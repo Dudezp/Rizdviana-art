@@ -117,23 +117,46 @@ async function loadCatalog() {
 
 function setStockFilter(mode) {
     currentStockFilter = mode;
-    const btnAll = document.getElementById('filter-all');
-    const btnStock = document.getElementById('filter-stock');
-    const btnAllMob = document.getElementById('filter-all-mobile');
-    const btnStockMob = document.getElementById('filter-stock-mobile');
-
-    if (mode === 'all') {
-        if (btnAll) btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
-        if (btnStock) btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
-        if (btnAllMob) btnAllMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition bg-stoneDark text-white shadow-xs";
-        if (btnStockMob) btnStockMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition text-stone-600 hover:text-stoneDark";
-    } else {
-        if (btnStock) btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
-        if (btnAll) btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
-        if (btnAllMob) btnAllMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition text-stone-600 hover:text-stoneDark";
-        if (btnStockMob) btnStockMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition bg-stoneDark text-white shadow-xs";
-    }
+    updatePillPosition(mode);
     applyFilters();
+}
+
+function updatePillPosition(mode = currentStockFilter) {
+    // Мобільний ковзний тумблер
+    const mobPill = document.getElementById('stock-pill-mobile');
+    const mobAll = document.getElementById('filter-all-mobile');
+    const mobStock = document.getElementById('filter-stock-mobile');
+
+    if (mobPill && mobAll && mobStock) {
+        const activeBtn = mode === 'all' ? mobAll : mobStock;
+        const inactiveBtn = mode === 'all' ? mobStock : mobAll;
+
+        activeBtn.classList.remove('text-stone-600');
+        activeBtn.classList.add('text-white');
+        inactiveBtn.classList.remove('text-white');
+        inactiveBtn.classList.add('text-stone-600');
+
+        mobPill.style.width = `${activeBtn.offsetWidth}px`;
+        mobPill.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+    }
+
+    // Десктопний ковзний тумблер
+    const deskPill = document.getElementById('stock-pill-desktop');
+    const deskAll = document.getElementById('filter-all');
+    const deskStock = document.getElementById('filter-stock');
+
+    if (deskPill && deskAll && deskStock) {
+        const activeBtn = mode === 'all' ? deskAll : deskStock;
+        const inactiveBtn = mode === 'all' ? deskStock : deskAll;
+
+        activeBtn.classList.remove('text-stone-600');
+        activeBtn.classList.add('text-white');
+        inactiveBtn.classList.remove('text-white');
+        inactiveBtn.classList.add('text-stone-600');
+
+        deskPill.style.width = `${activeBtn.offsetWidth}px`;
+        deskPill.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+    }
 }
 
 function syncFilterAndApply(field, val) {
@@ -1114,14 +1137,21 @@ function initIosInstallPrompt() {
 window.showIosInstallPrompt = showIosBanner;
 
 // Ініціалізація після завантаження сторінки
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initPhoneMask();
-        initIosInstallPrompt();
-    });
-} else {
+function onPageInit() {
     initPhoneMask();
     initIosInstallPrompt();
+    updatePillPosition('all');
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => updatePillPosition());
+    }
+}
+
+window.addEventListener('resize', () => updatePillPosition(), { passive: true });
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onPageInit);
+} else {
+    onPageInit();
 }
 
 loadCatalog();

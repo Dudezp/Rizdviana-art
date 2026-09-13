@@ -80,7 +80,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="style.css?v=mobile-filters1">
+  <link rel="stylesheet" href="style.css?v=pill-anim1">
 </head>
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
@@ -112,11 +112,12 @@
       <!-- ДЕСКТОПНА ПАНЕЛЬ ФІЛЬТРІВ (sm:block — для екранів від 640px) -->
       <div class="hidden sm:block">
         <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 px-1 border-b border-stone-300/40">
-          <div class="flex items-center gap-1.5">
-            <button id="filter-all" onclick="setStockFilter('all')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white">
+          <div id="stock-toggle-group-desktop" class="segmented-control-container">
+            <div id="stock-pill-desktop" class="segmented-pill"></div>
+            <button id="filter-all" type="button" onclick="setStockFilter('all')" class="segmented-btn px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-white">
               Усі роботи
             </button>
-            <button id="filter-stock" onclick="setStockFilter('in_stock')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100">
+            <button id="filter-stock" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-stone-600 hover:text-stoneDark">
               В наявності
             </button>
           </div>
@@ -186,12 +187,13 @@
       <!-- МОБІЛЬНА КОМПАКТНА ПАНЕЛЬ (sm:hidden — 1 тонкий рядок) -->
       <div class="block sm:hidden">
         <div class="flex items-center justify-between gap-2 py-0.5">
-          <!-- Перемикач Усі / В наявності -->
-          <div class="inline-flex p-0.5 bg-craft/60 rounded-full border border-craft">
-            <button id="filter-all-mobile" onclick="setStockFilter('all')" class="px-3 py-1 rounded-full text-[11px] font-semibold transition bg-stoneDark text-white shadow-xs">
+          <!-- Перемикач Усі / В наявності з ковзним тумблером (iOS style) -->
+          <div id="stock-toggle-group-mobile" class="segmented-control-container">
+            <div id="stock-pill-mobile" class="segmented-pill"></div>
+            <button id="filter-all-mobile" type="button" onclick="setStockFilter('all')" class="segmented-btn px-3 py-1 text-[11px] font-semibold text-white">
               Усі
             </button>
-            <button id="filter-stock-mobile" onclick="setStockFilter('in_stock')" class="px-3 py-1 rounded-full text-[11px] font-semibold transition text-stone-600 hover:text-stoneDark">
+            <button id="filter-stock-mobile" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3 py-1 text-[11px] font-semibold text-stone-600 hover:text-stoneDark">
               В наявності
             </button>
           </div>
@@ -572,6 +574,6 @@
     </div>
   </aside>
 
-  <script src="script.js?v=mobile-filters1"></script>
+  <script src="script.js?v=pill-anim1"></script>
 </body>
 </html>
