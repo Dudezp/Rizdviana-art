@@ -80,7 +80,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="style.css?v=pill-anim1">
+  <link rel="stylesheet" href="style.css?v=pill-text-fix2">
 </head>
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
@@ -114,10 +114,10 @@
         <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 px-1 border-b border-stone-300/40">
           <div id="stock-toggle-group-desktop" class="segmented-control-container">
             <div id="stock-pill-desktop" class="segmented-pill"></div>
-            <button id="filter-all" type="button" onclick="setStockFilter('all')" class="segmented-btn px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-white">
+            <button id="filter-all" type="button" onclick="setStockFilter('all')" class="segmented-btn active px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold">
               Усі роботи
             </button>
-            <button id="filter-stock" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-stone-600 hover:text-stoneDark">
+            <button id="filter-stock" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold">
               В наявності
             </button>
           </div>
@@ -190,10 +190,10 @@
           <!-- Перемикач Усі / В наявності з ковзним тумблером (iOS style) -->
           <div id="stock-toggle-group-mobile" class="segmented-control-container">
             <div id="stock-pill-mobile" class="segmented-pill"></div>
-            <button id="filter-all-mobile" type="button" onclick="setStockFilter('all')" class="segmented-btn px-3 py-1 text-[11px] font-semibold text-white">
+            <button id="filter-all-mobile" type="button" onclick="setStockFilter('all')" class="segmented-btn active px-3 py-1 text-[11px] font-semibold">
               Усі
             </button>
-            <button id="filter-stock-mobile" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3 py-1 text-[11px] font-semibold text-stone-600 hover:text-stoneDark">
+            <button id="filter-stock-mobile" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3 py-1 text-[11px] font-semibold">
               В наявності
             </button>
           </div>
@@ -574,6 +574,6 @@
     </div>
   </aside>
 
-  <script src="script.js?v=pill-anim1"></script>
+  <script src="script.js?v=pill-text-fix2"></script>
 </body>
 </html>

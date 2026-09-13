@@ -131,10 +131,8 @@ function updatePillPosition(mode = currentStockFilter) {
         const activeBtn = mode === 'all' ? mobAll : mobStock;
         const inactiveBtn = mode === 'all' ? mobStock : mobAll;
 
-        activeBtn.classList.remove('text-stone-600');
-        activeBtn.classList.add('text-white');
-        inactiveBtn.classList.remove('text-white');
-        inactiveBtn.classList.add('text-stone-600');
+        activeBtn.classList.add('active');
+        inactiveBtn.classList.remove('active');
 
         mobPill.style.width = `${activeBtn.offsetWidth}px`;
         mobPill.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
@@ -149,10 +147,8 @@ function updatePillPosition(mode = currentStockFilter) {
         const activeBtn = mode === 'all' ? deskAll : deskStock;
         const inactiveBtn = mode === 'all' ? deskStock : deskAll;
 
-        activeBtn.classList.remove('text-stone-600');
-        activeBtn.classList.add('text-white');
-        inactiveBtn.classList.remove('text-white');
-        inactiveBtn.classList.add('text-stone-600');
+        activeBtn.classList.add('active');
+        inactiveBtn.classList.remove('active');
 
         deskPill.style.width = `${activeBtn.offsetWidth}px`;
         deskPill.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
