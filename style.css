@@ -31,31 +31,38 @@ body {
 
 /* 3-етапна плавна анімація шапки без зміщення контейнера */
 #header-logo {
-  height: 54px;
-  max-width: 220px;
+  height: 40px;
+  max-width: 180px;
   transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
 }
 
+@media (min-width: 640px) {
+  #header-logo {
+    height: 54px;
+    max-width: 220px;
+  }
+}
+
 #header-tagline {
-  max-height: 30px;
-  opacity: 1;
-  font-size: 0.65rem;
-  margin-top: 0.35rem;
-  margin-bottom: 0.25rem;
-  letter-spacing: 0.16em;
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
+  display: none;
 }
 
 @media (min-width: 640px) {
   #header-tagline {
+    display: block;
+    max-height: 30px;
+    opacity: 1;
     font-size: 0.72rem;
     letter-spacing: 0.24em;
+    margin-top: 0.35rem;
+    margin-bottom: 0.25rem;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
   }
 }
 
 #header-nav {
-  padding-top: 0.35rem;
-  padding-bottom: 0.25rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
   gap: 0.85rem;
   font-size: 0.7rem;
   flex-wrap: wrap;
@@ -64,6 +71,8 @@ body {
 
 @media (min-width: 640px) {
   #header-nav {
+    padding-top: 0.35rem;
+    padding-bottom: 0.25rem;
     gap: 1.25rem;
     font-size: 0.75rem;
   }
@@ -82,14 +91,33 @@ body {
 
 /* Фаза 2: компактний логотип та меню */
 #sticky-header.step-2 #header-logo {
-  height: 36px;
+  height: 28px;
+}
+
+@media (min-width: 640px) {
+  #sticky-header.step-2 #header-logo {
+    height: 36px;
+  }
 }
 
 #sticky-header.step-2 #header-nav {
-  padding-top: 0.15rem;
-  padding-bottom: 0.15rem;
-  gap: 1rem;
-  font-size: 0.7rem;
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  gap: 0.85rem;
+  font-size: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  #sticky-header.step-2 #header-nav {
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+    gap: 1rem;
+    font-size: 0.7rem;
+  }
+}
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
 }
 
 /* Приховування смуги прокрутки для горизонтального списку фільтрів */

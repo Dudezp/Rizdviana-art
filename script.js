@@ -119,30 +119,109 @@ function setStockFilter(mode) {
     currentStockFilter = mode;
     const btnAll = document.getElementById('filter-all');
     const btnStock = document.getElementById('filter-stock');
+    const btnAllMob = document.getElementById('filter-all-mobile');
+    const btnStockMob = document.getElementById('filter-stock-mobile');
 
     if (mode === 'all') {
-        btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
-        btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
+        if (btnAll) btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
+        if (btnStock) btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
+        if (btnAllMob) btnAllMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition bg-stoneDark text-white shadow-xs";
+        if (btnStockMob) btnStockMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition text-stone-600 hover:text-stoneDark";
     } else {
-        btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
-        btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
+        if (btnStock) btnStock.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white";
+        if (btnAll) btnAll.className = "filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100";
+        if (btnAllMob) btnAllMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition text-stone-600 hover:text-stoneDark";
+        if (btnStockMob) btnStockMob.className = "px-3 py-1 rounded-full text-[11px] font-semibold transition bg-stoneDark text-white shadow-xs";
     }
     applyFilters();
 }
 
+function syncFilterAndApply(field, val) {
+    const desktopEl = document.getElementById(`select-${field}`);
+    const mobileEl = document.getElementById(`mobile-select-${field}`);
+    if (desktopEl && desktopEl.value !== val) desktopEl.value = val;
+    if (mobileEl && mobileEl.value !== val) mobileEl.value = val;
+    applyFilters();
+}
+
+function syncSortAndApply(val) {
+    const desktopSort = document.getElementById('select-sort');
+    const mobileSort = document.getElementById('select-sort-mobile');
+    if (desktopSort && desktopSort.value !== val) desktopSort.value = val;
+    if (mobileSort && mobileSort.value !== val) mobileSort.value = val;
+    applyFilters();
+}
+
+function openMobileFilters() {
+    const drawer = document.getElementById('mobile-filters-drawer');
+    const backdrop = document.getElementById('mobile-filters-backdrop');
+    const panel = document.getElementById('mobile-filters-panel');
+    if (!drawer) return;
+
+    drawer.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    requestAnimationFrame(() => {
+        if (backdrop) backdrop.classList.remove('opacity-0');
+        if (panel) panel.classList.remove('translate-y-full');
+    });
+}
+
+function closeMobileFilters() {
+    const drawer = document.getElementById('mobile-filters-drawer');
+    const backdrop = document.getElementById('mobile-filters-backdrop');
+    const panel = document.getElementById('mobile-filters-panel');
+    if (!drawer) return;
+
+    if (backdrop) backdrop.classList.add('opacity-0');
+    if (panel) panel.classList.add('translate-y-full');
+
+    setTimeout(() => {
+        drawer.classList.add('hidden');
+        document.body.style.overflow = '';
+    }, 300);
+}
+
 function applyFilters() {
-    const type = document.getElementById('select-type').value;
-    const ornament = document.getElementById('select-ornament').value;
-    const shape = document.getElementById('select-shape').value;
-    const width = document.getElementById('select-width').value;
-    const color = document.getElementById('select-color').value;
-    const sortBy = document.getElementById('select-sort')?.value || 'newest';
+    const type = document.getElementById('select-type')?.value || document.getElementById('mobile-select-type')?.value || '';
+    const ornament = document.getElementById('select-ornament')?.value || document.getElementById('mobile-select-ornament')?.value || '';
+    const shape = document.getElementById('select-shape')?.value || document.getElementById('mobile-select-shape')?.value || '';
+    const width = document.getElementById('select-width')?.value || document.getElementById('mobile-select-width')?.value || '';
+    const color = document.getElementById('select-color')?.value || document.getElementById('mobile-select-color')?.value || '';
+    const sortBy = document.getElementById('select-sort')?.value || document.getElementById('select-sort-mobile')?.value || 'newest';
 
     const cleanColor = color ? color.trim().toLowerCase() : '';
     const cleanType = type ? type.trim().toLowerCase() : '';
     const cleanOrnament = ornament ? ornament.trim().toLowerCase() : '';
     const cleanShape = shape ? shape.trim().toLowerCase() : '';
     const cleanWidth = width ? width.trim().toLowerCase() : '';
+
+    let activeFilterCount = 0;
+    if (cleanType) activeFilterCount++;
+    if (cleanOrnament) activeFilterCount++;
+    if (cleanShape) activeFilterCount++;
+    if (cleanWidth) activeFilterCount++;
+    if (cleanColor) activeFilterCount++;
+
+    const badge = document.getElementById('mobile-filter-badge');
+    const trigger = document.getElementById('mobile-filter-trigger');
+    if (badge && trigger) {
+        if (activeFilterCount > 0) {
+            badge.innerText = activeFilterCount;
+            badge.classList.remove('hidden');
+            badge.classList.add('inline-flex');
+            trigger.classList.add('border-stoneDark', 'bg-craft/40');
+        } else {
+            badge.classList.add('hidden');
+            badge.classList.remove('inline-flex');
+            trigger.classList.remove('border-stoneDark', 'bg-craft/40');
+        }
+    }
+
+    const drawerCount = document.getElementById('mobile-drawer-count');
+    if (drawerCount) {
+        drawerCount.innerText = activeFilterCount > 0 ? `(${activeFilterCount} акт.)` : '';
+    }
 
     let filtered = allProducts.filter(item => {
         if (currentStockFilter === 'in_stock' && item.status !== 'in_stock') return false;
@@ -166,20 +245,26 @@ function applyFilters() {
         return new Date(b.created_at) - new Date(a.created_at);
     });
 
+    const applyBtn = document.getElementById('mobile-apply-btn');
+    if (applyBtn) {
+        applyBtn.innerText = `Показати вироби (${filtered.length})`;
+    }
+
+    const countMob = document.getElementById('items-count-mobile');
+    if (countMob) {
+        countMob.innerText = `Знайдено робіт: ${filtered.length}`;
+    }
+
     renderProducts(filtered);
 }
 
 function resetFilters() {
-    const typeEl = document.getElementById('select-type');
-    const ornamentEl = document.getElementById('select-ornament');
-    const shapeEl = document.getElementById('select-shape');
-    const widthEl = document.getElementById('select-width');
-    const colorEl = document.getElementById('select-color');
-    if (typeEl) typeEl.value = '';
-    if (ornamentEl) ornamentEl.value = '';
-    if (shapeEl) shapeEl.value = '';
-    if (widthEl) widthEl.value = '';
-    if (colorEl) colorEl.value = '';
+    ['type', 'ornament', 'shape', 'width', 'color'].forEach(field => {
+        const d = document.getElementById(`select-${field}`);
+        const m = document.getElementById(`mobile-select-${field}`);
+        if (d) d.value = '';
+        if (m) m.value = '';
+    });
     setStockFilter('all');
 }
 

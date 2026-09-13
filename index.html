@@ -80,12 +80,12 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="style.css?v=sticky2">
+  <link rel="stylesheet" href="style.css?v=mobile-filters1">
 </head>
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
   <div id="sticky-header" class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
-    <header id="main-header" class="max-w-6xl mx-auto px-4 pt-6 sm:pt-8 pb-3 flex flex-col items-center justify-center text-center">
+    <header id="main-header" class="max-w-6xl mx-auto px-4 pt-3 sm:pt-8 pb-1.5 sm:pb-3 flex flex-col items-center justify-center text-center">
       <a href="#" class="inline-block transition hover:opacity-90">
         <img 
           id="header-logo"
@@ -101,84 +101,124 @@
         Традиційні та сучасні прикраси з бісеру
       </p>
       
-      <nav id="header-nav" class="flex items-center justify-center uppercase tracking-wider font-semibold mt-2">
+      <nav id="header-nav" class="flex items-center justify-center uppercase tracking-wider font-semibold mt-1 sm:mt-2 text-[11px] sm:text-xs">
         <a href="#catalog" class="text-stoneDark hover:text-stone-500 transition">Каталог</a>
         <a href="#about" class="text-stoneDark hover:text-stone-500 transition">Про бренд</a>
         <a href="#delivery" class="text-stoneDark hover:text-stone-500 transition">Оплата та доставка</a>
       </nav>
     </header>
 
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-2 pb-3.5">
-      <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 px-1 border-b border-stone-300/40">
-        <div class="flex items-center gap-1.5">
-          <button id="filter-all" onclick="setStockFilter('all')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white">
-            Усі роботи
-          </button>
-          <button id="filter-stock" onclick="setStockFilter('in_stock')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100">
-            В наявності
-          </button>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-1 sm:pt-2 pb-2 sm:pb-3.5">
+      <!-- ДЕСКТОПНА ПАНЕЛЬ ФІЛЬТРІВ (sm:block — для екранів від 640px) -->
+      <div class="hidden sm:block">
+        <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 px-1 border-b border-stone-300/40">
+          <div class="flex items-center gap-1.5">
+            <button id="filter-all" onclick="setStockFilter('all')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-stoneDark text-white">
+              Усі роботи
+            </button>
+            <button id="filter-stock" onclick="setStockFilter('in_stock')" class="filter-stock-btn px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold transition bg-white text-stone-700 hover:bg-stone-100">
+              В наявності
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select id="select-sort" onchange="syncSortAndApply(this.value)" class="bg-white border border-craft rounded-lg px-2.5 py-1 text-[11px] font-medium text-stoneDark focus:outline-none focus:border-stoneDark transition cursor-pointer">
+              <option value="newest">Спочатку нові</option>
+              <option value="price_asc">Ціна: від дешевих</option>
+              <option value="price_desc">Ціна: від дорогих</option>
+              <option value="title_asc">Назва (А — Я)</option>
+              <option value="oldest">Спочатку давніші</option>
+            </select>
+
+            <div id="items-count" class="text-[11px] text-stone-500 uppercase tracking-wider whitespace-nowrap min-w-[125px] text-right">
+              Завантаження...
+            </div>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <select id="select-sort" onchange="applyFilters()" class="bg-white border border-craft rounded-lg px-2.5 py-1 text-[11px] font-medium text-stoneDark focus:outline-none focus:border-stoneDark transition cursor-pointer">
-            <option value="newest">Спочатку нові</option>
-            <option value="price_asc">Ціна: від дешевих</option>
-            <option value="price_desc">Ціна: від дорогих</option>
-            <option value="title_asc">Назва (А — Я)</option>
-            <option value="oldest">Спочатку давніші</option>
+        <div class="grid grid-cols-5 gap-2.5 pt-2.5 pb-1.5 px-2">
+          <select id="select-type" onchange="syncFilterAndApply('type', this.value)" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap transition">
+            <option value="">Усі типи</option>
+            <option value="Силянка">Силянка</option>
+            <option value="Гердан">Гердан</option>
+            <option value="Чокер">Чокер</option>
+            <option value="Браслет">Браслет</option>
           </select>
 
-          <!-- Фіксована мінімальна ширина блоку запобігає зсуву елементів поруч -->
-          <div id="items-count" class="text-[11px] text-stone-500 uppercase tracking-wider whitespace-nowrap min-w-[125px] text-right">
-            Завантаження...
-          </div>
+          <select id="select-ornament" onchange="syncFilterAndApply('ornament', this.value)" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap transition">
+            <option value="">Орнамент</option>
+            <option value="Рослинний">Рослинний</option>
+            <option value="Геометричний">Геометричний</option>
+          </select>
+
+          <select id="select-shape" onchange="syncFilterAndApply('shape', this.value)" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap transition">
+            <option value="">Форма</option>
+            <option value="Стрічка">Стрічка</option>
+            <option value="Заокруглена">Заокруглена</option>
+            <option value="Зубчаста">Зубчаста</option>
+          </select>
+
+          <select id="select-width" onchange="syncFilterAndApply('width', this.value)" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap transition">
+            <option value="">Ширина</option>
+            <option value="Вузька">Вузька</option>
+            <option value="Середня">Середня</option>
+            <option value="Широка">Широка</option>
+          </select>
+
+          <select id="select-color" onchange="syncFilterAndApply('color', this.value)" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap transition">
+            <option value="">Колір</option>
+            <option value="Червоний">Червоний</option>
+            <option value="Чорний">Чорний</option>
+            <option value="Білий">Білий</option>
+            <option value="Синій">Синій</option>
+            <option value="Зелений">Зелений</option>
+            <option value="Жовтий">Жовтий</option>
+            <option value="Помаранчевий">Помаранчевий</option>
+            <option value="Рожевий">Рожевий</option>
+            <option value="Фіолетовий">Фіолетовий</option>
+            <option value="Коричневий">Коричневий</option>
+            <option value="Золотий">Золотий</option>
+            <option value="Сріблястий">Сріблястий</option>
+          </select>
         </div>
       </div>
 
-      <div class="flex sm:grid sm:grid-cols-5 gap-2.5 pt-2.5 pb-1.5 px-2 overflow-x-auto no-scrollbar">
-        <select id="select-type" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
-          <option value="">Усі типи</option>
-          <option value="Силянка">Силянка</option>
-          <option value="Гердан">Гердан</option>
-          <option value="Чокер">Чокер</option>
-          <option value="Браслет">Браслет</option>
-        </select>
+      <!-- МОБІЛЬНА КОМПАКТНА ПАНЕЛЬ (sm:hidden — 1 тонкий рядок) -->
+      <div class="block sm:hidden">
+        <div class="flex items-center justify-between gap-2 py-0.5">
+          <!-- Перемикач Усі / В наявності -->
+          <div class="inline-flex p-0.5 bg-craft/60 rounded-full border border-craft">
+            <button id="filter-all-mobile" onclick="setStockFilter('all')" class="px-3 py-1 rounded-full text-[11px] font-semibold transition bg-stoneDark text-white shadow-xs">
+              Усі
+            </button>
+            <button id="filter-stock-mobile" onclick="setStockFilter('in_stock')" class="px-3 py-1 rounded-full text-[11px] font-semibold transition text-stone-600 hover:text-stoneDark">
+              В наявності
+            </button>
+          </div>
 
-        <select id="select-ornament" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
-          <option value="">Орнамент</option>
-          <option value="Рослинний">Рослинний</option>
-          <option value="Геометричний">Геометричний</option>
-        </select>
+          <!-- Кнопка "Фільтри" та Сортування -->
+          <div class="flex items-center gap-1.5">
+            <button id="mobile-filter-trigger" onclick="openMobileFilters()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-craft bg-white text-stoneDark text-xs font-semibold shadow-xs active:scale-95 transition">
+              <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+              </svg>
+              <span>Фільтри</span>
+              <span id="mobile-filter-badge" class="hidden w-4 h-4 bg-stoneDark text-white text-[9px] rounded-full items-center justify-center font-bold">0</span>
+            </button>
 
-        <select id="select-shape" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
-          <option value="">Форма</option>
-          <option value="Стрічка">Стрічка</option>
-          <option value="Заокруглена">Заокруглена</option>
-          <option value="Зубчаста">Зубчаста</option>
-        </select>
+            <select id="select-sort-mobile" onchange="syncSortAndApply(this.value)" class="bg-white border border-craft rounded-full px-2.5 py-1.5 text-xs font-medium text-stoneDark focus:outline-none transition cursor-pointer shadow-xs">
+              <option value="newest">Нові</option>
+              <option value="price_asc">Ціна ↑</option>
+              <option value="price_desc">Ціна ↓</option>
+              <option value="title_asc">А—Я</option>
+              <option value="oldest">Давніші</option>
+            </select>
+          </div>
+        </div>
 
-        <select id="select-width" onchange="applyFilters()" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
-          <option value="">Ширина</option>
-          <option value="Вузька">Вузька</option>
-          <option value="Середня">Середня</option>
-          <option value="Широка">Широка</option>
-        </select>
-
-        <select id="select-color" onchange="applyFilters()" class="filter-select col-span-2 md:col-span-1 bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap flex-shrink-0 transition">
-          <option value="">Колір</option>
-          <option value="Червоний">Червоний</option>
-          <option value="Чорний">Чорний</option>
-          <option value="Білий">Білий</option>
-          <option value="Синій">Синій</option>
-          <option value="Зелений">Зелений</option>
-          <option value="Жовтий">Жовтий</option>
-          <option value="Помаранчевий">Помаранчевий</option>
-          <option value="Рожевий">Рожевий</option>
-          <option value="Фіолетовий">Фіолетовий</option>
-          <option value="Коричневий">Коричневий</option>
-          <option value="Золотий">Золотий</option>
-          <option value="Сріблястий">Сріблястий</option>
-        </select>
+        <div id="items-count-mobile" class="text-[10px] text-stone-400 uppercase tracking-wider text-right pr-1 pt-0.5">
+          Завантаження...
+        </div>
       </div>
     </div>
   </div>
@@ -277,6 +317,110 @@
       </div>
     </div>
   </footer>
+
+  <!-- ШТОРКА ФІЛЬТРІВ ДЛЯ СМАРТФОНІВ (BOTTOM SHEET) -->
+  <div id="mobile-filters-drawer" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-filters-title">
+    <!-- Затемнення фону -->
+    <div id="mobile-filters-backdrop" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" onclick="closeMobileFilters()"></div>
+    
+    <!-- Панель шторки -->
+    <div id="mobile-filters-panel" class="fixed inset-x-0 bottom-0 max-h-[85vh] bg-linen rounded-t-3xl border-t border-craft shadow-2xl flex flex-col transform translate-y-full transition-transform duration-300 ease-out z-10">
+      <!-- Верхній повзунок для візуалу свайпа -->
+      <div class="pt-2.5 pb-1 flex justify-center">
+        <div class="w-10 h-1 rounded-full bg-stone-300"></div>
+      </div>
+
+      <!-- Заголовок шторки -->
+      <div class="px-5 py-2.5 border-b border-craft flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h3 id="mobile-filters-title" class="font-serif font-bold text-lg text-stoneDark">Фільтри</h3>
+          <span id="mobile-drawer-count" class="text-xs text-stone-500 font-medium"></span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="resetFilters()" class="text-xs text-stone-500 hover:text-stoneDark underline font-medium">
+            Скинути всі
+          </button>
+          <button type="button" onclick="closeMobileFilters()" class="w-8 h-8 rounded-full bg-craft/60 flex items-center justify-center text-stoneDark hover:bg-craft transition text-sm" aria-label="Закрити фільтри">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Список параметрів фільтрації -->
+      <div class="p-5 overflow-y-auto space-y-4 text-sm">
+        <!-- Тип виробу -->
+        <div>
+          <label for="mobile-select-type" class="block text-[11px] uppercase tracking-wider font-semibold text-stone-600 mb-1.5">Тип виробу</label>
+          <select id="mobile-select-type" onchange="syncFilterAndApply('type', this.value)" class="w-full bg-white border border-craft rounded-xl p-2.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark">
+            <option value="">Усі типи</option>
+            <option value="Силянка">Силянка</option>
+            <option value="Гердан">Гердан</option>
+            <option value="Чокер">Чокер</option>
+            <option value="Браслет">Браслет</option>
+          </select>
+        </div>
+
+        <!-- Орнамент -->
+        <div>
+          <label for="mobile-select-ornament" class="block text-[11px] uppercase tracking-wider font-semibold text-stone-600 mb-1.5">Орнамент</label>
+          <select id="mobile-select-ornament" onchange="syncFilterAndApply('ornament', this.value)" class="w-full bg-white border border-craft rounded-xl p-2.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark">
+            <option value="">Усі орнаменти</option>
+            <option value="Рослинний">Рослинний</option>
+            <option value="Геометричний">Геометричний</option>
+          </select>
+        </div>
+
+        <!-- Форма -->
+        <div>
+          <label for="mobile-select-shape" class="block text-[11px] uppercase tracking-wider font-semibold text-stone-600 mb-1.5">Форма</label>
+          <select id="mobile-select-shape" onchange="syncFilterAndApply('shape', this.value)" class="w-full bg-white border border-craft rounded-xl p-2.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark">
+            <option value="">Усі форми</option>
+            <option value="Стрічка">Стрічка</option>
+            <option value="Заокруглена">Заокруглена</option>
+            <option value="Зубчаста">Зубчаста</option>
+          </select>
+        </div>
+
+        <!-- Ширина -->
+        <div>
+          <label for="mobile-select-width" class="block text-[11px] uppercase tracking-wider font-semibold text-stone-600 mb-1.5">Ширина</label>
+          <select id="mobile-select-width" onchange="syncFilterAndApply('width', this.value)" class="w-full bg-white border border-craft rounded-xl p-2.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark">
+            <option value="">Усі розміри</option>
+            <option value="Вузька">Вузька</option>
+            <option value="Середня">Середня</option>
+            <option value="Широка">Широка</option>
+          </select>
+        </div>
+
+        <!-- Колір -->
+        <div>
+          <label for="mobile-select-color" class="block text-[11px] uppercase tracking-wider font-semibold text-stone-600 mb-1.5">Колір</label>
+          <select id="mobile-select-color" onchange="syncFilterAndApply('color', this.value)" class="w-full bg-white border border-craft rounded-xl p-2.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark">
+            <option value="">Усі кольори</option>
+            <option value="Червоний">Червоний</option>
+            <option value="Чорний">Чорний</option>
+            <option value="Білий">Білий</option>
+            <option value="Синій">Синій</option>
+            <option value="Зелений">Зелений</option>
+            <option value="Жовтий">Жовтий</option>
+            <option value="Помаранчевий">Помаранчевий</option>
+            <option value="Рожевий">Рожевий</option>
+            <option value="Фіолетовий">Фіолетовий</option>
+            <option value="Коричневий">Коричневий</option>
+            <option value="Золотий">Золотий</option>
+            <option value="Сріблястий">Сріблястий</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Кнопка застосування внизу шторки -->
+      <div class="p-4 border-t border-craft bg-linen/95 pb-safe">
+        <button type="button" onclick="closeMobileFilters()" id="mobile-apply-btn" class="w-full py-3 bg-stoneDark text-white font-semibold text-xs uppercase tracking-wider rounded-xl text-center shadow transition active:scale-98">
+          Показати вироби
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- МОДАЛЬНЕ ВІКНО КАРТКИ ТОВАРУ -->
   <div id="product-modal" class="fixed inset-0 z-50 hidden bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto" onclick="handleBackdropClick(event)">
@@ -428,6 +572,6 @@
     </div>
   </aside>
 
-  <script src="script.js?v=filter-fix3"></script>
+  <script src="script.js?v=mobile-filters1"></script>
 </body>
 </html>
