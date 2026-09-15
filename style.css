@@ -44,19 +44,31 @@ body {
 }
 
 #header-tagline {
-  display: none;
+  display: block;
+  max-height: 26px;
+  opacity: 1;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  margin-top: 0.25rem;
+  margin-bottom: 0.15rem;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
+}
+
+@media (min-width: 400px) {
+  #header-tagline {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+  }
 }
 
 @media (min-width: 640px) {
   #header-tagline {
-    display: block;
     max-height: 30px;
-    opacity: 1;
     font-size: 0.72rem;
     letter-spacing: 0.24em;
     margin-top: 0.35rem;
     margin-bottom: 0.25rem;
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
   }
 }
 
