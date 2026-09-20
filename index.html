@@ -58,6 +58,9 @@
   <!-- Бібліотеки та стилі -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- intl-tel-input: міжнародна бібліотека телефонних кодів усіх країн світу -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/css/intlTelInput.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,11 +83,11 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="style.css?v=tagline-restored">
+  <link rel="stylesheet" href="style.css?v=safari-fix-v2">
 </head>
 <body class="bg-linen text-stoneDark font-sans min-h-screen">
 
-  <div id="sticky-header" class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
+  <div id="sticky-header" class="sticky top-0 z-50 bg-linen/95 backdrop-blur-md border-b border-craft shadow-sm">
     <header id="main-header" class="max-w-6xl mx-auto px-4 pt-3 sm:pt-8 pb-1.5 sm:pb-3 flex flex-col items-center justify-center text-center">
       <a href="#" class="inline-block transition hover:opacity-90">
         <img 
@@ -120,11 +123,36 @@
             <button id="filter-stock" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold">
               В наявності
             </button>
+            <button id="filter-favorites" type="button" onclick="setStockFilter('favorites')" class="segmented-btn px-3 py-1.5 text-[11px] uppercase tracking-wider font-semibold flex items-center gap-1">
+              <span>❤️ Обране</span>
+              <span id="fav-count-badge-desktop" class="hidden text-[9px] px-1.5 py-0.2 rounded-full bg-red-100 text-red-700 font-bold">0</span>
+            </button>
           </div>
 
           <div class="flex items-center gap-2">
-            <select id="select-sort" onchange="syncSortAndApply(this.value)" class="bg-white border border-craft rounded-lg px-2.5 py-1 text-[11px] font-medium text-stoneDark focus:outline-none focus:border-stoneDark transition cursor-pointer">
-              <option value="newest">Спочатку нові</option>
+            <!-- Поле живого пошуку (десктоп) -->
+            <div class="relative w-44 lg:w-56">
+              <input 
+                type="text" 
+                id="search-input-desktop" 
+                placeholder="Пошук (маки, гердан)..." 
+                oninput="syncSearchAndApply(this.value)"
+                class="w-full bg-white border border-craft rounded-lg pl-7 pr-6 py-1 text-[11px] text-stoneDark placeholder-stone-400 focus:outline-none focus:border-stoneDark transition shadow-xs"
+              />
+              <svg class="w-3.5 h-3.5 text-stone-400 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <button 
+                id="search-clear-desktop" 
+                type="button" 
+                onclick="clearSearch()" 
+                class="hidden absolute right-1.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stoneDark text-xs font-bold p-0.5"
+                aria-label="Очистити пошук"
+              >✕</button>
+            </div>
+
+            <select id="select-sort" aria-label="Сортування каталогу" onchange="syncSortAndApply(this.value)" class="bg-white border border-craft rounded-lg px-2.5 py-1 text-[11px] font-medium text-stoneDark focus:outline-none focus:border-stoneDark transition cursor-pointer">
+              <option value="newest" selected>Спочатку нові</option>
               <option value="price_asc">Ціна: від дешевих</option>
               <option value="price_desc">Ціна: від дорогих</option>
               <option value="title_asc">Назва (А — Я)</option>
@@ -137,7 +165,14 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-5 gap-2.5 pt-2.5 pb-1.5 px-2">
+        <div class="grid grid-cols-6 gap-2 pt-2.5 pb-1.5 px-2">
+          <select id="select-budget" onchange="syncFilterAndApply('budget', this.value)" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap transition">
+            <option value="">Бюджет</option>
+            <option value="under1000">До 1 000 ₴</option>
+            <option value="1000-2000">1 000 – 2 000 ₴</option>
+            <option value="above2000">Понад 2 000 ₴</option>
+          </select>
+
           <select id="select-type" onchange="syncFilterAndApply('type', this.value)" class="filter-select bg-white border border-craft rounded-lg px-2.5 py-1.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark whitespace-nowrap transition">
             <option value="">Усі типи</option>
             <option value="Силянка">Силянка</option>
@@ -184,17 +219,21 @@
         </div>
       </div>
 
-      <!-- МОБІЛЬНА КОМПАКТНА ПАНЕЛЬ (sm:hidden — 1 тонкий рядок) -->
+      <!-- МОБІЛЬНА КОМПАКТНА ПАНЕЛЬ (sm:hidden) -->
       <div class="block sm:hidden">
         <div class="flex items-center justify-between gap-2 py-0.5">
-          <!-- Перемикач Усі / В наявності з ковзним тумблером (iOS style) -->
+          <!-- Перемикач Усі / В наявності / Обране -->
           <div id="stock-toggle-group-mobile" class="segmented-control-container">
             <div id="stock-pill-mobile" class="segmented-pill"></div>
-            <button id="filter-all-mobile" type="button" onclick="setStockFilter('all')" class="segmented-btn active px-3 py-1 text-[11px] font-semibold">
+            <button id="filter-all-mobile" type="button" onclick="setStockFilter('all')" class="segmented-btn active px-2.5 py-1 text-[11px] font-semibold">
               Усі
             </button>
-            <button id="filter-stock-mobile" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-3 py-1 text-[11px] font-semibold">
+            <button id="filter-stock-mobile" type="button" onclick="setStockFilter('in_stock')" class="segmented-btn px-2.5 py-1 text-[11px] font-semibold">
               В наявності
+            </button>
+            <button id="filter-favorites-mobile" type="button" onclick="setStockFilter('favorites')" class="segmented-btn px-2 py-1 text-[11px] font-semibold flex items-center gap-0.5">
+              <span>❤️</span>
+              <span id="fav-count-badge-mobile" class="text-[9px] font-bold text-stone-500">0</span>
             </button>
           </div>
 
@@ -208,8 +247,8 @@
               <span id="mobile-filter-badge" class="hidden w-4 h-4 bg-stoneDark text-white text-[9px] rounded-full items-center justify-center font-bold">0</span>
             </button>
 
-            <select id="select-sort-mobile" onchange="syncSortAndApply(this.value)" class="bg-white border border-craft rounded-full px-2.5 py-1.5 text-xs font-medium text-stoneDark focus:outline-none transition cursor-pointer shadow-xs">
-              <option value="newest">Нові</option>
+            <select id="select-sort-mobile" aria-label="Сортування каталогу" onchange="syncSortAndApply(this.value)" class="bg-white border border-craft rounded-full px-2.5 py-1.5 text-xs font-medium text-stoneDark focus:outline-none transition cursor-pointer shadow-xs">
+              <option value="newest" selected>Нові</option>
               <option value="price_asc">Ціна ↑</option>
               <option value="price_desc">Ціна ↓</option>
               <option value="title_asc">А—Я</option>
@@ -218,17 +257,68 @@
           </div>
         </div>
 
-        <div id="items-count-mobile" class="text-[10px] text-stone-400 uppercase tracking-wider text-right pr-1 pt-0.5">
+        <!-- Мобільний рядок пошуку -->
+        <div class="relative mt-1.5">
+          <input 
+            type="text" 
+            id="search-input-mobile" 
+            placeholder="Шукати (назва, квіти, гердан)..." 
+            oninput="syncSearchAndApply(this.value)"
+            class="w-full bg-white border border-craft rounded-xl pl-8 pr-7 py-1.5 text-xs text-stoneDark placeholder-stone-400 focus:outline-none focus:border-stoneDark transition shadow-xs"
+          />
+          <svg class="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <button 
+            id="search-clear-mobile" 
+            type="button" 
+            onclick="clearSearch()" 
+            class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stoneDark text-xs font-bold p-0.5"
+            aria-label="Очистити пошук"
+          >✕</button>
+        </div>
+
+        <div id="items-count-mobile" class="text-[10px] text-stone-400 uppercase tracking-wider text-right pr-1 pt-1">
           Завантаження...
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Резервування висоти під каталог запобігає різкому зсуву блоку #about (CLS) -->
-  <main id="catalog" class="max-w-6xl mx-auto px-4 py-8 min-h-[1000px] md:min-h-[1300px]">
-    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 min-h-[800px]"></div>
+  <!-- Каталог робіт -->
+  <main id="catalog" class="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+    <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8 content-start"></div>
+
+    <!-- Блок підвантаження робіт (Load More / Пагінація) -->
+    <div id="load-more-container" class="mt-8 sm:mt-12 text-center flex flex-col items-center gap-3 hidden">
+      <div class="text-xs text-stone-500 font-medium">
+        Показано <span id="load-more-current" class="font-bold text-stoneDark">12</span> з <span id="load-more-total" class="font-bold text-stoneDark">54</span> робіт
+      </div>
+      <div class="w-48 sm:w-64 h-1.5 bg-craft rounded-full overflow-hidden">
+        <div id="load-more-progress" class="h-full bg-stoneDark transition-all duration-300 rounded-full" style="width: 22%;"></div>
+      </div>
+      <button id="btn-load-more" onclick="loadMoreProducts()" class="mt-1.5 inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:py-3 rounded-xl bg-white border border-craft hover:border-stoneDark text-xs font-semibold uppercase tracking-wider text-stoneDark hover:bg-stone-50 transition shadow-xs">
+        <span>Показати ще</span>
+        <span id="load-more-batch-count" class="text-[11px] text-stone-400 font-normal">(+12)</span>
+      </button>
+    </div>
   </main>
+
+  <!-- Нещодавно переглянуті прикраси -->
+  <section id="recently-viewed-section" class="hidden max-w-6xl mx-auto px-4 pb-12">
+    <div class="border-t border-craft/80 pt-8">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-sm">👁️</span>
+          <h2 class="font-serif font-bold text-lg sm:text-xl text-stoneDark">Нещодавно переглянуті</h2>
+        </div>
+        <button type="button" onclick="clearRecentlyViewed()" class="text-xs text-stone-400 hover:text-stoneDark underline transition">
+          Очистити
+        </button>
+      </div>
+      <div id="recently-viewed-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4"></div>
+    </div>
+  </section>
 
   <section id="about" class="border-t border-craft bg-craft/30 py-16 px-4">
     <div class="max-w-4xl mx-auto text-center">
@@ -350,6 +440,17 @@
 
       <!-- Список параметрів фільтрації -->
       <div class="p-5 overflow-y-auto space-y-4 text-sm">
+        <!-- Бюджет -->
+        <div>
+          <label for="mobile-select-budget" class="block text-[11px] uppercase tracking-wider font-semibold text-stone-600 mb-1.5">Бюджет</label>
+          <select id="mobile-select-budget" onchange="syncFilterAndApply('budget', this.value)" class="w-full bg-white border border-craft rounded-xl p-2.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark">
+            <option value="">Усі ціни</option>
+            <option value="under1000">До 1 000 ₴</option>
+            <option value="1000-2000">1 000 – 2 000 ₴</option>
+            <option value="above2000">Понад 2 000 ₴</option>
+          </select>
+        </div>
+
         <!-- Тип виробу -->
         <div>
           <label for="mobile-select-type" class="block text-[11px] uppercase tracking-wider font-semibold text-stone-600 mb-1.5">Тип виробу</label>
@@ -441,10 +542,10 @@
             <span class="bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium text-stoneDark shadow">🔍 Натисніть для перегляду</span>
           </div>
         </div>
-        <div id="modal-thumbnails" class="mt-4 flex gap-2 overflow-x-auto"></div>
+        <div id="modal-thumbnails" class="mt-4 flex gap-2.5 overflow-x-auto py-1.5 px-1 -mx-1 no-scrollbar"></div>
       </div>
 
-      <div class="w-full md:w-1/2 p-6 overflow-y-auto flex flex-col justify-between space-y-6">
+      <div id="modal-details-col" class="w-full md:w-1/2 p-6 overflow-y-auto flex flex-col justify-between space-y-6">
         <div>
           <div class="flex items-center gap-2 mb-2">
             <span id="modal-status-badge" class="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"></span>
@@ -466,15 +567,29 @@
 
         <div class="border-t border-craft pt-4">
           <div id="modal-action-buttons" class="space-y-2">
-            <button 
-              type="button" 
-              onclick="shareCurrentProduct()" 
-              class="w-full py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white text-stoneDark hover:bg-craft/60 border border-craft shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
-              <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-              </svg>
-              <span id="share-btn-text">Поділитися прикрасою</span>
-            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button 
+                id="modal-btn-favorite"
+                type="button" 
+                onclick="toggleModalFavorite()" 
+                class="w-full py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white text-stoneDark hover:bg-craft/60 border border-craft shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <svg id="modal-fav-icon" class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                <span id="modal-fav-text">В обране</span>
+              </button>
+
+              <button 
+                id="modal-share-btn"
+                type="button" 
+                onclick="shareCurrentProduct()" 
+                class="w-full py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white text-stoneDark hover:bg-craft/60 border border-craft shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+                <span id="share-btn-text">Поділитися</span>
+              </button>
+            </div>
 
             <div class="grid grid-cols-2 gap-2">
               <a id="modal-btn-instagram" href="#" target="_blank" class="block text-center py-3 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">Instagram</a>
@@ -485,25 +600,70 @@
             </button>
           </div>
 
-          <div id="modal-quick-order" class="hidden space-y-2.5">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-semibold uppercase tracking-wider text-stoneDark">Швидке замовлення</span>
-              <button type="button" onclick="hideQuickOrderForm()" class="text-xs text-stone-500 hover:text-stoneDark underline">Повернутися</button>
+          <div id="modal-quick-order" class="hidden">
+            <div id="order-form-fields" class="space-y-2.5">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-semibold uppercase tracking-wider text-stoneDark">Швидке замовлення</span>
+                <button type="button" onclick="hideQuickOrderForm()" class="text-xs text-stone-500 hover:text-stoneDark underline">Повернутися</button>
+              </div>
+              
+              <!-- Поле-пастка для спам-ботів (Honeypot) -->
+              <input type="text" id="order-cust-hp" name="order_hp_check" style="display:none!important;position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+              <input type="text" id="order-cust-name" placeholder="Ваше ім'я *" autocomplete="name" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
+              <div>
+                <input 
+                  type="tel" 
+                  id="order-cust-phone" 
+                  autocomplete="tel" 
+                  class="w-full bg-white border border-craft rounded-xl px-3.5 py-2.5 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition shadow-xs" 
+                />
+                <div class="text-[10px] text-stone-400 mt-1 pl-1">Україна та міжнародна доставка (Viber, WhatsApp, Telegram)</div>
+              </div>
+              <input type="text" id="order-cust-comment" placeholder="Коментар, країна/місто доставки або розмір" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
+
+              <div id="order-form-alert" class="hidden text-xs py-1.5 px-2 rounded"></div>
+
+              <button id="btn-submit-order" onclick="submitQuickOrder()" class="w-full py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">
+                Підтвердити замовлення
+              </button>
             </div>
-            
-            <!-- Поле-пастка для спам-ботів (Honeypot) -->
-            <input type="text" id="order-cust-hp" name="order_hp_check" style="display:none!important;position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
-            <input type="text" id="order-cust-name" placeholder="Ваше ім'я *" autocomplete="name" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
-            <input type="tel" id="order-cust-phone" placeholder="Номер телефону (дзвінок / Viber) *" autocomplete="tel" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
-            <input type="text" id="order-cust-comment" placeholder="Коментар або розмір (необов'язково)" class="w-full bg-white border border-craft rounded-xl px-3.5 py-2 text-xs text-stoneDark focus:outline-none focus:border-stoneDark transition" />
-
-            <div id="order-form-alert" class="hidden text-xs py-1.5 px-2 rounded"></div>
-
-            <button id="btn-submit-order" onclick="submitQuickOrder()" class="w-full py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">
-              Підтвердити замовлення
-            </button>
+            <!-- ЕКРАН УСПІХУ ШВИДКОГО ЗАМОВЛЕННЯ -->
+            <div id="order-success-view" class="hidden py-4 text-center space-y-3.5 animate-success-pop">
+              <div class="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-bold border border-emerald-200/60 shadow-sm">
+                ✓
+              </div>
+              <div class="space-y-1">
+                <h4 class="font-serif font-bold text-lg text-stoneDark">Замовлення прийнято!</h4>
+                <p id="order-success-msg" class="text-xs text-stone-600 leading-relaxed px-1">
+                  Дякуємо! Ваше замовлення успішно передано майстрині Тетяні.
+                </p>
+                <p id="order-success-phone" class="text-[11px] text-stone-400">
+                  Зв'яжемося з вами найближчим часом для узгодження деталей.
+                </p>
+              </div>
+              <div class="pt-2 flex flex-col gap-2">
+                <a id="order-success-tg-link" href="https://t.me/tatianata91" target="_blank" class="w-full py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition flex items-center justify-center gap-1.5">
+                  <span>💬</span> Написати майстрині в Telegram
+                </a>
+                <button type="button" onclick="closeModal()" class="w-full py-2 px-3 rounded-xl text-xs text-stone-500 hover:text-stoneDark transition">
+                  Продовжити перегляд прикрас →
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <!-- БЛОК РЕКОМЕНДАЦІЙ (ІНШІ КОЛЬОРИ ТА СХОЖІ РОБОТИ) -->
+        <div id="modal-related-section" class="border-t border-craft pt-4 hidden">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-semibold uppercase tracking-wider text-stoneDark flex items-center gap-1.5">
+              <span id="modal-related-icon">✨</span>
+              <span id="modal-related-title-text">Інші кольори та схожі роботи</span>
+            </span>
+          </div>
+          <div id="modal-related-list" class="grid grid-cols-3 gap-2 sm:gap-2.5"></div>
         </div>
       </div>
     </div>
@@ -574,6 +734,47 @@
     </div>
   </aside>
 
-  <script src="script.js?v=pill-text-fix2"></script>
+  <!-- МОДАЛЬНЕ ВІКНО «ПОДІЛИТИСЯ» (ДЛЯ СОЦМЕРЕЖ / HTTP) -->
+  <div id="share-dialog" class="fixed inset-0 z-[120] hidden items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-fade-in" onclick="if(event.target.id==='share-dialog')closeShareDialog()">
+    <div class="bg-linen rounded-2xl border border-craft shadow-2xl p-5 w-full max-w-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-serif font-bold text-base text-stoneDark flex items-center gap-2">
+          <span>📤</span> Поділитися прикрасою
+        </h3>
+        <button type="button" onclick="closeShareDialog()" class="w-7 h-7 rounded-full bg-craft/60 hover:bg-craft flex items-center justify-center text-xs text-stoneDark">
+          ✕
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2.5 pt-1">
+        <a id="share-link-tg" href="#" target="_blank" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white border border-craft hover:bg-stone-50 transition text-center shadow-xs">
+          <span class="text-2xl">✈️</span>
+          <span class="text-[11px] font-semibold text-stone-700">Telegram</span>
+        </a>
+        <a id="share-link-viber" href="#" target="_blank" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white border border-craft hover:bg-stone-50 transition text-center shadow-xs">
+          <span class="text-2xl">💜</span>
+          <span class="text-[11px] font-semibold text-stone-700">Viber</span>
+        </a>
+        <a id="share-link-wa" href="#" target="_blank" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white border border-craft hover:bg-stone-50 transition text-center shadow-xs">
+          <span class="text-2xl">💬</span>
+          <span class="text-[11px] font-semibold text-stone-700">WhatsApp</span>
+        </a>
+      </div>
+
+      <div class="pt-2 border-t border-craft/80 flex flex-col gap-2">
+        <button type="button" onclick="copyShareUrlDirectly()" class="w-full py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition flex items-center justify-center gap-2 shadow-xs">
+          <span id="share-dialog-copy-text">📋 Скопіювати посилання</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ПЛАВАЮЧИЙ TOAST ДЛЯ СПОВІЩЕНЬ -->
+  <div id="toast-notification" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[150] pointer-events-none transition-all duration-300 opacity-0 translate-y-3 flex items-center gap-2 px-4 py-2.5 rounded-full bg-stone-900/90 text-white text-xs font-medium shadow-xl backdrop-blur">
+    <span id="toast-icon">✨</span>
+    <span id="toast-message">Сповіщення</span>
+  </div>
+
+  <script src="script.js?v=clean-sort-v2"></script>
 </body>
 </html>

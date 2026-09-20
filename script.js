@@ -38,11 +38,358 @@ function getOptimizedImageUrl(url, width = 600, quality = 85) {
     return url;
 }
 
+// --- УНІВЕРСАЛЬНИЙ TOAST ДЛЯ СПОВІЩЕНЬ ---
+let toastTimeout = null;
+function showToast(message, icon = '✨') {
+    const toast = document.getElementById('toast-notification');
+    const toastMsg = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
+    if (!toast) return;
+
+    if (toastIcon) toastIcon.innerText = icon;
+    if (toastMsg) toastMsg.innerText = message;
+
+    toast.classList.add('show');
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2800);
+}
+
+// --- КРОСПЛАТФОРМЕНЕ КОПІЮВАННЯ (З ПІДТРИМКОЮ ЛОКАЛЬНИХ HTTP-МЕРЕЖ) ---
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    }
+    return new Promise((resolve, reject) => {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '0';
+        textArea.setAttribute('readonly', '');
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            if (successful) resolve();
+            else reject(new Error('execCommand failed'));
+        } catch (err) {
+            document.body.removeChild(textArea);
+            reject(err);
+        }
+    });
+}
+
 let allProducts = [];
+let currentFilteredProducts = [];
+const PRODUCTS_PER_PAGE = 12;
+let currentVisibleCount = PRODUCTS_PER_PAGE;
 let currentStockFilter = 'all';
 let currentProductMedia = [];
 let activeMediaIndex = 0;
 let activeModalProduct = null;
+
+// --- СИСТЕМА ОБРАНОГО (WISHLIST) ---
+function getStoredFavorites() {
+    try {
+        const stored = localStorage.getItem('rizdviana_favorites');
+        return stored ? JSON.parse(stored) : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveStoredFavorites(favs) {
+    try {
+        localStorage.setItem('rizdviana_favorites', JSON.stringify(Array.from(favs)));
+    } catch (e) {
+        console.warn('LocalStorage error:', e);
+    }
+}
+
+const favoriteIds = new Set(getStoredFavorites());
+
+function updateFavoritesBadges() {
+    const count = favoriteIds.size;
+    const deskBadge = document.getElementById('fav-count-badge-desktop');
+    const mobBadge = document.getElementById('fav-count-badge-mobile');
+    
+    if (deskBadge) {
+        deskBadge.innerText = count;
+        deskBadge.classList.toggle('hidden', count === 0);
+    }
+    if (mobBadge) {
+        mobBadge.innerText = count;
+        mobBadge.className = count > 0 ? 'text-[9px] font-bold text-red-600' : 'text-[9px] font-bold text-stone-500';
+    }
+}
+
+function toggleFavorite(productId, event) {
+    if (event) {
+        event.stopPropagation();
+        const targetBtn = event.currentTarget;
+        if (targetBtn) {
+            targetBtn.classList.add('heart-animate');
+            setTimeout(() => targetBtn.classList.remove('heart-animate'), 400);
+        }
+    }
+
+    if (favoriteIds.has(productId)) {
+        favoriteIds.delete(productId);
+    } else {
+        favoriteIds.add(productId);
+    }
+    saveStoredFavorites(favoriteIds);
+    updateFavoritesBadges();
+
+    if (currentStockFilter === 'favorites') {
+        applyFilters();
+    } else {
+        const cardBtns = document.querySelectorAll(`button[data-fav-id="${productId}"]`);
+        const isFav = favoriteIds.has(productId);
+        cardBtns.forEach(btn => {
+            const svg = btn.querySelector('svg');
+            if (isFav) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-label', 'Видалити з обраного');
+                btn.setAttribute('title', 'В обраному');
+                if (svg) {
+                    svg.classList.add('text-red-500', 'fill-red-500');
+                    svg.setAttribute('fill', 'currentColor');
+                }
+            } else {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-label', 'Додати в обране');
+                btn.setAttribute('title', 'Додати в обране');
+                if (svg) {
+                    svg.classList.remove('text-red-500', 'fill-red-500');
+                    svg.setAttribute('fill', 'none');
+                }
+            }
+        });
+    }
+
+    if (activeModalProduct && activeModalProduct.id === productId) {
+        updateModalFavoriteState(productId);
+    }
+}
+
+function updateModalFavoriteState(productId) {
+    const btn = document.getElementById('modal-btn-favorite');
+    const icon = document.getElementById('modal-fav-icon');
+    const text = document.getElementById('modal-fav-text');
+    if (!btn || !icon || !text) return;
+
+    const isFav = favoriteIds.has(productId);
+    if (isFav) {
+        btn.classList.add('border-red-300', 'bg-red-50/50');
+        icon.classList.remove('text-stone-400');
+        icon.classList.add('text-red-500', 'fill-red-500');
+        icon.setAttribute('fill', 'currentColor');
+        text.innerText = 'В обраному';
+    } else {
+        btn.classList.remove('border-red-300', 'bg-red-50/50');
+        icon.classList.add('text-stone-400');
+        icon.classList.remove('text-red-500', 'fill-red-500');
+        icon.setAttribute('fill', 'none');
+        text.innerText = 'В обране';
+    }
+}
+
+function toggleModalFavorite() {
+    if (!activeModalProduct) return;
+    toggleFavorite(activeModalProduct.id);
+}
+
+// --- НЕЩОДАВНО ПЕРЕГЛЯНУТІ ПРИКРАСИ (RECENTLY VIEWED) ---
+function getRecentlyViewedIds() {
+    try {
+        const stored = localStorage.getItem('rizdviana_recent');
+        return stored ? JSON.parse(stored) : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveRecentlyViewedId(id) {
+    if (!id) return;
+    try {
+        let list = getRecentlyViewedIds().filter(itemId => itemId !== id);
+        list.unshift(id);
+        list = list.slice(0, 6);
+        localStorage.setItem('rizdviana_recent', JSON.stringify(list));
+        renderRecentlyViewed();
+    } catch (e) {
+        console.warn('Recently viewed error:', e);
+    }
+}
+
+function clearRecentlyViewed() {
+    try {
+        localStorage.removeItem('rizdviana_recent');
+    } catch (e) {}
+    renderRecentlyViewed();
+    showToast("Історію перегляду очищено", "🧹");
+}
+
+function renderRecentlyViewed() {
+    const section = document.getElementById('recently-viewed-section');
+    const grid = document.getElementById('recently-viewed-grid');
+    if (!section || !grid || !allProducts || allProducts.length === 0) return;
+
+    const ids = getRecentlyViewedIds();
+    if (ids.length === 0) {
+        section.classList.add('hidden');
+        grid.innerHTML = '';
+        return;
+    }
+
+    const recentProducts = ids
+        .map(id => allProducts.find(p => p.id === id || p.slug === id))
+        .filter(Boolean);
+
+    if (recentProducts.length === 0) {
+        section.classList.add('hidden');
+        grid.innerHTML = '';
+        return;
+    }
+
+    section.classList.remove('hidden');
+    grid.innerHTML = recentProducts.map(p => {
+        const coverUrl = (p.media && p.media.length > 0) ? p.media[0].url : '';
+        const optCover = getOptimizedImageUrl(coverUrl, 300, 80);
+        return `
+            <div role="button" tabindex="0" onclick="openModal('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${p.id}')" class="recent-card bg-white rounded-xl overflow-hidden border border-craft p-2 cursor-pointer flex flex-col justify-between group focus:outline-none">
+                <div class="aspect-square bg-stone-100 rounded-lg overflow-hidden mb-2">
+                    <img src="${escapeAttr(optCover)}" alt="${escapeAttr(p.title)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                </div>
+                <div class="px-1 pb-0.5">
+                    <h4 class="font-serif font-semibold text-xs text-stoneDark group-hover:text-stone-600 transition truncate">${escapeHtml(p.title)}</h4>
+                    <span class="text-xs font-semibold text-stone-700 mt-0.5 block">${p.price} ₴</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// --- ЖИВИЙ ПОШУК (LIVE SEARCH) ---
+let searchQuery = '';
+
+function syncSearchAndApply(val) {
+    searchQuery = (val || '').trim();
+    const deskInput = document.getElementById('search-input-desktop');
+    const mobInput = document.getElementById('search-input-mobile');
+    const deskClear = document.getElementById('search-clear-desktop');
+    const mobClear = document.getElementById('search-clear-mobile');
+
+    if (deskInput && deskInput.value !== val) deskInput.value = val;
+    if (mobInput && mobInput.value !== val) mobInput.value = val;
+
+    if (deskClear) deskClear.classList.toggle('hidden', !searchQuery);
+    if (mobClear) mobClear.classList.toggle('hidden', !searchQuery);
+
+    applyFilters();
+}
+
+function clearSearch() {
+    syncSearchAndApply('');
+}
+
+// --- МІЖНАРОДНА БІБЛІОТЕКА ТЕЛЕФОНІВ (intl-tel-input) ---
+let itiInstance = null;
+
+function initPhoneInput() {
+    const phoneInput = document.getElementById('order-cust-phone');
+    if (!phoneInput || !window.intlTelInput || itiInstance) return;
+
+    try {
+        itiInstance = window.intlTelInput(phoneInput, {
+            initialCountry: "ua",
+            countryOrder: ["ua", "pl", "de", "us", "gb", "cz", "it", "es", "fr", "ca"],
+            separateDialCode: true,
+            autoPlaceholder: "aggressive",
+            strictMode: true,
+            i18n: {
+                searchPlaceholder: "Пошук країни або коду..."
+            },
+            loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js")
+        });
+
+        // Очищення дублювання коду при вставці або автозаповненні
+        phoneInput.addEventListener('input', () => {
+            if (!itiInstance) return;
+            const countryData = itiInstance.getSelectedCountryData();
+            if (!countryData || !countryData.dialCode) return;
+
+            const dialCode = countryData.dialCode;
+            let val = phoneInput.value;
+
+            // Якщо номер починається з плюса (наприклад автозаповнення вставило повний номер +380...)
+            if (val.trim().startsWith('+')) {
+                itiInstance.setNumber(val.trim());
+                return;
+            }
+
+            // Якщо користувач вводить з кодом країни або з 0 для України:
+            if (val.startsWith(dialCode) && val.length > dialCode.length + 2) {
+                phoneInput.value = val.slice(dialCode.length).trimStart();
+            } else if (dialCode === '380' && val.startsWith('0') && val.length > 1) {
+                phoneInput.value = val.slice(1).trimStart();
+            }
+        });
+
+        phoneInput.addEventListener('paste', (e) => {
+            const text = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+            if (text.trim().startsWith('+') && itiInstance) {
+                e.preventDefault();
+                itiInstance.setNumber(text.trim());
+            }
+        });
+    } catch (err) {
+        console.warn("Помилка ініціалізації intl-tel-input:", err);
+    }
+}
+
+// --- СЕНСОРНІ СВАЙПИ У МОДАЛЬНОМУ ВІКНІ ---
+let touchStartX = 0;
+let touchStartY = 0;
+let suppressModalZoom = false;
+
+function setupModalSwipe() {
+    const container = document.getElementById('modal-main-media');
+    if (!container || container.dataset.swipeInitialized) return;
+    container.dataset.swipeInitialized = 'true';
+
+    container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+        if (!currentProductMedia || currentProductMedia.length <= 1) return;
+        if (e.changedTouches.length === 1) {
+            const diffX = e.changedTouches[0].clientX - touchStartX;
+            const diffY = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+                suppressModalZoom = true;
+                setTimeout(() => { suppressModalZoom = false; }, 300);
+
+                if (diffX < 0) {
+                    const nextIndex = (activeMediaIndex + 1) % currentProductMedia.length;
+                    setActiveMedia(nextIndex);
+                } else {
+                    const prevIndex = (activeMediaIndex - 1 + currentProductMedia.length) % currentProductMedia.length;
+                    setActiveMedia(prevIndex);
+                }
+            }
+        }
+    }, { passive: true });
+}
 
 // Змінні масштабування та панорамування (Zoom & Pan)
 let isZoomed = false;
@@ -61,27 +408,22 @@ async function loadCatalog() {
     const grid = document.getElementById('products-grid');
 
     // Скелетони замість текстового рядка, щоб уникнути різкого зсуву висоти сторінки (CLS)
-    const skeletonCards = Array(12).fill(0).map(() => `
+    const skeletonCards = Array(PRODUCTS_PER_PAGE).fill(0).map(() => `
         <div class="bg-white rounded-2xl overflow-hidden border border-craft flex flex-col animate-pulse">
             <div class="aspect-square bg-craft/50"></div>
-            <div class="p-5 flex flex-col justify-between gap-4">
-                <div class="space-y-2.5">
-                    <div class="h-5 bg-craft/70 rounded w-3/4"></div>
-                    <div class="h-3 bg-craft/40 rounded w-full"></div>
-                    <div class="h-3 bg-craft/40 rounded w-2/3"></div>
+            <div class="p-2.5 sm:p-4 flex flex-col justify-between gap-2">
+                <div class="space-y-1.5">
+                    <div class="h-3.5 sm:h-4 bg-craft/70 rounded w-3/4"></div>
+                    <div class="h-3 sm:h-3.5 bg-craft/40 rounded w-1/2"></div>
                 </div>
-                <div class="pt-2">
-                    <div class="grid grid-cols-2 gap-2 mb-2">
-                        <div class="h-9 bg-craft/60 rounded-xl"></div>
-                        <div class="h-9 bg-craft/60 rounded-xl"></div>
-                    </div>
-                    <div class="h-8 bg-craft/40 rounded-xl"></div>
-                </div>
+                <div class="h-3.5 sm:h-4 bg-craft/60 rounded w-1/3 mt-2"></div>
             </div>
         </div>
     `).join('');
     
     grid.innerHTML = skeletonCards;
+    const loadMoreBox = document.getElementById('load-more-container');
+    if (loadMoreBox) loadMoreBox.classList.add('hidden');
 
     try {
         const { data, error } = await supabaseClient
@@ -97,7 +439,9 @@ async function loadCatalog() {
         if (error) throw error;
 
         allProducts = data || [];
+        updateFavoritesBadges();
         applyFilters();
+        renderRecentlyViewed();
 
         // Автоматичне відкриття прикраси за прямим посиланням у URL (?item=ID або ?item=slug)
         const urlParams = new URLSearchParams(window.location.search);
@@ -119,39 +463,58 @@ function setStockFilter(mode) {
     currentStockFilter = mode;
     updatePillPosition(mode);
     applyFilters();
+    scrollToCatalogTop(true);
 }
 
 function updatePillPosition(mode = currentStockFilter) {
     // Мобільний ковзний тумблер
+    const mobButtons = {
+        all: document.getElementById('filter-all-mobile'),
+        in_stock: document.getElementById('filter-stock-mobile'),
+        favorites: document.getElementById('filter-favorites-mobile')
+    };
     const mobPill = document.getElementById('stock-pill-mobile');
-    const mobAll = document.getElementById('filter-all-mobile');
-    const mobStock = document.getElementById('filter-stock-mobile');
+    const targetMob = mobButtons[mode];
 
-    if (mobPill && mobAll && mobStock) {
-        const activeBtn = mode === 'all' ? mobAll : mobStock;
-        const inactiveBtn = mode === 'all' ? mobStock : mobAll;
-
-        activeBtn.classList.add('active');
-        inactiveBtn.classList.remove('active');
-
-        mobPill.style.width = `${activeBtn.offsetWidth}px`;
-        mobPill.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+    if (mobPill && targetMob) {
+        Object.values(mobButtons).forEach(btn => btn?.classList.remove('active'));
+        targetMob.classList.add('active');
+        mobPill.style.width = `${targetMob.offsetWidth}px`;
+        mobPill.style.transform = `translateX(${targetMob.offsetLeft}px)`;
     }
 
     // Десктопний ковзний тумблер
+    const deskButtons = {
+        all: document.getElementById('filter-all'),
+        in_stock: document.getElementById('filter-stock'),
+        favorites: document.getElementById('filter-favorites')
+    };
     const deskPill = document.getElementById('stock-pill-desktop');
-    const deskAll = document.getElementById('filter-all');
-    const deskStock = document.getElementById('filter-stock');
+    const targetDesk = deskButtons[mode];
 
-    if (deskPill && deskAll && deskStock) {
-        const activeBtn = mode === 'all' ? deskAll : deskStock;
-        const inactiveBtn = mode === 'all' ? deskStock : deskAll;
+    if (deskPill && targetDesk) {
+        Object.values(deskButtons).forEach(btn => btn?.classList.remove('active'));
+        targetDesk.classList.add('active');
+        deskPill.style.width = `${targetDesk.offsetWidth}px`;
+        deskPill.style.transform = `translateX(${targetDesk.offsetLeft}px)`;
+    }
+}
 
-        activeBtn.classList.add('active');
-        inactiveBtn.classList.remove('active');
+// Плавне переміщення на початок каталогу після зміни фільтрів
+function scrollToCatalogTop(smooth = true) {
+    const catalogEl = document.getElementById('catalog');
+    if (!catalogEl) return;
 
-        deskPill.style.width = `${activeBtn.offsetWidth}px`;
-        deskPill.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+    const stickyHeader = document.getElementById('sticky-header');
+    const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 54;
+    const catalogTop = catalogEl.getBoundingClientRect().top + window.pageYOffset;
+    const targetScrollY = Math.max(0, Math.round(catalogTop - headerHeight - 10));
+
+    if (Math.abs(window.pageYOffset - targetScrollY) > 30) {
+        window.scrollTo({
+            top: targetScrollY,
+            behavior: smooth ? 'smooth' : 'auto'
+        });
     }
 }
 
@@ -161,6 +524,7 @@ function syncFilterAndApply(field, val) {
     if (desktopEl && desktopEl.value !== val) desktopEl.value = val;
     if (mobileEl && mobileEl.value !== val) mobileEl.value = val;
     applyFilters();
+    scrollToCatalogTop(true);
 }
 
 function syncSortAndApply(val) {
@@ -169,6 +533,7 @@ function syncSortAndApply(val) {
     if (desktopSort && desktopSort.value !== val) desktopSort.value = val;
     if (mobileSort && mobileSort.value !== val) mobileSort.value = val;
     applyFilters();
+    scrollToCatalogTop(true);
 }
 
 function openMobileFilters() {
@@ -198,10 +563,12 @@ function closeMobileFilters() {
     setTimeout(() => {
         drawer.classList.add('hidden');
         document.body.style.overflow = '';
+        scrollToCatalogTop(true);
     }, 300);
 }
 
 function applyFilters() {
+    const budget = document.getElementById('select-budget')?.value || document.getElementById('mobile-select-budget')?.value || '';
     const type = document.getElementById('select-type')?.value || document.getElementById('mobile-select-type')?.value || '';
     const ornament = document.getElementById('select-ornament')?.value || document.getElementById('mobile-select-ornament')?.value || '';
     const shape = document.getElementById('select-shape')?.value || document.getElementById('mobile-select-shape')?.value || '';
@@ -209,6 +576,7 @@ function applyFilters() {
     const color = document.getElementById('select-color')?.value || document.getElementById('mobile-select-color')?.value || '';
     const sortBy = document.getElementById('select-sort')?.value || document.getElementById('select-sort-mobile')?.value || 'newest';
 
+    const cleanBudget = budget ? budget.trim() : '';
     const cleanColor = color ? color.trim().toLowerCase() : '';
     const cleanType = type ? type.trim().toLowerCase() : '';
     const cleanOrnament = ornament ? ornament.trim().toLowerCase() : '';
@@ -216,6 +584,7 @@ function applyFilters() {
     const cleanWidth = width ? width.trim().toLowerCase() : '';
 
     let activeFilterCount = 0;
+    if (cleanBudget) activeFilterCount++;
     if (cleanType) activeFilterCount++;
     if (cleanOrnament) activeFilterCount++;
     if (cleanShape) activeFilterCount++;
@@ -229,11 +598,9 @@ function applyFilters() {
             badge.innerText = activeFilterCount;
             badge.classList.remove('hidden');
             badge.classList.add('inline-flex');
-            trigger.classList.add('border-stoneDark', 'bg-craft/40');
         } else {
             badge.classList.add('hidden');
             badge.classList.remove('inline-flex');
-            trigger.classList.remove('border-stoneDark', 'bg-craft/40');
         }
     }
 
@@ -242,8 +609,30 @@ function applyFilters() {
         drawerCount.innerText = activeFilterCount > 0 ? `(${activeFilterCount} акт.)` : '';
     }
 
+    const searchQuery = (document.getElementById('search-input-desktop')?.value || document.getElementById('search-input-mobile')?.value || '').trim();
+
     let filtered = allProducts.filter(item => {
+        // Фільтр за наявністю / обраним
         if (currentStockFilter === 'in_stock' && item.status !== 'in_stock') return false;
+        if (currentStockFilter === 'favorites' && !favoriteIds.has(item.id)) return false;
+
+        // Фільтр за бюджетом
+        const price = Number(item.price) || 0;
+        if (cleanBudget === 'under1000' && price >= 1000) return false;
+        if (cleanBudget === '1000-2000' && (price < 1000 || price > 2000)) return false;
+        if (cleanBudget === 'above2000' && price <= 2000) return false;
+
+        // Пошук за ключовими словами
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const matchTitle = (item.title || '').toLowerCase().includes(q);
+            const matchDesc = (item.description || '').toLowerCase().includes(q);
+            const matchMaterials = (item.materials || '').toLowerCase().includes(q);
+            const matchType = (item.product_type || '').toLowerCase().includes(q);
+            const matchColors = Array.isArray(item.colors) && item.colors.some(c => String(c).toLowerCase().includes(q));
+            if (!matchTitle && !matchDesc && !matchMaterials && !matchType && !matchColors) return false;
+        }
+
         if (cleanType && (!item.product_type || item.product_type.trim().toLowerCase() !== cleanType)) return false;
         if (cleanOrnament && (!item.ornament || item.ornament.trim().toLowerCase() !== cleanOrnament)) return false;
         if (cleanShape && (!item.shape || item.shape.trim().toLowerCase() !== cleanShape)) return false;
@@ -257,6 +646,12 @@ function applyFilters() {
     });
 
     filtered.sort((a, b) => {
+        if (sortBy === 'newest') {
+            const aStock = a.status === 'in_stock' ? 1 : 0;
+            const bStock = b.status === 'in_stock' ? 1 : 0;
+            if (aStock !== bStock) return bStock - aStock; // в наявності спочатку
+            return new Date(b.created_at) - new Date(a.created_at); // потім найновіші
+        }
         if (sortBy === 'price_asc') return (Number(a.price) || 0) - (Number(b.price) || 0);
         if (sortBy === 'price_desc') return (Number(b.price) || 0) - (Number(a.price) || 0);
         if (sortBy === 'title_asc') return (a.title || '').localeCompare(b.title || '', 'uk');
@@ -274,25 +669,211 @@ function applyFilters() {
         countMob.innerText = `Знайдено робіт: ${filtered.length}`;
     }
 
+    currentFilteredProducts = filtered;
+    currentVisibleCount = PRODUCTS_PER_PAGE;
     renderProducts(filtered);
+
+    // Захист від втрати огляду/зсуву у футер: якщо користувач опинився нижче оновленого списку
+    const catalogEl = document.getElementById('catalog');
+    if (catalogEl && allProducts.length > 0) {
+        const stickyHeader = document.getElementById('sticky-header');
+        const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 54;
+        const targetScrollY = Math.max(0, Math.round(catalogEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 10));
+        const catalogBottom = catalogEl.offsetTop + catalogEl.offsetHeight;
+
+        if (window.pageYOffset > catalogBottom - 150) {
+            window.scrollTo({
+                top: targetScrollY,
+                behavior: 'smooth'
+            });
+        }
+    }
 }
 
 function resetFilters() {
-    ['type', 'ornament', 'shape', 'width', 'color'].forEach(field => {
+    ['budget', 'type', 'ornament', 'shape', 'width', 'color'].forEach(field => {
         const d = document.getElementById(`select-${field}`);
         const m = document.getElementById(`mobile-select-${field}`);
         if (d) d.value = '';
         if (m) m.value = '';
     });
+    const dSort = document.getElementById('select-sort');
+    const mSort = document.getElementById('select-sort-mobile');
+    if (dSort) dSort.value = 'newest';
+    if (mSort) mSort.value = 'newest';
+    clearSearch();
+    currentVisibleCount = PRODUCTS_PER_PAGE;
     setStockFilter('all');
+    scrollToCatalogTop(true);
+}
+
+function buildProductCardHtml(product, index) {
+    const isInStock = product.status === 'in_stock';
+    const isFav = favoriteIds.has(product.id);
+    const sortedMedia = product.media ? [...product.media].sort((a, b) => a.display_order - b.display_order) : [];
+    
+    // Знаходимо перше фото для обкладинки
+    const firstImage = sortedMedia.find(m => m.media_type === 'image' && !m.url.endsWith('.mp4'));
+    const coverMedia = firstImage 
+        ? firstImage.url 
+        : (sortedMedia[0]?.url || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80');
+
+    const itemType = product.product_type ? product.product_type.toLowerCase() : 'прикраса';
+    const seoAlt = `${product.title} — авторська ${itemType} з бісеру ручної роботи, бренд RIZDVIANA.ART`;
+
+    const safeId = escapeAttr(product.id);
+    const safeTitle = escapeHtml(product.title);
+    const safePrice = escapeHtml(product.price);
+    const safeAlt = escapeAttr(seoAlt);
+    const safeTitleAttr = escapeAttr(`${product.title} — RIZDVIANA.ART`);
+
+    // Оптимізація розміру обкладинки для вітрини (швидкий рендер)
+    const optimizedCover = getOptimizedImageUrl(coverMedia, 500, 85);
+    const safeCoverMedia = escapeAttr(optimizedCover);
+
+    // LCP оптимізація (modern-web-guidance): перші 2 картки — кандидати LCP (fetchpriority="high"), наступні — eager
+    const isLcp = index < 2;
+    const isAboveFold = index < 4;
+    const loadingAttr = isAboveFold ? 'loading="eager"' : 'loading="lazy"';
+    const priorityAttr = isLcp ? 'fetchpriority="high"' : '';
+
+    return `
+        <div class="product-card group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col justify-between transition hover:shadow-md h-full w-full">
+            <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="relative aspect-square overflow-hidden bg-stone-100 flex items-center justify-center cursor-pointer focus:outline-none">
+                <img 
+                    src="${safeCoverMedia}" 
+                    alt="${safeAlt}" 
+                    title="${safeTitleAttr}"
+                    ${loadingAttr}
+                    ${priorityAttr}
+                    decoding="async"
+                    width="450"
+                    height="450"
+                    class="w-full h-full object-cover object-center transition duration-500 group-hover:scale-105" 
+                />
+                
+                <span class="absolute top-2 left-2 sm:top-3 sm:left-3 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full ${
+                    isInStock 
+                        ? 'bg-emerald-900/80 backdrop-blur text-emerald-100' 
+                        : 'bg-stone-800/80 backdrop-blur text-stone-300'
+                }">
+                    ${isInStock ? 'В наявності' : 'Під замовлення'}
+                </span>
+
+                <button 
+                    type="button" 
+                    data-fav-id="${safeId}"
+                    onclick="toggleFavorite('${safeId}', event)" 
+                    class="btn-favorite absolute top-2 right-2 sm:top-3 sm:right-3 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white backdrop-blur flex items-center justify-center shadow-xs transition ${isFav ? 'active' : ''}" 
+                    aria-label="${isFav ? 'Видалити з обраного' : 'Додати в обране'}"
+                    title="${isFav ? 'В обраному' : 'Додати в обране'}"
+                >
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition ${isFav ? 'text-red-500 fill-red-500' : 'text-stone-400'}" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </button>
+
+                ${sortedMedia.length > 1 ? `
+                    <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-stone-900/70 backdrop-blur px-1.5 py-0.5 sm:px-2 rounded-full text-[9px] sm:text-[10px] text-white">
+                        +${sortedMedia.length - 1}
+                    </div>
+                ` : ''}
+            </div>
+
+            <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="p-2.5 sm:p-4 flex flex-col flex-grow justify-between cursor-pointer focus:outline-none">
+                <div>
+                    <h3 class="font-serif font-semibold text-xs sm:text-base text-stoneDark group-hover:text-stone-600 transition line-clamp-2 leading-snug sm:leading-normal mb-1">
+                        ${safeTitle}
+                    </h3>
+                </div>
+                <div class="mt-1 sm:mt-2 flex items-baseline justify-between pt-1 border-t border-craft/50">
+                    <span class="font-semibold text-xs sm:text-sm text-stoneDark whitespace-nowrap">${safePrice} ₴</span>
+                    <span class="text-[10px] text-stone-400 group-hover:text-stone-600 transition hidden xs:inline">Детальніше →</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function updateLoadMoreUI(totalCount) {
+    const container = document.getElementById('load-more-container');
+    const currentEl = document.getElementById('load-more-current');
+    const totalEl = document.getElementById('load-more-total');
+    const progressEl = document.getElementById('load-more-progress');
+    const batchCountEl = document.getElementById('load-more-batch-count');
+    if (!container) return;
+
+    if (totalCount <= currentVisibleCount) {
+        container.classList.add('hidden');
+        return;
+    }
+
+    container.classList.remove('hidden');
+    const visibleNow = Math.min(currentVisibleCount, totalCount);
+    if (currentEl) currentEl.innerText = visibleNow;
+    if (totalEl) totalEl.innerText = totalCount;
+
+    const remaining = totalCount - visibleNow;
+    const nextBatch = Math.min(PRODUCTS_PER_PAGE, remaining);
+    if (batchCountEl) batchCountEl.innerText = `(+${nextBatch})`;
+
+    if (progressEl) {
+        const pct = Math.min(100, Math.round((visibleNow / totalCount) * 100));
+        progressEl.style.width = `${pct}%`;
+    }
+}
+
+function loadMoreProducts() {
+    const grid = document.getElementById('products-grid');
+    if (!grid || !currentFilteredProducts || currentFilteredProducts.length === 0) return;
+
+    const prevCount = currentVisibleCount;
+    currentVisibleCount += PRODUCTS_PER_PAGE;
+
+    const nextBatch = currentFilteredProducts.slice(prevCount, currentVisibleCount);
+    if (nextBatch.length > 0) {
+        const nextBatchHtml = nextBatch.map((product, idx) => buildProductCardHtml(product, prevCount + idx)).join('');
+        grid.insertAdjacentHTML('beforeend', nextBatchHtml);
+    }
+
+    updateLoadMoreUI(currentFilteredProducts.length);
 }
 
 function renderProducts(items) {
     const grid = document.getElementById('products-grid');
     const countEl = document.getElementById('items-count');
-    countEl.innerText = `Знайдено робіт: ${items.length}`;
+    const loadMoreContainer = document.getElementById('load-more-container');
+    if (countEl) countEl.innerText = `Знайдено робіт: ${items.length}`;
 
     if (items.length === 0) {
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+
+        if (currentStockFilter === 'favorites') {
+            grid.innerHTML = `
+                <div class="col-span-full py-16 text-center">
+                    <div class="text-4xl mb-3">❤️</div>
+                    <h3 class="font-serif font-bold text-lg text-stoneDark mb-2">У вас поки немає збережених прикрас</h3>
+                    <p class="text-stone-500 text-xs mb-4 max-w-md mx-auto">Натисніть сердечко на будь-якій прикрасі, щоб зберегти її тут для швидкого перегляду.</p>
+                    <button onclick="setStockFilter('all')" class="inline-flex items-center gap-1.5 px-4 py-2 bg-stoneDark text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm">
+                        Переглянути каталог
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        if (searchQuery) {
+            grid.innerHTML = `
+                <div class="col-span-full py-16 text-center">
+                    <p class="text-stone-500 text-sm mb-3">За запитом «<strong>${escapeHtml(searchQuery)}</strong>» виробів не знайдено</p>
+                    <button onclick="clearSearch()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-stoneDark text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm">
+                        ✕ Очистити пошук
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
         grid.innerHTML = `
             <div class="col-span-full py-16 text-center">
                 <p class="text-stone-400 text-sm mb-3">Виробів за обраними критеріями не знайдено</p>
@@ -304,102 +885,128 @@ function renderProducts(items) {
         return;
     }
 
-    grid.innerHTML = items.map((product, index) => {
-        const isInStock = product.status === 'in_stock';
-        const sortedMedia = product.media ? [...product.media].sort((a, b) => a.display_order - b.display_order) : [];
-        
-        // Знаходимо перше фото для обкладинки
+    const initialBatch = items.slice(0, currentVisibleCount);
+    grid.innerHTML = initialBatch.map((product, index) => buildProductCardHtml(product, index)).join('');
+    updateLoadMoreUI(items.length);
+}
+
+// --- СИСТЕМА РЕКОМЕНДАЦІЙ («ІНШІ КОЛЬОРИ ТА СХОЖІ РОБОТИ») ---
+function getCleanProductTitle(title) {
+    return (title || '')
+        .replace(/^(силянка|чокер|гердан|кутовий гердан|браслет)\s*/i, '')
+        .replace(/["«»']/g, '')
+        .trim();
+}
+
+function getProductBaseRoot(title) {
+    const clean = getCleanProductTitle(title);
+    return clean.split(/[:(]/)[0].trim();
+}
+
+function findProductRecommendations(target, all) {
+    if (!target || !all || all.length <= 1) return [];
+
+    const targetClean = getCleanProductTitle(target.title).toLowerCase();
+    const targetRoot = getProductBaseRoot(target.title).toLowerCase();
+    const rootWords = targetRoot.split(/\s+/).filter(w => w.length > 2);
+
+    const scored = all
+        .filter(p => p.id !== target.id && p.status !== 'archived')
+        .map(p => {
+            let score = 0;
+            let hasSeriesMatch = false;
+            const otherClean = getCleanProductTitle(p.title).toLowerCase();
+            const otherRoot = getProductBaseRoot(p.title).toLowerCase();
+            const otherWords = otherRoot.split(/\s+/).filter(w => w.length > 2);
+
+            // 1. Точний збіг кореня назви / серії (напр. «Сердечний оберіг», «Геометрія сердець», «Троянди по білому»)
+            if (targetRoot === otherRoot && targetRoot.length >= 4) {
+                score += 120;
+                hasSeriesMatch = true;
+            } else if (targetClean.startsWith(otherClean) || otherClean.startsWith(targetClean)) {
+                // Префіксний збіг (напр. «Дивоквіти» та «Дивоквіти рубінові», «Діамантовий» та «Діамантовий прозорий»)
+                score += 110;
+                hasSeriesMatch = true;
+            } else if (rootWords.length >= 2 && otherWords.length >= 2 && rootWords[0] === otherWords[0] && rootWords[1] === otherWords[1]) {
+                // Збіг перших двох слів (напр. «Класичні ромби блакитна» та «Класичні ромби малахітова»)
+                score += 100;
+                hasSeriesMatch = true;
+            } else if (rootWords.length >= 1 && otherWords.length >= 1 && rootWords[0].length >= 5 && rootWords[0] === otherWords[0]) {
+                // Збіг ключового першого слова від 5 літер (напр. «Баранці сріблясті» та «Баранці полум'яні», «Городенківська вишивка» та «Городенківська широка»)
+                score += 90;
+                hasSeriesMatch = true;
+            }
+
+            // 2. Вторинні параметри схожості (тип прикраси, орнамент, форма)
+            if (target.product_type && target.product_type === p.product_type) score += 10;
+            if (target.ornament && target.ornament === p.ornament) score += 8;
+            if (target.shape && target.shape === p.shape) score += 6;
+            if (p.status === 'in_stock') score += 2;
+
+            return { product: p, score, hasSeriesMatch };
+        })
+        .sort((a, b) => b.score - a.score);
+
+    return scored.slice(0, 3);
+}
+
+function renderModalRecommendations(product) {
+    const section = document.getElementById('modal-related-section');
+    const list = document.getElementById('modal-related-list');
+    const titleText = document.getElementById('modal-related-title-text');
+    const titleIcon = document.getElementById('modal-related-icon');
+    if (!section || !list) return;
+
+    const recs = findProductRecommendations(product, allProducts);
+    if (!recs || recs.length === 0) {
+        section.classList.add('hidden');
+        list.innerHTML = '';
+        return;
+    }
+
+    const hasSeriesMatch = recs.some(r => r.hasSeriesMatch);
+    if (titleText) {
+        titleText.innerText = hasSeriesMatch 
+            ? 'Інші кольори цієї серії' 
+            : 'Схожі авторські роботи';
+    }
+    if (titleIcon) {
+        titleIcon.innerText = hasSeriesMatch ? '🎨' : '✨';
+    }
+
+    list.innerHTML = recs.map(({ product: p }) => {
+        const isInStock = p.status === 'in_stock';
+        const sortedMedia = p.media ? [...p.media].sort((a, b) => a.display_order - b.display_order) : [];
         const firstImage = sortedMedia.find(m => m.media_type === 'image' && !m.url.endsWith('.mp4'));
-        const coverMedia = firstImage 
-            ? firstImage.url 
-            : (sortedMedia[0]?.url || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80');
+        const thumbUrl = firstImage ? firstImage.url : (sortedMedia[0]?.url || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80');
+        const optimizedThumb = getOptimizedImageUrl(thumbUrl, 240, 80);
 
-        const messageText = isInStock 
-            ? `Вітаю! Хочу придбати виріб "${product.title}" (${product.price} грн, в наявності).`
-            : `Вітаю! Мене зацікавив виріб "${product.title}" під замовлення. Хочу дізнатися деталі виготовлення.`;
-
-        const directUrl = `https://ig.me/m/${INSTAGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
-        const telegramUrl = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(messageText)}`;
-
-        const itemType = product.product_type ? product.product_type.toLowerCase() : 'прикраса';
-        const seoAlt = `${product.title} — авторська ${itemType} з бісеру ручної роботи, бренд RIZDVIANA.ART`;
-
-        const safeId = escapeAttr(product.id);
-        const safeTitle = escapeHtml(product.title);
-        const safePrice = escapeHtml(product.price);
-        const safeDesc = escapeHtml(product.description || '');
-        const safeDimensions = escapeHtml(product.dimensions || '—');
-        const safeAlt = escapeAttr(seoAlt);
-        const safeTitleAttr = escapeAttr(`${product.title} — RIZDVIANA.ART`);
-
-        // Оптимізація розміру обкладинки для вітрини (швидкий рендер)
-        const optimizedCover = getOptimizedImageUrl(coverMedia, 600, 85);
-        const safeCoverMedia = escapeAttr(optimizedCover);
-
-        // LCP оптимізація: перші 3 картки першого екрана вантажаться миттєво
-        const isAboveFold = index < 3;
-        const loadingAttr = isAboveFold ? 'loading="eager"' : 'loading="lazy"';
-        const priorityAttr = isAboveFold ? 'fetchpriority="high"' : 'fetchpriority="auto"';
+        const cleanTitle = p.title;
 
         return `
-            <div class="product-card group bg-white rounded-2xl overflow-hidden border border-craft flex flex-col transition hover:shadow-lg">
-                <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="relative aspect-square overflow-hidden bg-craft/20 flex items-center justify-center p-1.5 cursor-pointer focus:outline-none">
-                    <img 
-                        src="${safeCoverMedia}" 
-                        alt="${safeAlt}" 
-                        title="${safeTitleAttr}"
-                        ${loadingAttr}
-                        ${priorityAttr}
-                        decoding="async"
-                        width="400"
-                        height="400"
-                        class="w-full h-full object-contain transition duration-500 group-hover:scale-105" 
-                    />
-                    
-                    <span class="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                        isInStock 
-                            ? 'bg-emerald-900/80 backdrop-blur text-emerald-100' 
-                            : 'bg-stone-800/80 backdrop-blur text-stone-300'
-                    }">
-                        ${isInStock ? 'В наявності' : 'Під замовлення'}
+            <div onclick="openModal('${escapeAttr(p.id)}')" 
+                 class="group cursor-pointer flex flex-col p-1.5 sm:p-2 rounded-xl border border-craft/80 bg-white/70 hover:bg-white hover:border-stone-400 hover:shadow-sm transition active:scale-95 text-left"
+                 title="${escapeAttr(p.title)}">
+                <div class="aspect-square bg-craft/30 rounded-lg overflow-hidden relative mb-1.5 border border-craft/50">
+                    <img src="${escapeAttr(optimizedThumb)}" 
+                         alt="${escapeAttr(p.title)}" 
+                         class="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
+                         loading="lazy" />
+                    <span class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-semibold leading-none ${isInStock ? 'bg-emerald-900/85 text-emerald-100' : 'bg-stone-900/75 text-stone-200'}">
+                        ${isInStock ? 'В наявності' : 'На замовлення'}
                     </span>
-
-                    ${sortedMedia.length > 1 ? `
-                        <div class="absolute bottom-3 right-3 bg-stone-900/70 backdrop-blur px-2 py-0.5 rounded-full text-[10px] text-white">
-                            +${sortedMedia.length - 1} фото/відео
-                        </div>
-                    ` : ''}
                 </div>
-
-                <div class="p-5 flex flex-col flex-grow justify-between gap-4">
-                    <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="cursor-pointer focus:outline-none">
-                        <div class="flex items-baseline justify-between gap-2 mb-1">
-                            <h3 class="font-serif font-bold text-lg text-stoneDark group-hover:text-stone-600 transition">${safeTitle}</h3>
-                            <span class="font-semibold text-base whitespace-nowrap text-stoneDark">${safePrice} ₴</span>
-                        </div>
-                        <p class="text-xs text-stone-500 line-clamp-2 mb-3">${safeDesc}</p>
-                        <div class="text-[11px] text-stone-400 space-y-1 border-t border-craft pt-3">
-                            <div><strong class="text-stone-600">Розміри:</strong> ${safeDimensions}</div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-2 pt-2">
-                        <div class="grid grid-cols-2 gap-2">
-                            <a href="${directUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-stoneDark text-white hover:bg-stone-800 transition">
-                                Instagram
-                            </a>
-                            <a href="${telegramUrl}" target="_blank" class="text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-craft text-stoneDark hover:bg-stone-200 transition">
-                                Telegram
-                            </a>
-                        </div>
-                        <button onclick="openModalWithOrder('${safeId}')" class="w-full text-center py-2 px-3 rounded-xl text-xs font-medium text-stone-600 hover:text-stoneDark hover:bg-craft/50 border border-craft transition flex items-center justify-center gap-1.5">
-                            <span>📞</span> Швидке замовлення
-                        </button>
-                    </div>
+                <div class="text-[10px] sm:text-[11px] font-medium text-stoneDark line-clamp-2 leading-tight group-hover:text-stone-600 transition mb-1 flex-1">
+                    ${escapeHtml(cleanTitle)}
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-bold text-stone-800">
+                    ${p.price} ₴
                 </div>
             </div>
         `;
     }).join('');
+
+    section.classList.remove('hidden');
 }
 
 // --- КАРТКА ТОВАРУ ТА ШВИДКЕ ЗАМОВЛЕННЯ ---
@@ -461,10 +1068,28 @@ function openModal(productId) {
         : [{ url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80', media_type: 'image' }];
 
     activeMediaIndex = 0;
+    updateModalFavoriteState(product.id);
     renderModalCardMedia();
+    setupModalSwipe();
+    saveRecentlyViewedId(product.id);
+    renderModalRecommendations(product);
 
-    document.getElementById('product-modal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    // Скидаємо скрол модального вікна на самий верх при відкритті або перемиканні прикрас
+    const modal = document.getElementById('product-modal');
+    if (modal) modal.scrollTop = 0;
+    const detailsCol = document.getElementById('modal-details-col');
+    if (detailsCol) detailsCol.scrollTop = 0;
+
+    const showModal = () => {
+        document.getElementById('product-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.startViewTransition(showModal);
+    } else {
+        showModal();
+    }
 }
 
 function openModalWithOrder(productId) {
@@ -475,9 +1100,26 @@ function openModalWithOrder(productId) {
 function showQuickOrderForm() {
     document.getElementById('modal-action-buttons').classList.add('hidden');
     document.getElementById('modal-quick-order').classList.remove('hidden');
+    
+    // Скидаємо екран успіху назад на форму вводу
+    const formFields = document.getElementById('order-form-fields');
+    const successView = document.getElementById('order-success-view');
+    if (formFields) formFields.classList.remove('hidden');
+    if (successView) successView.classList.add('hidden');
+
+    const submitBtn = document.getElementById('btn-submit-order');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Підтвердити замовлення";
+        submitBtn.classList.remove('hidden');
+    }
+
+    initPhoneInput();
     const alertBox = document.getElementById('order-form-alert');
-    alertBox.className = 'hidden text-xs py-1.5 px-2 rounded';
-    alertBox.innerText = '';
+    if (alertBox) {
+        alertBox.className = 'hidden text-xs py-1.5 px-2 rounded';
+        alertBox.innerText = '';
+    }
 }
 
 function hideQuickOrderForm() {
@@ -497,19 +1139,19 @@ async function submitQuickOrder() {
 
     // Антиспам-пастка: якщо бот заповнив приховане поле, імітуємо успіх без запису в базу
     if (hpInput && hpInput.value.trim() !== '') {
-        alertBox.className = 'text-xs py-2 px-2.5 rounded bg-emerald-100 text-emerald-800 block';
-        alertBox.innerText = "✅ Дякуємо! Замовлення прийнято. Майстриня зв'яжеться з вами найближчим часом.";
+        const formFields = document.getElementById('order-form-fields');
+        const successView = document.getElementById('order-success-view');
+        if (formFields && successView) {
+            formFields.classList.add('hidden');
+            successView.classList.remove('hidden');
+        }
         nameInput.value = '';
-        phoneInput.value = '';
+        if (itiInstance) itiInstance.setNumber(''); else phoneInput.value = '';
         commInput.value = '';
-        setTimeout(() => {
-            closeModal();
-        }, 1500);
         return;
     }
 
     const name = nameInput.value.trim();
-    const phone = phoneInput.value.trim();
     const comment = commInput.value.trim();
 
     if (!name) {
@@ -518,15 +1160,29 @@ async function submitQuickOrder() {
         return;
     }
 
-    // Надійна валідація номера (Україна або міжнародний)
-    const digits = phone.replace(/\D/g, '');
-    const isUaValid = digits.startsWith('380') && digits.length === 12;
-    const isIntlValid = !digits.startsWith('380') && digits.length >= 10 && digits.length <= 15;
-
-    if (!isUaValid && !isIntlValid) {
+    const rawVal = phoneInput.value.trim();
+    if (!rawVal) {
         alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
-        alertBox.innerText = "Введіть коректний номер: +380 (XX) XXX-XX-XX або міжнародний (+48...)";
+        alertBox.innerText = "Будь ласка, введіть номер телефону.";
         return;
+    }
+
+    let fullPhone = '';
+    if (itiInstance) {
+        // Перевіряємо валідність номера для обраної країни
+        if (typeof itiInstance.isValidNumber === 'function' && itiInstance.isValidNumber() === false) {
+            alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
+            alertBox.innerText = "Вкажіть коректний номер телефону для обраної країни.";
+            return;
+        }
+        fullPhone = itiInstance.getNumber() || rawVal;
+    } else {
+        if (rawVal.replace(/\D/g, '').length < 7) {
+            alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
+            alertBox.innerText = "Вкажіть коректний номер телефону.";
+            return;
+        }
+        fullPhone = rawVal;
     }
 
     submitBtn.disabled = true;
@@ -540,26 +1196,34 @@ async function submitQuickOrder() {
                 product_title: activeModalProduct.title,
                 product_price: activeModalProduct.price,
                 customer_name: name,
-                customer_phone: phone,
+                customer_phone: fullPhone,
                 customer_comment: comment || null
             });
 
         if (error) throw error;
 
-        alertBox.className = 'text-xs py-2 px-2.5 rounded bg-emerald-100 text-emerald-800 block';
-        alertBox.innerText = "✅ Дякуємо! Замовлення прийнято. Майстриня зв'яжеться з вами найближчим часом.";
+        // Показуємо повноцінний преміальний екран успіху
+        const formFields = document.getElementById('order-form-fields');
+        const successView = document.getElementById('order-success-view');
+        const successMsg = document.getElementById('order-success-msg');
+        const successPhone = document.getElementById('order-success-phone');
+
+        if (formFields && successView) {
+            formFields.classList.add('hidden');
+            successView.classList.remove('hidden');
+            if (successMsg) {
+                successMsg.innerHTML = `Дякуємо, <b>${escapeHtml(name)}</b>! Ваше замовлення на «<b>${escapeHtml(activeModalProduct.title)}</b>» успішно прийнято.`;
+            }
+            if (successPhone) {
+                successPhone.innerHTML = `Майстриня Тетяна зв'яжеться з вами за номером <b>${escapeHtml(fullPhone)}</b> (дзвінок / Viber / Telegram) для узгодження деталей.`;
+            }
+        }
         
         nameInput.value = '';
-        phoneInput.value = '';
+        if (itiInstance) itiInstance.setNumber(''); else phoneInput.value = '';
         commInput.value = '';
-        submitBtn.classList.add('hidden');
 
-        setTimeout(() => {
-            closeModal();
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Підтвердити замовлення";
-            submitBtn.classList.remove('hidden');
-        }, 3500);
+        showToast("Замовлення успішно прийнято! 🎉", "✅");
 
     } catch (err) {
         alertBox.className = 'text-xs py-1.5 px-2.5 rounded bg-red-100 text-red-700 block';
@@ -602,8 +1266,8 @@ function renderModalCardMedia() {
     if (total > 1) {
         thumbsContainer.classList.remove('hidden');
         thumbsContainer.innerHTML = currentProductMedia.map((m, idx) => `
-            <button onclick="event.stopPropagation(); setActiveMedia(${idx})" class="w-12 h-12 rounded-lg overflow-hidden border-2 flex-shrink-0 relative transition ${
-                idx === activeMediaIndex ? 'border-stoneDark ring-1 ring-stoneDark opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+            <button onclick="event.stopPropagation(); setActiveMedia(${idx})" class="w-12 h-12 rounded-xl overflow-hidden border-2 flex-shrink-0 relative transition ${
+                idx === activeMediaIndex ? 'border-stoneDark shadow-sm opacity-100' : 'border-craft/80 opacity-60 hover:opacity-100'
             }">
                 ${m.media_type === 'video' || m.url.endsWith('.mp4')
                     ? `<div class="w-full h-full bg-stone-800 text-white flex items-center justify-center text-[9px]">▶</div>`
@@ -622,8 +1286,6 @@ function setActiveMedia(index) {
 }
 
 function closeModal() {
-    document.getElementById('product-modal').classList.add('hidden');
-    document.body.style.overflow = '';
     const videoEl = document.querySelector('#modal-main-media video');
     if (videoEl) videoEl.pause();
     activeModalProduct = null;
@@ -634,11 +1296,24 @@ function closeModal() {
     if (new URLSearchParams(window.location.search).has('item')) {
         window.history.pushState({}, '', window.location.pathname);
     }
+
+    const hideModal = () => {
+        document.getElementById('product-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.startViewTransition(hideModal);
+    } else {
+        hideModal();
+    }
 }
 
 function handleBackdropClick(e) {
     if (e.target.id === 'product-modal') closeModal();
 }
+
+let currentShareUrl = '';
 
 // --- ФУНКЦІЯ «ПОДІЛИТИСЯ ПРИКРАСОЮ» ---
 function shareCurrentProduct() {
@@ -649,31 +1324,72 @@ function shareCurrentProduct() {
     const shareTitle = `${activeModalProduct.title} — RIZDVIANA.ART`;
     const shareText = `Авторська прикраса з бісеру «${activeModalProduct.title}» від RIZDVIANA.ART`;
 
-    if (navigator.share) {
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    // Якщо браузер підтримує нативний Web Share API (наприклад, на мобільному з HTTPS)
+    if (isMobileDevice && typeof navigator.share === 'function' && window.isSecureContext) {
         navigator.share({
             title: shareTitle,
             text: shareText,
             url: shareUrl
         }).catch((err) => {
-            if (err.name !== 'AbortError') copyLinkFallback(shareUrl);
+            if (err.name !== 'AbortError') {
+                openShareDialog(shareUrl, shareTitle, shareText);
+            }
         });
     } else {
-        copyLinkFallback(shareUrl);
+        // Якщо Web Share недоступний (наприклад, локальне HTTP-тестування або ПК)
+        openShareDialog(shareUrl, shareTitle, shareText);
     }
 }
 
-function copyLinkFallback(url) {
-    navigator.clipboard.writeText(url).then(() => {
-        const btnText = document.getElementById('share-btn-text');
-        if (btnText) {
-            const oldText = btnText.innerText;
-            btnText.innerText = "✅ Посилання скопійовано!";
+function openShareDialog(url, title, text) {
+    const dialog = document.getElementById('share-dialog');
+    const tgLink = document.getElementById('share-link-tg');
+    const viberLink = document.getElementById('share-link-viber');
+    const waLink = document.getElementById('share-link-wa');
+    const copyText = document.getElementById('share-dialog-copy-text');
+
+    currentShareUrl = url;
+
+    const fullMessage = `${text} — ${url}`;
+    const encUrl = encodeURIComponent(url);
+    const encText = encodeURIComponent(fullMessage);
+
+    if (tgLink) tgLink.href = `https://t.me/share/url?url=${encUrl}&text=${encodeURIComponent(title)}`;
+    if (viberLink) viberLink.href = `viber://forward?text=${encText}`;
+    if (waLink) waLink.href = `https://api.whatsapp.com/send?text=${encText}`;
+
+    if (copyText) copyText.innerText = "📋 Скопіювати посилання";
+
+    if (dialog) {
+        dialog.classList.remove('hidden');
+        dialog.classList.add('flex');
+    }
+}
+
+function closeShareDialog() {
+    const dialog = document.getElementById('share-dialog');
+    if (dialog) {
+        dialog.classList.add('hidden');
+        dialog.classList.remove('flex');
+    }
+}
+
+function copyShareUrlDirectly() {
+    if (!currentShareUrl) return;
+    copyToClipboard(currentShareUrl).then(() => {
+        const copyText = document.getElementById('share-dialog-copy-text');
+        if (copyText) {
+            copyText.innerText = "✅ Скопійовано!";
             setTimeout(() => {
-                btnText.innerText = oldText;
-            }, 2500);
+                copyText.innerText = "📋 Скопіювати посилання";
+                closeShareDialog();
+            }, 1000);
         }
+        showToast("Посилання на прикрасу скопійовано!", "📋");
     }).catch(() => {
-        prompt("Скопіюйте посилання на виріб:", url);
+        prompt("Скопіюйте посилання на виріб:", currentShareUrl);
     });
 }
 
@@ -694,9 +1410,78 @@ window.addEventListener('popstate', (e) => {
 });
 
 // --- ПОКРАЩЕНА ГАЛЕРЕЯ ТА ЗУМ (ВИКОРИСТОВУЄ ОРИГІНАЛЬНУ ЯКІСТЬ) ---
+let lightboxSwipeStartX = 0;
+let lightboxSwipeStartY = 0;
+let isLightboxSwiping = false;
+let suppressLightboxClick = false;
+
+function setupLightboxSwipe() {
+    const container = document.getElementById('zoom-container');
+    if (!container || container.dataset.swipeInitialized) return;
+    container.dataset.swipeInitialized = 'true';
+
+    container.addEventListener('touchstart', (e) => {
+        if (isZoomed) return;
+        if (e.touches.length === 1) {
+            lightboxSwipeStartX = e.touches[0].clientX;
+            lightboxSwipeStartY = e.touches[0].clientY;
+            isLightboxSwiping = true;
+        }
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+        if (!isLightboxSwiping || isZoomed || e.touches.length !== 1) return;
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const diffX = currentX - lightboxSwipeStartX;
+        const diffY = currentY - lightboxSwipeStartY;
+
+        // Легке зміщення фото пальцем для відчуття відгуку інтерфейсу
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 8) {
+            const activeImg = document.getElementById('activeZoomImg');
+            if (activeImg) {
+                activeImg.style.transition = 'none';
+                activeImg.style.transform = `translateX(${diffX * 0.4}px)`;
+            }
+        }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+        if (!isLightboxSwiping || isZoomed) return;
+        isLightboxSwiping = false;
+
+        const activeImg = document.getElementById('activeZoomImg');
+        if (activeImg) {
+            activeImg.style.transition = 'transform 0.25s cubic-bezier(0.2, 0, 0.2, 1)';
+            activeImg.style.transform = 'translate(0px, 0px) scale(1)';
+        }
+
+        if (e.changedTouches.length === 1) {
+            const diffX = e.changedTouches[0].clientX - lightboxSwipeStartX;
+            const diffY = e.changedTouches[0].clientY - lightboxSwipeStartY;
+            const total = currentProductMedia ? currentProductMedia.length : 0;
+
+            if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+                suppressLightboxClick = true;
+                setTimeout(() => { suppressLightboxClick = false; }, 300);
+
+                if (total > 1) {
+                    if (diffX < 0) {
+                        nextZoomMedia();
+                    } else {
+                        prevZoomMedia();
+                    }
+                }
+            }
+        }
+    }, { passive: true });
+}
+
 function openZoom(index = 0) {
+    if (suppressModalZoom) return;
     activeMediaIndex = index;
     renderZoomGallery();
+    setupLightboxSwipe();
 
     const zoomLightbox = document.getElementById('zoom-lightbox');
     zoomLightbox.style.display = 'flex';
@@ -753,7 +1538,7 @@ function renderZoomGallery() {
 function setupZoomAndPan(img) {
     img.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (hasDragged || wasJustDragging) return;
+        if (hasDragged || wasJustDragging || suppressLightboxClick) return;
 
         if (isZoomed) {
             resetZoomImg(img);
@@ -908,7 +1693,7 @@ window.addEventListener('touchend', () => {
 });
 
 function handleZoomOverlayClick(e) {
-    if (wasJustDragging || hasDragged) return;
+    if (wasJustDragging || hasDragged || suppressLightboxClick) return;
     if (mousedownTargetOnBackdrop && (e.target.id === 'zoom-lightbox' || e.target.id === 'zoom-container')) {
         closeZoom(e);
     }
@@ -1026,56 +1811,9 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- РОЗУМНА МАСКА НОМЕРА ТЕЛЕФОНУ (УКРАЇНА ТА МІЖНАРОДНИЙ ФОРМАТ) ---
+// --- МІЖНАРОДНА БІБЛІОТЕКА ТЕЛЕФОНІВ (intl-tel-input) ІНІЦІАЛІЗАЦІЯ ---
 function initPhoneMask() {
-    const phoneInput = document.getElementById('order-cust-phone');
-    if (!phoneInput) return;
-
-    phoneInput.addEventListener('input', function(e) {
-        let val = e.target.value;
-
-        // Якщо користувач вводить або вставляє міжнародний номер з "+", що не є кодом України
-        // (наприклад +48, +1, +49), дозволяємо вільний міжнародний ввід без примусу до +380
-        if (val.startsWith('+') && !val.startsWith('+380') && !val.startsWith('+38') && !val.startsWith('+3')) {
-            e.target.value = '+' + val.replace(/[^\d\s-]/g, '').substring(1, 18);
-            return;
-        }
-
-        let digits = val.replace(/\D/g, '');
-
-        if (digits.startsWith('0')) {
-            digits = '38' + digits;
-        } else if (!digits.startsWith('380') && digits.length > 0) {
-            if (!digits.startsWith('38') && !digits.startsWith('3')) {
-                digits = '380' + digits;
-            }
-        }
-
-        digits = digits.substring(0, 12);
-
-        let formatted = '';
-        if (digits.length > 0) formatted = '+' + digits.substring(0, 3);
-        if (digits.length > 3) formatted += ' (' + digits.substring(3, 5);
-        if (digits.length >= 5) formatted += ') ' + digits.substring(5, 8);
-        if (digits.length >= 8) formatted += '-' + digits.substring(8, 10);
-        if (digits.length >= 10) formatted += '-' + digits.substring(10, 12);
-
-        e.target.value = formatted;
-    });
-
-    phoneInput.addEventListener('focus', function(e) {
-        if (!e.target.value.trim()) {
-            e.target.value = '+380 (';
-        }
-    });
-
-    phoneInput.addEventListener('blur', function(e) {
-        const val = e.target.value.trim();
-        const digits = val.replace(/\D/g, '');
-        if (digits === '380' || digits === '38' || digits === '3' || digits === '' || val === '+') {
-            e.target.value = '';
-        }
-    });
+    initPhoneInput();
 }
 
 // --- СМАРТ-ПІДКАЗКА ВСТАНОВЛЕННЯ ДЛЯ IOS SAFARI (PWA) ---
