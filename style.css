@@ -58,6 +58,13 @@ body {
   }
 }
 
+@media (min-width: 1024px) {
+  #header-logo {
+    height: 62px;
+    max-width: 250px;
+  }
+}
+
 #header-tagline {
   display: block;
   max-height: 26px;
@@ -87,6 +94,16 @@ body {
   }
 }
 
+@media (min-width: 1024px) {
+  #header-tagline {
+    max-height: 34px;
+    font-size: 0.8rem;
+    letter-spacing: 0.26em;
+    margin-top: 0.4rem;
+    margin-bottom: 0.3rem;
+  }
+}
+
 #header-nav {
   padding-top: 0.2rem;
   padding-bottom: 0.2rem;
@@ -102,6 +119,15 @@ body {
     padding-bottom: 0.25rem;
     gap: 1.25rem;
     font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  #header-nav {
+    padding-top: 0.45rem;
+    padding-bottom: 0.35rem;
+    gap: 2rem;
+    font-size: 0.82rem;
   }
 }
 

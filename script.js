@@ -757,17 +757,17 @@ function buildProductCardHtml(product, index) {
                     class="w-full h-full object-cover object-center transition duration-500 group-hover:scale-105" 
                 />
                 
-                <div class="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-wrap items-center gap-1 sm:gap-1.5 z-10 pointer-events-none pr-8">
+                <div class="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-wrap items-center gap-1 sm:gap-1.5 z-10 pointer-events-none pr-9">
                     ${product.is_top ? `
-                        <span class="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-bold tracking-wider px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-xs backdrop-blur border border-amber-300/30">
+                        <span class="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs font-bold tracking-wider px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-xs backdrop-blur border border-amber-300/40">
                             <span class="text-[10px] sm:text-xs leading-none">🔥</span>
-                            <span>Топ</span>
+                            <span>Топ<span class="hidden sm:inline"> продажів</span></span>
                         </span>
                     ` : ''}
-                    <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full ${
+                    <span class="text-[9px] sm:text-xs font-semibold uppercase tracking-wider px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full ${
                         isInStock 
-                            ? 'bg-emerald-900/80 backdrop-blur text-emerald-100' 
-                            : 'bg-stone-800/80 backdrop-blur text-stone-300'
+                            ? 'bg-emerald-900/85 backdrop-blur text-emerald-100 shadow-xs' 
+                            : 'bg-stone-800/85 backdrop-blur text-stone-300 shadow-xs'
                     }">
                         ${isInStock ? 'В наявності' : 'Під замовлення'}
                     </span>
@@ -777,31 +777,31 @@ function buildProductCardHtml(product, index) {
                     type="button" 
                     data-fav-id="${safeId}"
                     onclick="toggleFavorite('${safeId}', event)" 
-                    class="btn-favorite absolute top-2 right-2 sm:top-3 sm:right-3 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white backdrop-blur flex items-center justify-center shadow-xs transition ${isFav ? 'active' : ''}" 
+                    class="btn-favorite absolute top-2 right-2 sm:top-3 sm:right-3 z-10 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/85 hover:bg-white backdrop-blur flex items-center justify-center shadow-xs hover:shadow-sm transition ${isFav ? 'active' : ''}" 
                     aria-label="${isFav ? 'Видалити з обраного' : 'Додати в обране'}"
                     title="${isFav ? 'В обраному' : 'Додати в обране'}"
                 >
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition ${isFav ? 'text-red-500 fill-red-500' : 'text-stone-400'}" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 transition ${isFav ? 'text-red-500 fill-red-500' : 'text-stone-400'}" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                 </button>
 
                 ${sortedMedia.length > 1 ? `
-                    <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-stone-900/70 backdrop-blur px-1.5 py-0.5 sm:px-2 rounded-full text-[9px] sm:text-[10px] text-white">
+                    <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-stone-900/75 backdrop-blur px-1.5 py-0.5 sm:px-2 rounded-full text-[9px] sm:text-xs text-white">
                         +${sortedMedia.length - 1}
                     </div>
                 ` : ''}
             </div>
 
-            <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="p-2.5 sm:p-4 flex flex-col flex-grow justify-between cursor-pointer focus:outline-none">
+            <div role="button" tabindex="0" onclick="openModal('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('${safeId}')" class="p-2.5 sm:p-4 md:p-4.5 flex flex-col flex-grow justify-between cursor-pointer focus:outline-none">
                 <div>
-                    <h3 class="font-serif font-semibold text-xs sm:text-base text-stoneDark group-hover:text-stone-600 transition line-clamp-2 leading-snug sm:leading-normal mb-1">
+                    <h3 class="font-serif font-semibold text-xs sm:text-base md:text-lg text-stoneDark group-hover:text-stone-600 transition line-clamp-2 leading-snug mb-1">
                         ${safeTitle}
                     </h3>
                 </div>
                 <div class="mt-1 sm:mt-2 flex items-baseline justify-between pt-1 border-t border-craft/50">
-                    <span class="font-semibold text-xs sm:text-sm text-stoneDark whitespace-nowrap">${safePrice} ₴</span>
-                    <span class="text-[10px] text-stone-400 group-hover:text-stone-600 transition hidden xs:inline">Детальніше →</span>
+                    <span class="font-bold text-xs sm:text-base text-stoneDark whitespace-nowrap">${safePrice} ₴</span>
+                    <span class="text-[10px] sm:text-xs text-stone-400 group-hover:text-stone-600 transition hidden xs:inline">Детальніше →</span>
                 </div>
             </div>
         </div>
@@ -1065,10 +1065,10 @@ function openModal(productId) {
 
     const statusBadge = document.getElementById('modal-status-badge');
     if (isInStock) {
-        statusBadge.className = 'text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-900/80 text-emerald-100';
+        statusBadge.className = 'text-[11px] sm:text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-900/85 text-emerald-100 shadow-xs';
         statusBadge.innerText = 'В наявності';
     } else {
-        statusBadge.className = 'text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-stone-800/80 text-stone-300';
+        statusBadge.className = 'text-[11px] sm:text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-stone-800/85 text-stone-300 shadow-xs';
         statusBadge.innerText = 'Під замовлення';
     }
 
