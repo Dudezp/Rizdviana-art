@@ -650,6 +650,11 @@ function applyFilters() {
             const aStock = a.status === 'in_stock' ? 1 : 0;
             const bStock = b.status === 'in_stock' ? 1 : 0;
             if (aStock !== bStock) return bStock - aStock; // в наявності спочатку
+
+            const aTop = a.is_top ? 1 : 0;
+            const bTop = b.is_top ? 1 : 0;
+            if (aTop !== bTop) return bTop - aTop; // Топ продажів першими
+
             return new Date(b.created_at) - new Date(a.created_at); // потім найновіші
         }
         if (sortBy === 'price_asc') return (Number(a.price) || 0) - (Number(b.price) || 0);
@@ -752,13 +757,21 @@ function buildProductCardHtml(product, index) {
                     class="w-full h-full object-cover object-center transition duration-500 group-hover:scale-105" 
                 />
                 
-                <span class="absolute top-2 left-2 sm:top-3 sm:left-3 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full ${
-                    isInStock 
-                        ? 'bg-emerald-900/80 backdrop-blur text-emerald-100' 
-                        : 'bg-stone-800/80 backdrop-blur text-stone-300'
-                }">
-                    ${isInStock ? 'В наявності' : 'Під замовлення'}
-                </span>
+                <div class="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-wrap items-center gap-1 sm:gap-1.5 z-10 pointer-events-none pr-8">
+                    ${product.is_top ? `
+                        <span class="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-bold tracking-wider px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-xs backdrop-blur border border-amber-300/30">
+                            <span class="text-[10px] sm:text-xs leading-none">🔥</span>
+                            <span>Топ</span>
+                        </span>
+                    ` : ''}
+                    <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full ${
+                        isInStock 
+                            ? 'bg-emerald-900/80 backdrop-blur text-emerald-100' 
+                            : 'bg-stone-800/80 backdrop-blur text-stone-300'
+                    }">
+                        ${isInStock ? 'В наявності' : 'Під замовлення'}
+                    </span>
+                </div>
 
                 <button 
                     type="button" 
@@ -992,6 +1005,11 @@ function renderModalRecommendations(product) {
                          alt="${escapeAttr(p.title)}" 
                          class="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
                          loading="lazy" />
+                    ${p.is_top ? `
+                        <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold leading-none bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-xs">
+                            🔥 Топ
+                        </span>
+                    ` : ''}
                     <span class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-semibold leading-none ${isInStock ? 'bg-emerald-900/85 text-emerald-100' : 'bg-stone-900/75 text-stone-200'}">
                         ${isInStock ? 'В наявності' : 'На замовлення'}
                     </span>
@@ -1033,6 +1051,17 @@ function openModal(productId) {
     document.getElementById('modal-materials').innerText = product.materials || '—';
     document.getElementById('modal-dimensions').innerText = product.dimensions || '—';
     document.getElementById('modal-shape-type').innerText = `${product.product_type || ''} (${product.shape || 'Стандартна'}, ширина: ${product.width_size || '—'})`;
+
+    const topBadge = document.getElementById('modal-top-badge');
+    if (topBadge) {
+        if (product.is_top) {
+            topBadge.classList.remove('hidden');
+            topBadge.classList.add('inline-flex');
+        } else {
+            topBadge.classList.add('hidden');
+            topBadge.classList.remove('inline-flex');
+        }
+    }
 
     const statusBadge = document.getElementById('modal-status-badge');
     if (isInStock) {
