@@ -40,9 +40,41 @@ export async function onRequest(context) {
     const primaryImage = images.length > 0 ? images[0].url : (media[0]?.url || '');
 
     const itemType = (product.product_type || 'прикраса').toLowerCase();
-    const title = `${product.title} — авторська ${itemType} з бісеру | RIZDVIANA.ART`;
-    const desc = product.description || `Авторська ${itemType} «${product.title}» ручної роботи від майстерні RIZDVIANA.ART. Якісний бісер, автентичний орнамент. Ціна: ${product.price} ₴.`;
+    
+    // Визначаємо англійську категорію та цільові теги
+    let enType = "Ukrainian Beaded Folk Jewelry";
+    let tags = "#прикрасизбісеру #українськіприкраси #до_вишиванки #beadedjewelry #ukrainianjewelry #folkjewelry #rizdviana";
+    
+    if (itemType.includes("силянк")) {
+      enType = "Ukrainian Sylyanka Beaded Necklace";
+      tags = "#силянка #силянказбісеру #українськіприкраси #до_вишиванки #beadedjewelry #sylyanka #ukrainianjewelry #seedbeadnecklace #folkjewelry #rizdviana";
+    } else if (itemType.includes("гердан")) {
+      enType = "Traditional Ukrainian Beaded Gerdan Necklace";
+      tags = "#гердан #герданзбісеру #українськіприкраси #до_вишиванки #beadedjewelry #gerdan #ukrainianjewelry #folkjewelry #rizdviana";
+    } else if (itemType.includes("чокер")) {
+      enType = "Handmade Seed Bead Choker Necklace";
+      tags = "#чокер #чокерзбісеру #прикрасизбісеру #beadedchoker #seedbeadjewelry #handmadechoker #rizdviana";
+    } else if (itemType.includes("браслет")) {
+      enType = "Handmade Beaded Bracelet";
+      tags = "#браслет #браслетзбісеру #прикрасизбісеру #beadedbracelet #handmadejewelry #rizdviana";
+    }
+
+    const title = `${product.title} — ${enType} | RIZDVIANA.ART`;
+    
+    const rawDesc = (product.description || '').trim();
+    const priceText = product.price ? `Ціна: ${product.price} ₴.` : '';
+    const uaPart = rawDesc 
+      ? `${rawDesc} ${priceText}`.trim()
+      : `Авторська ${itemType} «${product.title}» ручної роботи від майстерні RIZDVIANA.ART. Якісний чеський та японський бісер, автентичний орнамент. ${priceText}`.trim();
+      
+    const enPart = `Handmade ${enType} by RIZDVIANA.ART. High-quality seed beads, authentic Ukrainian folk design. Worldwide shipping. Order directly on rizdviana.art.`;
+
+    const fullDesc = `${uaPart}\n\n✨ ${enPart}\n\n${tags}`;
     const pageUrl = url.href;
+
+    const escapeAttr = (str) => String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const safeDesc = escapeAttr(fullDesc);
+    const safeTitle = escapeAttr(title);
 
     let rewriter = new HTMLRewriter()
       .on('title', {
@@ -57,7 +89,7 @@ export async function onRequest(context) {
       })
       .on('meta[property="og:description"]', {
         element(el) {
-          el.setAttribute('content', desc);
+          el.setAttribute('content', fullDesc);
         }
       })
       .on('meta[property="og:url"]', {
@@ -67,7 +99,7 @@ export async function onRequest(context) {
       })
       .on('meta[name="description"]', {
         element(el) {
-          el.setAttribute('content', desc);
+          el.setAttribute('content', fullDesc);
         }
       })
       .on('meta[name="twitter:title"]', {
@@ -77,7 +109,7 @@ export async function onRequest(context) {
       })
       .on('meta[name="twitter:description"]', {
         element(el) {
-          el.setAttribute('content', desc);
+          el.setAttribute('content', fullDesc);
         }
       });
 
@@ -99,13 +131,13 @@ export async function onRequest(context) {
             el.append(`<meta property="og:image:width" content="1000" />`, { html: true });
             el.append(`<meta property="og:image:height" content="1500" />`, { html: true });
             el.append(`<meta name="pinterest:image" content="${primaryImage}" />`, { html: true });
+            el.append(`<meta name="pinterest:description" content="${safeDesc}" />`, { html: true });
           }
         })
         .on('body', {
           element(el) {
-            // Pinterest web picker explicitly looks for <img> tags in the HTML with portrait/square aspect ratio
             const imgTags = images.slice(0, 5).map((img, i) => 
-              `<img src="${img.url}" alt="${product.title} фото ${i+1}" width="800" height="1200" style="position:absolute;left:-9999px;top:-9999px;width:800px;height:1200px;opacity:0.01;pointer-events:none;" />`
+              `<img src="${img.url}" alt="${safeTitle} photo ${i+1}" data-pin-description="${safeDesc}" data-pin-title="${safeTitle}" data-pin-url="${pageUrl}" data-pin-media="${img.url}" width="800" height="1200" style="position:absolute;left:-9999px;top:-9999px;width:800px;height:1200px;opacity:0.01;pointer-events:none;" />`
             ).join('');
             el.prepend(imgTags, { html: true });
           }
