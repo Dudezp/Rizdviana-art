@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
     <title>RIZDVIANA.ART — Традиційні та сучасні прикраси з бісеру</title>
     <link>https://rizdviana.art/</link>
@@ -7,255 +7,331 @@
     <language>uk</language>
     <atom:link href="https://rizdviana.art/feed.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Силянка &quot;Червоний орнамент&quot;</title>
+      <link>https://rizdviana.art/?item=prod-2242d368</link>
+      <guid isPermaLink="false">prod-2242d368</guid>
+      <pubDate>Wed, 23 Sep 2026 20:01:11 +0000</pubDate>
+      <description>Широка яскрава силянка з акцентним узором геометричних квітів, що так нагадує класичні вишиті сорочки. Прикрасить Вас до будь-якої події і додасть українського колориту.</description>
+      <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9256b71f-7260-4814-9e90-f5fc99d211bb.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9256b71f-7260-4814-9e90-f5fc99d211bb.jpg" medium="image" type="image/jpeg" />
+    </item>
+    <item>
       <title>Силянка &quot;Тонке мереживо&quot;</title>
       <link>https://rizdviana.art/?item=prod-d879500e</link>
       <guid isPermaLink="false">prod-d879500e</guid>
+      <pubDate>Wed, 23 Sep 2026 14:43:51 +0000</pubDate>
       <description>Ніжнесенька перлинна силянка для поціновувачок мінімалістичних прикрас🥰 нічого зайвого — ідеально для повсякденного образу, прекрасно поєднується з золотими ланцюжками з підвісами та перлинними сережками.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/03a66c5b-a82e-4859-aa9c-08aefe435cd9.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/03a66c5b-a82e-4859-aa9c-08aefe435cd9.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Авангард&quot;</title>
       <link>https://rizdviana.art/?item=prod-dcea76d1</link>
       <guid isPermaLink="false">prod-dcea76d1</guid>
+      <pubDate>Wed, 23 Sep 2026 14:39:36 +0000</pubDate>
       <description>Ця розкішна силянка - поєднання чорного, темного золота, бузкового та бірюзового - стане справжньою окрасою образу.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/97f37b07-0e40-4ca8-bcc4-754528a1958e.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/97f37b07-0e40-4ca8-bcc4-754528a1958e.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Приморська&quot;</title>
       <link>https://rizdviana.art/?item=prod-0614a993</link>
       <guid isPermaLink="false">prod-0614a993</guid>
+      <pubDate>Tue, 22 Sep 2026 14:24:57 +0000</pubDate>
       <description>Силянка не просто як декоративна прикраса, а як мистецтво, як картина, яка несе в собі спогади про море, про узбережжя Причорномор&#x27;я, про наш Азов. 
 Шум моря, крик чайок, гомін людей на пляжі...
 
 Силянка &quot;Приморська&quot; для таких як я, закоханих у море🌊</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3a2a29e5-24eb-4341-8b08-dff8be7cc03c.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3a2a29e5-24eb-4341-8b08-dff8be7cc03c.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Кольоровий букет&quot;</title>
       <link>https://rizdviana.art/?item=prod-716b34c9</link>
       <guid isPermaLink="false">prod-716b34c9</guid>
+      <pubDate>Tue, 22 Sep 2026 14:19:58 +0000</pubDate>
       <description>Презентую силянку - веснянку🌷 яскраві квіти, зібрані у букети на прозорому фоні поєднані з контрасним обрамлення низу. Така прикраса буде ідеальна як самостійний акцент до простих світлих сорочок, так і компаньоном до яскравих вишитих блуз. Квітів багато не буває, але ця силянка унікальна ❤️‍🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/fedfe355-d82b-4f07-837f-fd87c4a940f3.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/fedfe355-d82b-4f07-837f-fd87c4a940f3.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Івано-Франківська барвиста&quot;</title>
       <link>https://rizdviana.art/?item=prod-cc97058b</link>
       <guid isPermaLink="false">prod-cc97058b</guid>
+      <pubDate>Tue, 22 Sep 2026 13:13:02 +0000</pubDate>
       <description>Яскрава і одночасно тепла силянка з орнаментом за мотивами Івано-Франківщини. Ідеальна як для святкового, традиційного вбрання, так і як невелике доповнення, що м&#x27;яко промовляє, хто ми та звідки🫶🏼</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/1fc07553-fae0-44d8-944e-bfceff76d753.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/1fc07553-fae0-44d8-944e-bfceff76d753.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Білий орнамент&quot;</title>
       <link>https://rizdviana.art/?item=prod-002b73c4</link>
       <guid isPermaLink="false">prod-002b73c4</guid>
+      <pubDate>Tue, 22 Sep 2026 13:07:38 +0000</pubDate>
       <description>Силяночка з білого та прозорого бісеру ніби легке мереживо, а прозорі ронделі з райдужними блиском додадуть особливого мерехтіння під сонячними промінчиками💫
 
 Силянка доповнена довгими зав&#x27;язками з бісерними китичками, які можна використати як аксесуар — зав&#x27;язати китичками вперед або навіть додатково огорнути шию🥰</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/ddfd0823-a3ab-4a7f-97a9-2e785c4bb54d.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/ddfd0823-a3ab-4a7f-97a9-2e785c4bb54d.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Колоски осінні&quot;</title>
       <link>https://rizdviana.art/?item=prod-7f428210</link>
       <guid isPermaLink="false">prod-7f428210</guid>
+      <pubDate>Tue, 22 Sep 2026 12:53:37 +0000</pubDate>
       <description>Силянка, що вже багатьом полюбилася, у новому кольоровому поєднанні. Я взяла для фону глибокий чорнильно-фіолетовий, такий темний, що майже чорний, і піщано-гірчичний для колосків. Разом ці кольори створили небанальну композицію, таку співзвучну до осінніх образів.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/2dc9c05e-39c5-4ca1-bda5-323579c7f683.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/2dc9c05e-39c5-4ca1-bda5-323579c7f683.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Літній дощ&quot;</title>
       <link>https://rizdviana.art/?item=prod-adf73fab</link>
       <guid isPermaLink="false">prod-adf73fab</guid>
+      <pubDate>Tue, 22 Sep 2026 12:47:48 +0000</pubDate>
       <description>Силянки вже стали не просто прикрасами з елементами етно, а справжнім сучасним мистецтвом. Ця силянка називається &quot;Дощ&quot; — на темному грозовому тлі яскраві квіти, соковита зелень, вкрита срібними краплями дощу. Мерехтливий бісер посилює ефект &quot;вологості&quot; і ось у нас вже не просто прикраса, а цілий живопис, картина з ароматом літньої грози💚</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/fb52acbd-c367-4443-ae29-4cf9cbefafb4.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/fb52acbd-c367-4443-ae29-4cf9cbefafb4.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Кудряві пташечки&quot;</title>
       <link>https://rizdviana.art/?item=prod-81e3c61b</link>
       <guid isPermaLink="false">prod-81e3c61b</guid>
+      <pubDate>Mon, 21 Sep 2026 07:04:58 +0000</pubDate>
       <description>Нова силянка з цікавими пташками 🔥 Здавна птахи були символом доброї звістки, оберегом дому та родини, саме тому цей мотив знову набирає популярності вже сьогодні, вже всі ми чекаємо добрих новин і оберігаємо рідних. Я взяла теплий коричневий матовий колір у поєднанні з бежевим — натуральні, природні кольори, які пасують всім.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/73b16c54-c71f-4627-b810-e6832c2ce4ed.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/73b16c54-c71f-4627-b810-e6832c2ce4ed.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Трояндовий мотив&quot;</title>
       <link>https://rizdviana.art/?item=prod-0a03801e</link>
       <guid isPermaLink="false">prod-0a03801e</guid>
+      <pubDate>Sun, 20 Sep 2026 19:23:31 +0000</pubDate>
       <description>Червоні троянди, вплетені в темряву, — наче спогад, що не втрачає кольору.
 Оригінальна силянка, що нагадує вишиті троянди з давніх сорочок стає традиційною прикрасою у сучасному баченні.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/574592e6-ec54-42d4-aaa0-8adea7d6c55d.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/574592e6-ec54-42d4-aaa0-8adea7d6c55d.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Колоски на зеленому&quot;</title>
       <link>https://rizdviana.art/?item=prod-38adb8cf</link>
       <guid isPermaLink="false">prod-38adb8cf</guid>
+      <pubDate>Sun, 20 Sep 2026 18:07:29 +0000</pubDate>
       <description>Перший варіант колосків був дуже популярний, повторювала його декілька разів🌿 тому вирішила спробувати ще інший варіант дизайну. В цей раз взяла райдужних бісер для фону і ніжний бежевий для колосків. Лаконічна краса, здається ця силянка не потребує навіть епітетів🌾</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/87de6c4b-56ae-4008-92e5-f15642d66f1d.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/87de6c4b-56ae-4008-92e5-f15642d66f1d.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Волошкове поле&quot;</title>
       <link>https://rizdviana.art/?item=prod-c630da83</link>
       <guid isPermaLink="false">prod-c630da83</guid>
+      <pubDate>Thu, 17 Sep 2026 20:07:28 +0000</pubDate>
       <description>Польові квіти —це щось про рідне, тепле, знайоме з дитинства. Ці чарівні волошки з колосками неодмінно прикрасять вас і подарують теплі спогади про літо🩵🌾</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c4a2facb-8169-4201-bdc6-be0c9aaa7734.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c4a2facb-8169-4201-bdc6-be0c9aaa7734.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Квітчаста вишивка&quot;</title>
       <link>https://rizdviana.art/?item=prod-37a979d1</link>
       <guid isPermaLink="false">prod-37a979d1</guid>
+      <pubDate>Thu, 17 Sep 2026 19:59:27 +0000</pubDate>
       <description>Силянка, що поєднала геометричний орнамент з квітковими мотивами. Візерунок, що ніби зійшов з рукава вишитої сорочки і легко додасть автентичності будь-якому сучасному образу.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/02fd64b9-adf4-45c1-b378-8fd38adc04be.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/02fd64b9-adf4-45c1-b378-8fd38adc04be.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сердечний оберіг: червоний вогник&quot;</title>
       <link>https://rizdviana.art/?item=prod-b03bda58</link>
       <guid isPermaLink="false">prod-b03bda58</guid>
+      <pubDate>Thu, 17 Sep 2026 19:51:33 +0000</pubDate>
       <description>Популярна модель у новому кольорі🔥 
 Класика у новому баченні — я взяла прозору основу, стійкий золотий бісер та червоний матовий вогник, його особливе, делікатне сяйво надає прикрасі особливої чарівності.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/90154378-ce6f-4dcb-984f-5ade889abeee.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/90154378-ce6f-4dcb-984f-5ade889abeee.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сердечний оберіг: смарагдове сяйво&quot;</title>
       <link>https://rizdviana.art/?item=prod-d609b5a3</link>
       <guid isPermaLink="false">prod-d609b5a3</guid>
+      <pubDate>Thu, 17 Sep 2026 19:46:03 +0000</pubDate>
       <description>Популярна модель у новому відтінку✨ сяючий смарагдовий у поєднанні з золотом на класичному чорному тлі — справжня королівська комбінація🤌🏼</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9082a248-ffdf-43c4-9cd8-c4a7b675240f.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9082a248-ffdf-43c4-9cd8-c4a7b675240f.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сердечний оберіг: засніжений гранат&quot;</title>
       <link>https://rizdviana.art/?item=prod-51e0e30b</link>
       <guid isPermaLink="false">prod-51e0e30b</guid>
+      <pubDate>Tue, 15 Sep 2026 17:34:16 +0000</pubDate>
       <description>Популярна модель у новому кольоровому рішенні: мерехтливий червоний з білим на сяючому прозорому тлі. Блиск, як у справжніх коштовностей❤️‍🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/b7bdd735-1a6d-4b09-ad07-61ee4cd6e999.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/b7bdd735-1a6d-4b09-ad07-61ee4cd6e999.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сердечний оберіг: біле золото&quot;</title>
       <link>https://rizdviana.art/?item=prod-4b778ab9</link>
       <guid isPermaLink="false">prod-4b778ab9</guid>
+      <pubDate>Tue, 15 Sep 2026 10:10:19 +0000</pubDate>
       <description>Ніжна прикраса, яка підійде буквально під все. Класичне поєднання золота та перлинного білого, а прозора основа додає сяйва.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/09d91d64-3816-4e5c-bc0e-7bac459ef0f4.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/09d91d64-3816-4e5c-bc0e-7bac459ef0f4.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сердечний оберіг: глибокий синій&quot;</title>
       <link>https://rizdviana.art/?item=prod-44f2ce76</link>
       <guid isPermaLink="false">prod-44f2ce76</guid>
+      <pubDate>Tue, 15 Sep 2026 10:06:23 +0000</pubDate>
       <description>Популярна модель у новому кольорі — глибокий синій з перлинним покриттям💙</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3593a1fa-178f-43f5-971e-23c9524dd788.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3593a1fa-178f-43f5-971e-23c9524dd788.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сердечний оберіг: волошковий лід&quot;</title>
       <link>https://rizdviana.art/?item=prod-92f42bf9</link>
       <guid isPermaLink="false">prod-92f42bf9</guid>
+      <pubDate>Mon, 14 Sep 2026 20:33:57 +0000</pubDate>
       <description>Невагома як хмаринка, силянка у спокійних відтінках синього та прозорого стане сильними аксесуаром до ваших образів у прохолодних відтінках. Кришталевий бісер та ронделі додають особливого сяйва✨</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/934ad757-7c9a-4fab-bf4e-aef77e86973f.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/934ad757-7c9a-4fab-bf4e-aef77e86973f.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка «Сердечний оберіг: цвіт абрикоса»</title>
       <link>https://rizdviana.art/?item=prod-01a0b9f1</link>
       <guid isPermaLink="false">prod-01a0b9f1</guid>
+      <pubDate>Mon, 14 Sep 2026 20:19:00 +0000</pubDate>
       <description>Кольори ніжні, немов квітки абрикосових дерев. Я взяла найніжніший рожевий, молочний і поєднала з рожевим металіком для більшої виразності. Справжня весняна краса❤️</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/eb144320-7386-47be-9924-31949eacfff9.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/eb144320-7386-47be-9924-31949eacfff9.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Вербовецька&quot;</title>
       <link>https://rizdviana.art/?item=prod-2cb8bad9</link>
       <guid isPermaLink="false">prod-2cb8bad9</guid>
+      <pubDate>Sun, 13 Sep 2026 22:27:45 +0000</pubDate>
       <description>Широка силянка зі стійкою під шию виконана в кольорах &quot;Вербовецької сорочки&quot;. Поєднання темно-синього і вишневого кольору здалеку грає пурпурними відтінками.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c780f373-43cf-4775-925f-17e6c6069381.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c780f373-43cf-4775-925f-17e6c6069381.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Бойківська традиція&quot;</title>
       <link>https://rizdviana.art/?item=prod-a744d8e1</link>
       <guid isPermaLink="false">prod-a744d8e1</guid>
+      <pubDate>Sun, 13 Sep 2026 22:23:29 +0000</pubDate>
       <description>Яскрава силянка, відтворення реальної давньої прикраси з Бойківщини. Широка як комірець, гарно заокруглена, можна носити як під шию так і під комір сорочки.
 Орнамент геометрично-рослинний, з квітковими мотивами, що нагадують вишивку. Квіти чергуються з ромбами і хрестиками- це традиційні символи родючості, захисту та гармонії. Край плетений ажурними кольоровими петельками.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/814fa96e-8b10-4bc4-8724-299b44b8b351.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/814fa96e-8b10-4bc4-8724-299b44b8b351.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Покуття традиційне&quot;</title>
       <link>https://rizdviana.art/?item=prod-20e08fda</link>
       <guid isPermaLink="false">prod-20e08fda</guid>
+      <pubDate>Sun, 13 Sep 2026 22:19:21 +0000</pubDate>
       <description>Яскрава силянка у традиційних кольорах Покуття❤️
 Гарно заокруглюється і чудово поєднується з іншими традиційними намистами.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9d39946f-c502-439b-9a08-4b0d27898f8e.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9d39946f-c502-439b-9a08-4b0d27898f8e.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Городенківська вишивка&quot;</title>
       <link>https://rizdviana.art/?item=prod-2ba5e775</link>
       <guid isPermaLink="false">prod-2ba5e775</guid>
+      <pubDate>Sun, 13 Sep 2026 22:16:26 +0000</pubDate>
       <description>Яскрава, традиційна силянка за мотивами знаменитої вишитої  сорочки з Покуття &quot;Волове око&quot;. Дуже нарядна, привертає увагу та безсумнівно прикрасить свою власницю❤️‍🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/6922b7c5-ecdf-4ddb-8f10-e4fbcecbaae5.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/6922b7c5-ecdf-4ddb-8f10-e4fbcecbaae5.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сонця квіти&quot;</title>
       <link>https://rizdviana.art/?item=prod-32090b31</link>
       <guid isPermaLink="false">prod-32090b31</guid>
+      <pubDate>Sun, 13 Sep 2026 17:46:06 +0000</pubDate>
       <description>Є безліч варіантів силянок з квітами — троянди, маки, нарциси, бузок, барвінок, бавовна... Фантазія безмежна! Але особливо популярні соняшники та маки, бо вони про щось рідне, про наші поля, про нашу землю🙏🏻
 Представляю вам один з варіантів соняхів з бісеру 🌻 одночасно парадна і проста, таку силянку легко можна додати і до вечірнього образу з сукнею, так і для повсякденного💫</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/8d92f775-7ccc-485b-9200-a714a014e486.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/8d92f775-7ccc-485b-9200-a714a014e486.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Лимончелло&quot;</title>
       <link>https://rizdviana.art/?item=prod-1e71de90</link>
       <guid isPermaLink="false">prod-1e71de90</guid>
+      <pubDate>Sun, 13 Sep 2026 10:25:36 +0000</pubDate>
       <description>Соковита і по-справжньому літня силянка, яка створює безтурботним настрій 🍋 ідеальне доповнення до вашої відпустки</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/91c5a317-b990-4838-a0d9-5c2c1d8be9f5.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/91c5a317-b990-4838-a0d9-5c2c1d8be9f5.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Символ&quot;</title>
       <link>https://rizdviana.art/?item=prod-8908ff29</link>
       <guid isPermaLink="false">prod-8908ff29</guid>
+      <pubDate>Sun, 13 Sep 2026 10:20:17 +0000</pubDate>
       <description>Вузька силянка з цікавим орнаментом, взятих з давніх вишивок. Ніби загадковий символ, що пройшов крізь віки.
 Можна носити як чокер чи нижче на шиї як намисто.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/146012e9-7174-43d8-a4fb-e83f4edf4c2d.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/146012e9-7174-43d8-a4fb-e83f4edf4c2d.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Косівські мотиви&quot;</title>
       <link>https://rizdviana.art/?item=prod-992f5931</link>
       <guid isPermaLink="false">prod-992f5931</guid>
+      <pubDate>Sun, 13 Sep 2026 10:15:15 +0000</pubDate>
       <description>Цікавий геометричний візерунок у кольорах, що нагадують косівську кераміку. Спокійні відтінки легко підійдуть навіть під повсякденний одяг, додаючи цікавий акцент.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/78a58f61-07aa-4dd4-838a-21c28bba6064.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/78a58f61-07aa-4dd4-838a-21c28bba6064.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Чарівна&quot;</title>
       <link>https://rizdviana.art/?item=prod-f8ef6d61</link>
       <guid isPermaLink="false">prod-f8ef6d61</guid>
+      <pubDate>Sun, 13 Sep 2026 09:37:18 +0000</pubDate>
       <description>Елегантна силянка з графітового бісеру з додаванням срібного та золотого блискучого бісеру, по низу обрамлена скляними чорними намистинами. Коли не треба нічого зайвого🤌🏼</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/8ae2a990-b1bd-4283-a07a-62e0cc304fce.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/8ae2a990-b1bd-4283-a07a-62e0cc304fce.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Таїна&quot;</title>
       <link>https://rizdviana.art/?item=prod-c7840c67</link>
       <guid isPermaLink="false">prod-c7840c67</guid>
+      <pubDate>Sun, 13 Sep 2026 09:10:24 +0000</pubDate>
       <description>Однотонна силянка з чорного бісеру - елегантна стриманість у кожній намистинці. Такий аксесуар можна носити буквально під будь-який образ, адже чорний колір - завжди база.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/ec3c87ad-f74f-4edd-9a8c-175b88123d56.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/ec3c87ad-f74f-4edd-9a8c-175b88123d56.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Красна&quot;</title>
       <link>https://rizdviana.art/?item=prod-4d63d039</link>
       <guid isPermaLink="false">prod-4d63d039</guid>
+      <pubDate>Sun, 13 Sep 2026 09:04:32 +0000</pubDate>
       <description>Проста базова силянка у класичному червоному кольорі — як самостійна прикраса чи як доповнення до ваших намист❤️</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/cf67817f-1e56-4acb-9000-c9b242027d32.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/cf67817f-1e56-4acb-9000-c9b242027d32.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Золото&quot;</title>
       <link>https://rizdviana.art/?item=prod-5428e2b3</link>
       <guid isPermaLink="false">prod-5428e2b3</guid>
+      <pubDate>Sun, 13 Sep 2026 08:44:58 +0000</pubDate>
       <description>Лаконічна силянка з золотистого блискучого бісеру — без зайвих деталей, легко додати до будь-якого образу✨</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/d0ac92c1-6f89-4446-a24a-771b04aa9a8d.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/d0ac92c1-6f89-4446-a24a-771b04aa9a8d.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Котики вербові&quot;</title>
       <link>https://rizdviana.art/?item=prod-d2b27821</link>
       <guid isPermaLink="false">prod-d2b27821</guid>
+      <pubDate>Sun, 13 Sep 2026 06:33:24 +0000</pubDate>
       <description>Весна приносить натхнення🌿🕊️
 
 Силянка з вербовими котиками — символом пробудження природи та світлого настрою. Ніжний серпанковий фон, делікатна перша зелень і природні відтінки створюють відчуття свіжості, як перші теплі дні.
 
 Вона ідеально доповнить образ до Великодня або стане оригінальним акцентом у повсякденному стилі — коли хочеться трохи весни поруч 🌷</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/d64f9b62-5ebf-4cac-925e-4e3edd3338a1.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/d64f9b62-5ebf-4cac-925e-4e3edd3338a1.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Фантазія&quot;</title>
       <link>https://rizdviana.art/?item=prod-2e4ebbd5</link>
       <guid isPermaLink="false">prod-2e4ebbd5</guid>
+      <pubDate>Sat, 12 Sep 2026 23:37:08 +0000</pubDate>
       <description>Дизайнерські квіткові композиції на силянці — це реальність🌺🌿
 Даруйте квіти, що не в&#x27;януть❤️
 
@@ -264,50 +340,62 @@
 
 Схема: ne_yak_u_vsih</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/62651221-9fd1-4ae0-bea9-a2526897071c.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/62651221-9fd1-4ae0-bea9-a2526897071c.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Дніпровська&quot;</title>
       <link>https://rizdviana.art/?item=prod-c06df186</link>
       <guid isPermaLink="false">prod-c06df186</guid>
+      <pubDate>Sat, 12 Sep 2026 23:16:26 +0000</pubDate>
       <description>Надзвичайно мерехтлива, космічна силянка з орнаментом, взятим із сорочок Дніпропетровщини💫 чи чарували вас у дитинстві веселкові розводи на калюжах? Мене - так! І так хотілось мені цей бензиново-веселковий бісер оформити в розкішну прикрасу✨</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3da737d1-75dd-4b93-bc74-468119cca9df.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3da737d1-75dd-4b93-bc74-468119cca9df.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Класичні ромби малахітова&quot;</title>
       <link>https://rizdviana.art/?item=prod-b2f38aa6</link>
       <guid isPermaLink="false">prod-b2f38aa6</guid>
+      <pubDate>Sat, 12 Sep 2026 23:10:49 +0000</pubDate>
       <description>Виразна силянка у малахітово-зелених та напівпрозорому молочному відтінках — прикраса, що одразу притягує погляд. Підбирала кольори особливо ретельно, щоб не перебити магічність зеленого, але залишити прикрасу ніжною, яка якнайкраще пасуватиме до своєї власниці🌿</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/f9b28d41-bc38-4d75-8e55-a3bdd9e09479.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/f9b28d41-bc38-4d75-8e55-a3bdd9e09479.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Класичні ромби блакитна&quot;</title>
       <link>https://rizdviana.art/?item=prod-a432b349</link>
       <guid isPermaLink="false">prod-a432b349</guid>
+      <pubDate>Sat, 12 Sep 2026 22:43:35 +0000</pubDate>
       <description>Ніжна силянка у відтінках небесно-блакитного та білого 🤍💙
 Традиційний орнамент у сучасному звучанні: легка, повітряна, але водночас виразна.
 Весняна блакить чистого неба чи проліска, що народилась з-під сріблястого снігу?..
 
 Ідеально підійде як до вишиванки, так і до мінімалістичних образів — щоб акцент був саме на прикрасі 🌿</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3dccf875-e40a-4d84-844b-453ae7345ecb.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3dccf875-e40a-4d84-844b-453ae7345ecb.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Баранці полум&#x27;яні&quot;</title>
       <link>https://rizdviana.art/?item=prod-0792a314</link>
       <guid isPermaLink="false">prod-0792a314</guid>
+      <pubDate>Sat, 12 Sep 2026 07:45:45 +0000</pubDate>
       <description>Яскрава і виразна силянка з орнаментом натхненним глиняними баранцями ❤️‍🔥 у червоному кольорі просто вогонь🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c2d231d2-dc20-45ed-9ea5-225cc0292877.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c2d231d2-dc20-45ed-9ea5-225cc0292877.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Кучерики&quot;</title>
       <link>https://rizdviana.art/?item=prod-d8e81ac9</link>
       <guid isPermaLink="false">prod-d8e81ac9</guid>
+      <pubDate>Thu, 10 Sep 2026 09:13:01 +0000</pubDate>
       <description>Лаконічна і зручна на повсякдень силянка з геометричним орнаментом, що повторює традиційні елементи вишивки. Можна носити як чокер так і намисто навколо шиї.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3ae74e4a-00d1-4cd3-8dd4-908fb2df951b.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3ae74e4a-00d1-4cd3-8dd4-908fb2df951b.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Семаківська&quot;</title>
       <link>https://rizdviana.art/?item=prod-f37531e0</link>
       <guid isPermaLink="false">prod-f37531e0</guid>
+      <pubDate>Thu, 10 Sep 2026 09:02:21 +0000</pubDate>
       <description>Силянка створена за взором жіночої сорочки з с.Семаківці (сучасна Івано-Франківська область) у 1920-1930х роках. Вона увібрала в себе вести колорит та барвисиість фарб у геометричному орнаменті.
 Прикраса має стійку та 14 см ширини, лягає у повне коло на плечі.
 
@@ -315,11 +403,13 @@
 
 За схемою тг-каналу Бісерні легуміни</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/68d656f2-efd0-420e-ae76-d7c03048c190.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/68d656f2-efd0-420e-ae76-d7c03048c190.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Орьнек&quot;</title>
       <link>https://rizdviana.art/?item=prod-6e430edb</link>
       <guid isPermaLink="false">prod-6e430edb</guid>
+      <pubDate>Wed, 09 Sep 2026 20:46:35 +0000</pubDate>
       <description>Крим.
 
 Є місця, які назавжди залишаються в серці.
@@ -328,57 +418,71 @@
 
 Ця силянка створена за мотивами традиційного кримського орнаменту “орьнек”. Це історія, пам’ять і багата культурна спадщина півострова.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/57e8dd45-e95c-407f-83ed-3b1ca606dbbd.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/57e8dd45-e95c-407f-83ed-3b1ca606dbbd.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Городенківська широка&quot;</title>
       <link>https://rizdviana.art/?item=prod-9fcf2c89</link>
       <guid isPermaLink="false">prod-9fcf2c89</guid>
+      <pubDate>Wed, 09 Sep 2026 20:39:36 +0000</pubDate>
       <description>Силянка, присвячена Городенківщині ❤️
 Орнамент був замальований Єронімою (Герміною) Озаркевич у її збірці творів народного мистецтва, це фрагмент з вишивки 1850-1870х років, Городенківського повіту (Покуття).
 Я взяла класичні кольори і не додавала нічого зайвого — вийшла проста, лаконічна і при цьому цікава силянка, яка буде пасувати як до традиційного, так і сучасного одягу.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/41fd6fcc-b449-484e-9305-dc5a2f90eaed.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/41fd6fcc-b449-484e-9305-dc5a2f90eaed.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Чокер &quot;Діамантовий прозорий&quot;</title>
       <link>https://rizdviana.art/?item=prod-2a51c5d7</link>
       <guid isPermaLink="false">prod-2a51c5d7</guid>
+      <pubDate>Wed, 09 Sep 2026 20:35:26 +0000</pubDate>
       <description>Силяні з бісеру не лише традиційні силянки🤌🏼
 Розкішний чокер, розшитий скляними намистинами — більше 450 ронделів, пришитих вручну, низки з різними видами намистин для особливої гри світла, зав&#x27;язки з китичками як особлива окраса.  Справжнє вечірнє кольє🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/ac4ec479-9fc2-434a-8e08-4df39bee9aaa.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/ac4ec479-9fc2-434a-8e08-4df39bee9aaa.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Чокер &quot;Діамантовий&quot;</title>
       <link>https://rizdviana.art/?item=prod-23e91a70</link>
       <guid isPermaLink="false">prod-23e91a70</guid>
+      <pubDate>Wed, 09 Sep 2026 20:31:00 +0000</pubDate>
       <description>Силяні з бісеру не лише традиційні силянки🤌🏼
 Розкішний чокер, розшитий скляними намистинами — більше 450 ронделів, пришитих вручну, низки з різними видами намистин для особливої гри світла, зав&#x27;язки з китичками як особлива окраса.  Справжнє вечірнє кольє🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/1786d491-a756-4b47-891d-97a84bd033ad.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/1786d491-a756-4b47-891d-97a84bd033ad.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Чокер &quot;Птахи&quot;</title>
       <link>https://rizdviana.art/?item=prod-ad52b77b</link>
       <guid isPermaLink="false">prod-ad52b77b</guid>
+      <pubDate>Wed, 09 Sep 2026 20:25:33 +0000</pubDate>
       <description>Яскравий чокер з підвісами — сучасна схема за мотивами оригінальної старовинної прикраси (Буковина, кінець ХІХ ст)</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/f0d338f7-4c51-4c6c-aac3-e85a93aad5a1.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/f0d338f7-4c51-4c6c-aac3-e85a93aad5a1.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Витка&quot;</title>
       <link>https://rizdviana.art/?item=prod-f44348ec</link>
       <guid isPermaLink="false">prod-f44348ec</guid>
+      <pubDate>Wed, 09 Sep 2026 17:13:55 +0000</pubDate>
       <description>Витка орнаментом силянка за оригінальною, не самою простою схемою 🤎 але ж гарна, наче мереживо, тому вона вартувала того, щоб трошки поламати голову ☺️✨</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/773ffd35-ce10-4ab4-b81f-9df9cd23baf4.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/773ffd35-ce10-4ab4-b81f-9df9cd23baf4.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Чокер &quot;Донеччина&quot;</title>
       <link>https://rizdviana.art/?item=prod-926379d0</link>
       <guid isPermaLink="false">prod-926379d0</guid>
+      <pubDate>Wed, 09 Sep 2026 17:08:58 +0000</pubDate>
       <description>Традиційний для Донецької область орнамент з квітів у червоно-чорному виконанні ніби перейшов на прикрасу з вишитих сорочок❤️ обрамлення з переплетених петлів додає силянці особливої чарівності</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/bc482b6b-77c4-4334-86a3-e4098777d380.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/bc482b6b-77c4-4334-86a3-e4098777d380.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Мальви&quot;</title>
       <link>https://rizdviana.art/?item=prod-36e875cb</link>
       <guid isPermaLink="false">prod-36e875cb</guid>
+      <pubDate>Wed, 09 Sep 2026 17:02:59 +0000</pubDate>
       <description>Ці надзвичайні мальви притягують погляди🌺
 Силяні по новому методу, щоб перетворитися в закруглене кольє, що забрало більше часу на виготовлення, але того вартує. 
 Чотири відтінки рожевого бісеру, щоб зробити пелюстки реалістичними. 
@@ -386,136 +490,171 @@
 Автор схеми: ne_yak_u_vsih
 Сплетено за авторським методом форми Любові Чулак</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/1bf6341f-7b88-493b-98f4-8c6895ac3262.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/1bf6341f-7b88-493b-98f4-8c6895ac3262.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Чокер &quot;Срібні зорі Запорізькі&quot;</title>
       <link>https://rizdviana.art/?item=prod-ff78223d</link>
       <guid isPermaLink="false">prod-ff78223d</guid>
+      <pubDate>Wed, 09 Sep 2026 16:51:28 +0000</pubDate>
       <description>Вишиванкові зорі можна переосмислити дуже по-сучасному ✨
 В цій стильний силянці традиційний орнамент Запорізької області заграв новим сенсом - на чорному тлі сталевий сірий бісер люкс-серії та сяючий сріблястий Miyuki - поєднання одночасно стримане і привертаюче увагу🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/85e6267c-5174-4ba8-88af-70afe8a2b28b.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/85e6267c-5174-4ba8-88af-70afe8a2b28b.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Черкаські розписи&quot;</title>
       <link>https://rizdviana.art/?item=prod-cfe8000e</link>
       <guid isPermaLink="false">prod-cfe8000e</guid>
+      <pubDate>Wed, 09 Sep 2026 10:36:10 +0000</pubDate>
       <description>Невелика кругла силянка з оригінальним орнаментом за схемою Маргарити Фесенко. За основу візерунку взяті народні розписи хат у Черкаській області.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/bbfefb92-8e6f-4147-935b-24c33c723dc3.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/bbfefb92-8e6f-4147-935b-24c33c723dc3.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Дивоквіти&quot;</title>
       <link>https://rizdviana.art/?item=prod-3decc1fb</link>
       <guid isPermaLink="false">prod-3decc1fb</guid>
+      <pubDate>Wed, 09 Sep 2026 10:32:14 +0000</pubDate>
       <description>Ці чарівні дивоквіти - моя фантазія на основі рослинних орнаментів з вишитих рушників, покладена на бісерну сітку талановитою авторкою</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/5f99efcc-ca38-435b-9651-5e751ffdcd8f.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/5f99efcc-ca38-435b-9651-5e751ffdcd8f.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Троянди по білому (жовтогаряча)&quot;</title>
       <link>https://rizdviana.art/?item=prod-72798698</link>
       <guid isPermaLink="false">prod-72798698</guid>
+      <pubDate>Tue, 08 Sep 2026 20:33:22 +0000</pubDate>
       <description>Ніжна та тендітна, немов наречена🌹
 Ця силянка поєднала в собі класичну геометричну вишивку &quot;білим по білому&quot; з рослинним орнаментом — делікатні троянди додають цікавого акценту, а блискучі намистини — смарагдового сяйва❤️</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c3f8037b-b17b-4177-9d34-70050d27dea4.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/c3f8037b-b17b-4177-9d34-70050d27dea4.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Троянди по білому&quot;</title>
       <link>https://rizdviana.art/?item=prod-294e2085</link>
       <guid isPermaLink="false">prod-294e2085</guid>
+      <pubDate>Tue, 08 Sep 2026 20:28:14 +0000</pubDate>
       <description>Ніжна та тендітна, немов наречена🌹
 Ця силянка поєднала в собі класичну геометричну вишивку &quot;білим по білому&quot; з рослинним орнаментом — делікатні троянди додають цікавого акценту, а блискучі намистини — рубінового сяйва❤️</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/04ee4365-bb41-414c-af97-e12275a4e184.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/04ee4365-bb41-414c-af97-e12275a4e184.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Геометрія сердець (червона)&quot;</title>
       <link>https://rizdviana.art/?item=prod-697b15d9</link>
       <guid isPermaLink="false">prod-697b15d9</guid>
+      <pubDate>Tue, 08 Sep 2026 20:16:39 +0000</pubDate>
       <description>Любов, вплетена в кожну бісеринку ❤️
 Силянка з орнаментом із сердечок як почуття, що залишаються. Чеський блискучий бісер сяє, як закохані очі✨</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/92e21dc8-a1a1-4e58-938c-cf22d0102b59.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/92e21dc8-a1a1-4e58-938c-cf22d0102b59.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Геометрія сердець (чорна)&quot;</title>
       <link>https://rizdviana.art/?item=prod-f4334601</link>
       <guid isPermaLink="false">prod-f4334601</guid>
+      <pubDate>Tue, 08 Sep 2026 05:59:07 +0000</pubDate>
       <description>Лаконічна та графічна силянка, стильне та завжди доречне поєднання чорного та сріблястого бісеру доповнить будь-який образ. Китиці з намистинами — додаткова окраса, завдяки якій силянку можна носити у двох варіаціях: зав&#x27;язками наперед чи назад.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/020e7a83-043d-4f0f-9b69-02949911dd30.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/020e7a83-043d-4f0f-9b69-02949911dd30.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Дивоквіти рубінові&quot;</title>
       <link>https://rizdviana.art/?item=prod-6582ae65</link>
       <guid isPermaLink="false">prod-6582ae65</guid>
+      <pubDate>Mon, 07 Sep 2026 20:31:09 +0000</pubDate>
       <description>На перлинному білому розквітли багряні квіти. Натхненні традиційними розписами та бароковою вишивкою, ці квіти зібрані з бісеру декількох червоних відтінків, що сяє та мерехтить не залишаючи свою власницю без уваги❤️
 
 Схема: ne_yak_u_vsih</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/dd851c11-5d9e-4512-82ea-6ae47eaf8a8d.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/dd851c11-5d9e-4512-82ea-6ae47eaf8a8d.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Гуцулочка&quot;</title>
       <link>https://rizdviana.art/?item=prod-c0cb4941</link>
       <guid isPermaLink="false">prod-c0cb4941</guid>
+      <pubDate>Sun, 06 Sep 2026 21:12:40 +0000</pubDate>
       <description>Ця розкішна широка силянка — особлива прикраса, створена з увагою до деталей ❤️ яскравий гуцульський орнамент зі стійких відтінків бісеру може пройти крізь роки і залишитися наступним поколінням🙏🏻 
 Силянка покриває плечі, має 19 см ширини та 300 грам ваги🤌🏼 стійка підшита на стрічку.
 Справді, така прикраса не залишить свою власницю без уваги..</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/eb25d384-ff0c-4ade-86b5-9389e47b062c.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/eb25d384-ff0c-4ade-86b5-9389e47b062c.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Сердечний оберіг&quot;</title>
       <link>https://rizdviana.art/?item=prod-7ba6c831</link>
       <guid isPermaLink="false">prod-7ba6c831</guid>
+      <pubDate>Sun, 06 Sep 2026 21:06:08 +0000</pubDate>
       <description>Справжній хіт, що вже став класикою❤️‍🔥 силянка оригінальної форми з додаванням скляних намистин — прикраса, що однаково чудово пасує як до традиційних, так і до сучасних образів.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9c7567da-e12a-4eda-83d0-e59afe35be79.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9c7567da-e12a-4eda-83d0-e59afe35be79.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Баранці сріблясті&quot;</title>
       <link>https://rizdviana.art/?item=prod-e69929db</link>
       <guid isPermaLink="false">prod-e69929db</guid>
+      <pubDate>Sun, 06 Sep 2026 20:58:53 +0000</pubDate>
       <description>Чорний, білий і срібний акцент — ця силянка саме для сучасних дівчат з повагою до традицій. Достатньо одного тону в одязі, і вже не сумний &quot;чорний тотал лук&quot;, а стильний, з натяком на етно 😉
 А можна ще зробити на коричневому, червоному, синьому, зеленому тлі — під будь-якмй образ та настрій🔥</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/d517952f-396d-44bc-af9e-56af2938f210.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/d517952f-396d-44bc-af9e-56af2938f210.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Пташина пара&quot;</title>
       <link>https://rizdviana.art/?item=prod-9e7eb923</link>
       <guid isPermaLink="false">prod-9e7eb923</guid>
+      <pubDate>Fri, 04 Sep 2026 13:29:36 +0000</pubDate>
       <description>Силянка з пташками, візерунок яких характерний для весільних та обрядових рушників. Пара пташок як символ сімейного щастя та затишку.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/037840b9-8c9f-449c-bf42-8a0924bd7fca.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/037840b9-8c9f-449c-bf42-8a0924bd7fca.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Жито&quot;</title>
       <link>https://rizdviana.art/?item=prod-ee7e7d4b</link>
       <guid isPermaLink="false">prod-ee7e7d4b</guid>
+      <pubDate>Fri, 04 Sep 2026 12:59:24 +0000</pubDate>
       <description>Авторська прикраса з бісеру від майстерні RIZDVIANA.ART. Ціна: 800 ₴.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/7320eef5-36ff-45a1-9372-e0d6e9a5a494.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/7320eef5-36ff-45a1-9372-e0d6e9a5a494.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Кутовий гердан &quot;Тризуб&quot;</title>
       <link>https://rizdviana.art/?item=prod-7a3e3fcb</link>
       <guid isPermaLink="false">prod-7a3e3fcb</guid>
+      <pubDate>Fri, 04 Sep 2026 12:57:17 +0000</pubDate>
       <description>Авторська прикраса з бісеру від майстерні RIZDVIANA.ART. Ціна: 750 ₴.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/80f29e54-c108-470a-aa5a-71665887518d.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/80f29e54-c108-470a-aa5a-71665887518d.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Вишивані ружі&quot;</title>
       <link>https://rizdviana.art/?item=prod-9030b86c</link>
       <guid isPermaLink="false">prod-9030b86c</guid>
+      <pubDate>Fri, 04 Sep 2026 12:55:06 +0000</pubDate>
       <description>Долю вистелю трояндами...
 
 Так люблю ці трояндові орнаменти з давніх сорочок, милуюсь цими вишивками, та що казати, перша моя вишита сорочка теж з трояндами 😍</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3ccb5e30-d89a-4d4c-8198-461946db486c.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/3ccb5e30-d89a-4d4c-8198-461946db486c.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Мрійливі маки&quot;</title>
       <link>https://rizdviana.art/?item=prod-2a3b9c0d</link>
       <guid isPermaLink="false">prod-2a3b9c0d</guid>
+      <pubDate>Fri, 04 Sep 2026 12:52:32 +0000</pubDate>
       <description>Авторська прикраса з бісеру від майстерні RIZDVIANA.ART. Ціна: 600 ₴.</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9e457c0b-f0ca-4bcd-84a8-c0ee1388d3d9.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/9e457c0b-f0ca-4bcd-84a8-c0ee1388d3d9.jpg" medium="image" type="image/jpeg" />
     </item>
     <item>
       <title>Силянка &quot;Квіти Миколаївщини&quot;</title>
       <link>https://rizdviana.art/?item=prod-b55f0f17</link>
       <guid isPermaLink="false">prod-b55f0f17</guid>
+      <pubDate>Fri, 04 Sep 2026 12:49:55 +0000</pubDate>
       <description>Силянка з квітковим орнаментом за мотивами вишитих сорочок Миколаївщини. Яскраві кольори на білому тлі будуть чудовим доповненням до літніх суконь та сорочок🌺</description>
       <enclosure url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/95ed5969-7562-4080-a5de-a42c53c532c1.jpg" type="image/jpeg" length="0" />
+      <media:content url="https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/95ed5969-7562-4080-a5de-a42c53c532c1.jpg" medium="image" type="image/jpeg" />
     </item>
   </channel>
 </rss>
