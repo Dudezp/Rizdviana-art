@@ -15,7 +15,9 @@ export async function onRequest(context) {
   }
 
   try {
-    const supabaseUrl = `https://jvckjrzcvfonucagpecu.supabase.co/rest/v1/products?or=(slug.eq.${encodeURIComponent(item)},id.eq.${encodeURIComponent(item)})&select=id,title,description,price,product_type,media:product_media(url,media_type,display_order)&limit=1`;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item);
+    const filter = isUuid ? `id=eq.${encodeURIComponent(item)}` : `slug=eq.${encodeURIComponent(item)}`;
+    const supabaseUrl = `https://jvckjrzcvfonucagpecu.supabase.co/rest/v1/products?${filter}&select=id,title,description,price,product_type,media:product_media(url,media_type,display_order)&limit=1`;
     const res = await fetch(supabaseUrl, {
       headers: {
         'apikey': 'sb_publishable_Gp7u0i4jGzMUJuhiZ6_j_Q_HV3ndPXK'
