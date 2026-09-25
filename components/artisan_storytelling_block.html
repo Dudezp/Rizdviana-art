@@ -1,0 +1,138 @@
+<!--
+  БЛОК STORYTELLING: ПРО АВТОРКУ ТА МАГІЮ БІСЕРУ (ЗБЕРЕЖЕНО ДЛЯ МАЙБУТНЬОГО ВИКОРИСТАННЯ)
+  Цей компонент містить журнальну фотокомпозицію з портретом Тетяни (tetiana.jpg),
+  маніфест авторки, 3 ювелірні стовпи майстерності та прямі посилання на соцмережі.
+  Щоб повернути на сайт — вставити цей блок замість секції <section id="about"> в index.html.
+-->
+
+<section id="about" class="scroll-mt-[185px] sm:scroll-mt-40 border-t border-craft bg-craft/20 py-12 sm:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+  <div class="max-w-7xl 2xl:max-w-[1440px] mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+      
+      <!-- Ліва колонка: Фотокомпозиція та візуальна естетика майстерні -->
+      <div class="lg:col-span-5 relative flex justify-center">
+        <div class="relative w-full max-w-sm sm:max-w-md">
+          <!-- Декоративна підкладка з легким поворотом -->
+          <div class="absolute inset-0 bg-stone-200/50 rounded-3xl transform rotate-2 sm:rotate-3 scale-[0.98] transition"></div>
+          
+          <!-- Галерейна крафтова картка (Artisan Gallery Frame) -->
+          <div class="relative rounded-3xl border border-craft bg-white p-3 sm:p-4 shadow-md">
+            <div class="overflow-hidden rounded-2xl aspect-[3/4] bg-craft/30">
+              <img 
+                id="storytelling-author-img"
+                src="tetiana.jpg" 
+                alt="Тетяна — засновниця та майстриня RIZDVIANA.ART" 
+                loading="lazy"
+                class="w-full h-full object-cover object-top transition duration-700 hover:scale-105"
+              />
+            </div>
+            <div class="pt-3 pb-1 px-1 flex items-center justify-between text-xs">
+              <div>
+                <p class="font-serif font-semibold text-stoneDark text-xs sm:text-sm">Тетяна</p>
+                <p class="text-[11px] text-stone-500 font-sans">Засновниця та майстриня RIZDVIANA.ART</p>
+              </div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-linen border border-craft text-[11px] font-medium text-stone-600">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                <span>100% ручна праця</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Права колонка: Історія авторки, цінності та філософія -->
+      <div class="lg:col-span-7 space-y-5 sm:space-y-6">
+        <div class="space-y-1.5">
+          <span class="text-xs uppercase tracking-[0.28em] text-stone-500 font-semibold block">Авторська майстерня</span>
+          <h2 class="font-serif font-bold text-2xl sm:text-3xl lg:text-4xl text-stoneDark tracking-tight leading-tight">
+            Там, де бісер стає живою пам'яттю
+          </h2>
+        </div>
+
+        <!-- Особистий текст авторки -->
+        <div class="space-y-3.5 text-sm sm:text-base text-stone-600 leading-relaxed font-normal">
+          <p>
+            Мене звати Тетяна, і <b class="text-stoneDark font-semibold">RIZDVIANA.ART</b> народилася з глибокої любові до української традиції та тиші творчого процесу. Для мене бісер — це як пікселі живої пам'яті. З крихітних намистин, стібок за стібком, народжується не просто прикраса, а річ зі своїм характером, голосом та теплом людських рук.
+          </p>
+          <p>
+            Переосмислюючи автентичні орнаменти Поділля, Гуцульщини та Причорномор'я, я поєдную їх із сучасним витонченим дизайном. Мені важливо, аби українські силянки не припадали пилом у музеях, а жили поруч із вами: зі святковою вишиванкою, вишуканою вечірньою сукнею чи улюбленою лляною сорочкою.
+          </p>
+        </div>
+
+        <!-- Цитата-маніфест -->
+        <blockquote class="border-l-2 border-stoneDark/40 pl-4 py-1.5 text-sm sm:text-base italic text-stone-700 bg-white/60 rounded-r-xl">
+          «Коли жінка одягає силянку, змінюється постава, з'являється внутрішнє сяйво та впевненість у власній красі.»
+          <span class="block text-xs font-sans not-italic text-stone-500 mt-1 font-medium">— Тетяна, засновниця RIZDVIANA.ART</span>
+        </blockquote>
+
+        <!-- 3 стовпи майстерності з тематичними ювелірними іконками -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <!-- 1. Гранований кришталь / бісер Preciosa -->
+          <div class="bg-white p-4 rounded-2xl border border-craft shadow-xs">
+            <div class="w-8 h-8 rounded-lg bg-linen flex items-center justify-center text-stoneDark mb-2">
+              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 3h12l4 6-10 12L2 9l4-6z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2 9h20M12 21L7.5 9 10 3m4 0l2.5 6L12 21" />
+              </svg>
+            </div>
+            <h3 class="font-semibold text-stoneDark text-xs mb-1">Preciosa 1-го сорту</h3>
+            <p class="text-[11px] text-stone-500 leading-relaxed">Відкалібрований чеський та японський бісер бездоганної геометрії.</p>
+          </div>
+
+          <!-- 2. Нитка та нанизані бісеринки (ювелірний натяг) -->
+          <div class="bg-white p-4 rounded-2xl border border-craft shadow-xs">
+            <div class="w-8 h-8 rounded-lg bg-linen flex items-center justify-center text-stoneDark mb-2">
+              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" d="M2 12h5m5 0h2m5 0h3"/>
+                <circle cx="9.5" cy="12" r="2.5" stroke="currentColor"/>
+                <circle cx="16.5" cy="12" r="2.5" stroke="currentColor"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-stoneDark text-xs mb-1">Ювелірний натяг</h3>
+            <p class="text-[11px] text-stone-500 leading-relaxed">Надміцна нитка та надійна фурнітура, що зберігають форму виробу на роки.</p>
+          </div>
+
+          <!-- 3. Оберіг з душею -->
+          <div class="bg-white p-4 rounded-2xl border border-craft shadow-xs">
+            <div class="w-8 h-8 rounded-lg bg-linen flex items-center justify-center text-stoneDark mb-2">
+              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-stoneDark text-xs mb-1">Створено з душею</h3>
+            <p class="text-[11px] text-stone-500 leading-relaxed">Можливість індивідуального підбору довжини, кольору чи типу зав'язок.</p>
+          </div>
+        </div>
+
+        <!-- Дії: Написати майстрині або перейти в соцмережі -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+          <a 
+            href="https://instagram.com/rizdviana.art" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-stoneDark text-white text-xs uppercase tracking-wider font-semibold hover:bg-stone-800 transition active:scale-[0.98] shadow-sm"
+          >
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            <span>Instagram майстерні</span>
+          </a>
+          
+          <a 
+            href="https://t.me/tatianata91" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-craft text-stoneDark text-xs uppercase tracking-wider font-semibold hover:bg-craft/50 transition active:scale-[0.98] shadow-xs"
+          >
+            <svg class="w-4 h-4 fill-current text-[#229ED9]" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+            <span>Написати Тетяні в Telegram</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>

@@ -22,3 +22,5 @@ Thumbs.db
 # Внутрішня документація та каталоги
 pinterest_catalog.md
 pinterest_published.json
+
+pinterest_bulk_pins.csv

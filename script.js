@@ -112,7 +112,7 @@ function saveStoredFavorites(favs) {
 
 const favoriteIds = new Set(getStoredFavorites());
 
-function updateFavoritesBadges() {
+function updateFavoritesBadges(isAdded = false) {
     const count = favoriteIds.size;
     const deskBadge = document.getElementById('fav-count-badge-desktop');
     const mobBadge = document.getElementById('fav-count-badge-mobile');
@@ -120,88 +120,123 @@ function updateFavoritesBadges() {
     if (deskBadge) {
         deskBadge.innerText = count;
         deskBadge.classList.toggle('hidden', count === 0);
+        if (isAdded && count > 0) {
+            deskBadge.classList.remove('badge-bump');
+            void deskBadge.offsetWidth;
+            deskBadge.classList.add('badge-bump');
+            setTimeout(() => deskBadge.classList.remove('badge-bump'), 400);
+        }
     }
     if (mobBadge) {
         mobBadge.innerText = count;
-        mobBadge.className = count > 0 ? 'text-[9px] font-bold text-red-600' : 'text-[9px] font-bold text-stone-500';
+        mobBadge.className = count > 0 ? 'text-[9px] font-bold text-rose-600' : 'text-[9px] font-bold text-stone-500';
+        if (isAdded && count > 0) {
+            mobBadge.classList.remove('badge-bump');
+            void mobBadge.offsetWidth;
+            mobBadge.classList.add('badge-bump');
+            setTimeout(() => mobBadge.classList.remove('badge-bump'), 400);
+        }
     }
 }
 
 function toggleFavorite(productId, event) {
     if (event) {
         event.stopPropagation();
-        const targetBtn = event.currentTarget;
-        if (targetBtn) {
-            targetBtn.classList.add('heart-animate');
-            setTimeout(() => targetBtn.classList.remove('heart-animate'), 400);
-        }
     }
 
-    if (favoriteIds.has(productId)) {
+    const wasFav = favoriteIds.has(productId);
+    const isNowFav = !wasFav;
+
+    if (wasFav) {
         favoriteIds.delete(productId);
     } else {
         favoriteIds.add(productId);
     }
     saveStoredFavorites(favoriteIds);
-    updateFavoritesBadges();
+    updateFavoritesBadges(isNowFav);
+
+    // Тактильна мікровібрація для мобільних пристроїв
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+            navigator.vibrate(isNowFav ? 12 : 6);
+        } catch {
+            // ігноруємо можливі обмеження політики браузера
+        }
+    }
+
+    // Оновлюємо стан та запускаємо тактильну анімацію на картках
+    const cardBtns = document.querySelectorAll(`button[data-fav-id="${productId}"]`);
+    cardBtns.forEach(btn => {
+        const svg = btn.querySelector('svg');
+        btn.classList.remove('animating-fav', 'animating-unfav');
+        void btn.offsetWidth; // перезапуск CSS keyframes
+
+        if (isNowFav) {
+            btn.classList.add('active', 'animating-fav');
+            btn.setAttribute('aria-label', 'Видалити з обраного');
+            btn.setAttribute('title', 'В обраному');
+            if (svg) {
+                svg.classList.add('text-rose-600', 'fill-rose-600');
+                svg.setAttribute('fill', 'currentColor');
+            }
+            setTimeout(() => btn.classList.remove('animating-fav'), 450);
+        } else {
+            btn.classList.remove('active');
+            btn.classList.add('animating-unfav');
+            btn.setAttribute('aria-label', 'Додати в обране');
+            btn.setAttribute('title', 'Додати в обране');
+            if (svg) {
+                svg.classList.remove('text-rose-600', 'fill-rose-600', 'text-red-500', 'fill-red-500');
+                svg.setAttribute('fill', 'none');
+            }
+            setTimeout(() => btn.classList.remove('animating-unfav'), 250);
+        }
+    });
 
     if (currentStockFilter === 'favorites') {
         applyFilters();
-    } else {
-        const cardBtns = document.querySelectorAll(`button[data-fav-id="${productId}"]`);
-        const isFav = favoriteIds.has(productId);
-        cardBtns.forEach(btn => {
-            const svg = btn.querySelector('svg');
-            if (isFav) {
-                btn.classList.add('active');
-                btn.setAttribute('aria-label', 'Видалити з обраного');
-                btn.setAttribute('title', 'В обраному');
-                if (svg) {
-                    svg.classList.add('text-red-500', 'fill-red-500');
-                    svg.setAttribute('fill', 'currentColor');
-                }
-            } else {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-label', 'Додати в обране');
-                btn.setAttribute('title', 'Додати в обране');
-                if (svg) {
-                    svg.classList.remove('text-red-500', 'fill-red-500');
-                    svg.setAttribute('fill', 'none');
-                }
-            }
-        });
     }
 
     if (activeModalProduct && activeModalProduct.id === productId) {
-        updateModalFavoriteState(productId);
+        updateModalFavoriteState(productId, isNowFav);
     }
 }
 
-function updateModalFavoriteState(productId) {
+function updateModalFavoriteState(productId, justToggled = null) {
     const btn = document.getElementById('modal-btn-favorite');
     const icon = document.getElementById('modal-fav-icon');
     const text = document.getElementById('modal-fav-text');
     if (!btn || !icon || !text) return;
 
     const isFav = favoriteIds.has(productId);
+
+    if (justToggled !== null) {
+        icon.classList.remove('animating-fav', 'animating-unfav');
+        void icon.offsetWidth;
+        icon.classList.add(isFav ? 'animating-fav' : 'animating-unfav');
+        setTimeout(() => icon.classList.remove('animating-fav', 'animating-unfav'), isFav ? 450 : 250);
+    }
+
     if (isFav) {
-        btn.classList.add('border-red-300', 'bg-red-50/50');
+        btn.classList.add('border-rose-300', 'bg-rose-50/60', 'text-rose-700');
+        btn.classList.remove('border-craft', 'text-stoneDark');
         icon.classList.remove('text-stone-400');
-        icon.classList.add('text-red-500', 'fill-red-500');
+        icon.classList.add('text-rose-600', 'fill-rose-600');
         icon.setAttribute('fill', 'currentColor');
         text.innerText = 'В обраному';
     } else {
-        btn.classList.remove('border-red-300', 'bg-red-50/50');
+        btn.classList.remove('border-rose-300', 'bg-rose-50/60', 'text-rose-700');
+        btn.classList.add('border-craft', 'text-stoneDark');
         icon.classList.add('text-stone-400');
-        icon.classList.remove('text-red-500', 'fill-red-500');
+        icon.classList.remove('text-rose-600', 'fill-rose-600', 'text-red-500', 'fill-red-500');
         icon.setAttribute('fill', 'none');
         text.innerText = 'В обране';
     }
 }
 
-function toggleModalFavorite() {
+function toggleModalFavorite(event) {
     if (!activeModalProduct) return;
-    toggleFavorite(activeModalProduct.id);
+    toggleFavorite(activeModalProduct.id, event);
 }
 
 // --- НЕЩОДАВНО ПЕРЕГЛЯНУТІ ПРИКРАСИ (RECENTLY VIEWED) ---
@@ -1344,6 +1379,100 @@ function handleBackdropClick(e) {
 
 let currentShareUrl = '';
 
+// --- ІНТЕГРАЦІЯ З PINTEREST (ЗБЕРЕЖЕННЯ ПІНА) ---
+function buildPinterestPinData(product) {
+    if (!product) return null;
+
+    const itemIdentifier = product.slug || product.id;
+    // Для Pinterest посилання ЗАВЖДИ веде на офіційний продакшн-сайт з SSR мета-тегами
+    const destUrl = `https://rizdviana.art/?item=${encodeURIComponent(itemIdentifier)}`;
+
+    // Знаходимо найкраще вертикальне фото
+    let mediaUrl = '';
+    const images = (currentProductMedia || []).filter(m => m.media_type === 'image' && !m.url?.endsWith('.mp4'));
+    const activeItem = currentProductMedia ? currentProductMedia[activeMediaIndex] : null;
+
+    if (activeItem && activeItem.media_type === 'image' && !activeItem.url?.endsWith('.mp4')) {
+        mediaUrl = activeItem.url;
+    } else if (images.length > 0) {
+        mediaUrl = images[0].url;
+    } else if (currentProductMedia && currentProductMedia[0]?.url) {
+        mediaUrl = currentProductMedia[0].url;
+    }
+
+    const pType = (product.product_type || 'Прикраса').trim();
+    const pLower = pType.toLowerCase();
+    const title = (product.title || 'Прикраса з бісеру').trim();
+    const priceStr = product.price ? `Ціна: ${product.price} ₴.` : '';
+    const rawDesc = (product.description || '').trim();
+    const materials = product.materials || 'Якісний чеський та японський бісер';
+
+    let uaPart = rawDesc 
+        ? `${rawDesc} ${priceStr}`.trim() 
+        : `Авторська ${pLower} «${title}» ручної роботи від майстерні RIZDVIANA.ART. ${materials}. ${priceStr}`.trim();
+
+    let enPart = "Handmade Ukrainian beaded folk jewelry. Worldwide shipping. Order directly on rizdviana.art.";
+    let tags = "#прикрасизбісеру #українськіприкраси #до_вишиванки #beadedjewelry #ukrainianjewelry #rizdviana";
+
+    if (pLower.includes("силянк")) {
+        tags = "#силянка #силянказбісеру #українськіприкраси #до_вишиванки #beadedjewelry #sylyanka #ukrainianjewelry #seedbeadnecklace #rizdviana";
+    } else if (pLower.includes("гердан")) {
+        tags = "#гердан #герданзбісеру #українськіприкраси #до_вишиванки #beadedjewelry #gerdan #ukrainianjewelry #seedbeadnecklace #rizdviana";
+    } else if (pLower.includes("чокер")) {
+        tags = "#чокер #чокерзбісеру #прикрасизбісеру #beadedchoker #seedbeadjewelry #handmadechoker #rizdviana";
+    } else if (pLower.includes("браслет")) {
+        tags = "#браслет #браслетзбісеру #прикрасизбісеру #beadedbracelet #handmadejewelry #rizdviana";
+    }
+
+    const fullDesc = `${uaPart}\n\n✨ ${enPart}\n\n${tags}`.trim();
+
+    return {
+        url: destUrl,
+        media: mediaUrl,
+        title: `${title} — ${pLower} з бісеру | RIZDVIANA.ART`,
+        description: fullDesc
+    };
+}
+
+function saveModalToPinterest(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (!activeModalProduct) return;
+
+    // Тактильна мікровібрація на смартфонах
+    if (navigator.vibrate) {
+        try { navigator.vibrate(25); } catch (_) {}
+    }
+
+    const pinData = buildPinterestPinData(activeModalProduct);
+    if (!pinData) return;
+
+    const pinCreateUrl = `https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(pinData.url)}&media=${encodeURIComponent(pinData.media)}&description=${encodeURIComponent(pinData.description)}`;
+
+    // Логування в консоль для перевірки в тестовому режимі
+    console.log("📌 [Pinterest Test Mode] Дані для збереження піна:", pinData);
+
+    showToast("Відкриваємо Pinterest...", "📌");
+
+    // Відкриваємо спливаюче вікно по центру екрана
+    const width = 760;
+    const height = 640;
+    const left = Math.max(0, Math.round((window.innerWidth - width) / 2 + (window.screenX || 0)));
+    const top = Math.max(0, Math.round((window.innerHeight - height) / 2 + (window.screenY || 0)));
+
+    const popup = window.open(
+        pinCreateUrl,
+        'PinterestPinWindow',
+        `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes,status=no,toolbar=no,menubar=no`
+    );
+
+    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        window.open(pinCreateUrl, '_blank', 'noopener,noreferrer');
+    }
+}
+
 // --- ФУНКЦІЯ «ПОДІЛИТИСЯ ПРИКРАСОЮ» ---
 function shareCurrentProduct() {
     if (!activeModalProduct) return;
@@ -1899,10 +2028,31 @@ function initIosInstallPrompt() {
 
 window.showIosInstallPrompt = showIosBanner;
 
+// Точний плавний скрол для якорів навігації з урахуванням висоти липкої шапки
+function initAnchorSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (!href || href === '#' || href.length < 2) return;
+            const targetId = href.slice(1);
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+                e.preventDefault();
+                const stickyHeader = document.getElementById('sticky-header');
+                const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 70;
+                const targetY = targetEl.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+                window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+                history.pushState(null, null, `#${targetId}`);
+            }
+        });
+    });
+}
+
 // Ініціалізація після завантаження сторінки
 function onPageInit() {
     initPhoneMask();
     initIosInstallPrompt();
+    initAnchorSmoothScroll();
     updatePillPosition('all');
     if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(() => updatePillPosition());

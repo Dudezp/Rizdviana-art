@@ -531,26 +531,157 @@ input:focus-visible,
 
 /* Кнопка "В обране" (Heart button) на картці */
 .btn-favorite {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, color 0.2s ease;
+  position: relative;
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+  transform-origin: center;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.btn-favorite:hover {
-  transform: scale(1.12);
+@media (hover: hover) and (pointer: fine) {
+  .btn-favorite:hover {
+    transform: scale(1.12);
+  }
 }
 .btn-favorite:active {
   transform: scale(0.92);
 }
+.btn-favorite svg {
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, fill 0.2s ease;
+}
 .btn-favorite.active svg {
-  fill: #ef4444;
-  color: #ef4444;
+  fill: #e11d48;
+  color: #e11d48;
 }
 
+/* Радіальне кільце-імпульс (Ripple Halo) при додаванні */
+.btn-favorite::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 2px solid #f43f5e;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.7);
+}
+.btn-favorite.animating-fav::after {
+  animation: fav-ripple 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fav-ripple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.85;
+    border-width: 2.5px;
+  }
+  50% {
+    opacity: 0.5;
+    border-width: 1.5px;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+    border-width: 0.5px;
+  }
+}
+
+/* Пружний сплеск серця (Squish & Pop) */
 @keyframes heart-burst {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.78);
+  }
+  50% {
+    transform: scale(1.36);
+  }
+  75% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Спокійне згасання при знятті обраного */
+@keyframes heart-unpop {
   0% { transform: scale(1); }
-  45% { transform: scale(1.32); }
+  45% { transform: scale(0.86); }
   100% { transform: scale(1); }
 }
-.heart-animate {
-  animation: heart-burst 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+.animating-fav svg,
+svg.animating-fav {
+  animation: heart-burst 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animating-unfav svg,
+svg.animating-unfav {
+  animation: heart-unpop 0.2s ease-out;
+}
+
+/* Кнопка "В обране" у модалці товару */
+#modal-btn-favorite {
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+#modal-btn-favorite:active {
+  transform: scale(0.97);
+}
+#modal-fav-icon {
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, fill 0.2s ease;
+}
+
+/* Кнопка Pinterest у модалці товару */
+#modal-btn-pinterest {
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+#modal-btn-pinterest:active {
+  transform: scale(0.96);
+}
+#modal-btn-pinterest svg {
+  transform-origin: center;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#modal-btn-pinterest:hover svg {
+  transform: scale(1.16) rotate(-7deg);
+}
+
+/* Кнопка "Поділитися" у модалці товару */
+#modal-share-btn {
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+#modal-share-btn:active {
+  transform: scale(0.97);
+}
+
+/* Пульсація лічильника обраного в шапці (Badge Bump) */
+@keyframes badge-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.32); }
+  75% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.badge-bump {
+  animation: badge-bump 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-block;
+  transform-origin: center;
+}
+
+/* Адаптація для користувачів із чутливістю до руху */
+@media (prefers-reduced-motion: reduce) {
+  .btn-favorite,
+  .btn-favorite svg,
+  .btn-favorite::after,
+  .animating-fav svg,
+  .animating-unfav svg,
+  #modal-fav-icon,
+  .badge-bump {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Анімація переходу фото при свайпі у модалці */
