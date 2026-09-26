@@ -3,9 +3,25 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://rizdviana.art/</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-09-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://rizdviana.art/?item=prod-e153df5a</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+      <image:image>
+        <image:loc>https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/cf51061f-fed0-47d2-9d21-e1dba0ce0435.jpg</image:loc>
+        <image:title>Силянка &quot;Традиційна яскрава&quot;</image:title>
+        <image:caption>Новий чокер з традиційним орнаментом вже в наявності✨ Яскраві кольори і геометричний візерунок нагадують гуцульські вишиті сорочки, а нарядні петельки прикрашають🔥</image:caption>
+      </image:image>
+      <image:image>
+        <image:loc>https://jvckjrzcvfonucagpecu.supabase.co/storage/v1/object/public/catalog-media/48c0690c-cd20-416f-8caa-7d049f5e0683.jpg</image:loc>
+        <image:title>Силянка &quot;Традиційна яскрава&quot;</image:title>
+        <image:caption>Новий чокер з традиційним орнаментом вже в наявності✨ Яскраві кольори і геометричний візерунок нагадують гуцульські вишиті сорочки, а нарядні петельки прикрашають🔥</image:caption>
+      </image:image>
   </url>
   <url>
     <loc>https://rizdviana.art/?item=prod-cb6db7e0</loc>

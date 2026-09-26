@@ -57,10 +57,73 @@ async function generateDynamicSitemap() {
   }
 }
 
+function getPinterestCategoryInfo(pType) {
+  const pLower = (pType || 'прикраса').toLowerCase();
+  if (pLower.includes('силянк')) {
+    return {
+      enType: 'Sylyanka beaded necklace',
+      enTitleType: 'Ukrainian Sylyanka Beaded Necklace',
+      tags: '#силянка #силянказбісеру #українськіприкраси #до_вишиванки #beadedjewelry #sylyanka #ukrainianjewelry #seedbeadnecklace #rizdviana'
+    };
+  } else if (pLower.includes('гердан')) {
+    return {
+      enType: 'Ukrainian beaded gerdan',
+      enTitleType: 'Traditional Ukrainian Beaded Gerdan Necklace',
+      tags: '#гердан #герданзбісеру #українськіприкраси #до_вишиванки #beadedjewelry #gerdan #ukrainianjewelry #seedbeadnecklace #rizdviana'
+    };
+  } else if (pLower.includes('чокер')) {
+    return {
+      enType: 'Seed bead choker necklace',
+      enTitleType: 'Handmade Seed Bead Choker Necklace',
+      tags: '#чокер #чокерзбісеру #прикрасизбісеру #beadedchoker #seedbeadjewelry #handmadechoker #rizdviana'
+    };
+  } else if (pLower.includes('браслет')) {
+    return {
+      enType: 'Beaded bracelet',
+      enTitleType: 'Handmade Beaded Bracelet',
+      tags: '#браслет #браслетзбісеру #прикрасизбісеру #beadedbracelet #handmadejewelry #rizdviana'
+    };
+  }
+  return {
+    enType: 'Ukrainian beaded jewelry',
+    enTitleType: 'Ukrainian Beaded Folk Jewelry',
+    tags: '#прикрасизбісеру #українськіприкраси #до_вишиванки #beadedjewelry #ukrainianjewelry #folkjewelry #rizdviana'
+  };
+}
+
+function buildPinterestFeedDescription(p) {
+  const cat = getPinterestCategoryInfo(p.product_type);
+  const title = (p.title || 'Прикраса з бісеру').trim();
+  const price = p.price ? `Ціна: ${p.price} ₴.` : '';
+  const materials = (p.materials || 'Якісний чеський та японський бісер').trim();
+
+  const enPart = `✨ Handmade ${cat.enType} by RIZDVIANA.ART. Worldwide shipping.`;
+  const suffix = `\n\n${enPart}\n\n${cat.tags}`;
+  const maxUaLen = 500 - suffix.length;
+
+  let uaPart = (p.description || '').trim();
+  if (uaPart) {
+    if (price) uaPart = `${uaPart}\n${price}`;
+  } else {
+    uaPart = `Авторська прикраса «${title}» ручної роботи від майстерні RIZDVIANA.ART. ${materials}. ${price}`.trim();
+  }
+
+  if (uaPart.length > maxUaLen) {
+    let truncated = uaPart.slice(0, maxUaLen - 3).trim();
+    const lastSpace = truncated.lastIndexOf(' ');
+    if (lastSpace > Math.floor(maxUaLen / 2)) {
+      truncated = truncated.slice(0, lastSpace);
+    }
+    uaPart = truncated + '...';
+  }
+
+  return `${uaPart}${suffix}`;
+}
+
 // 2. ДИНАМІЧНИЙ FEED.XML ДЛЯ PINTEREST RSS
 async function generateDynamicFeed() {
   try {
-    const url = `${SUPABASE_REST_URL}/products?select=id,slug,title,description,price,created_at,media:product_media(url,media_type,display_order)&status=neq.archived&order=created_at.desc`;
+    const url = `${SUPABASE_REST_URL}/products?select=id,slug,title,description,price,product_type,materials,created_at,media:product_media(url,media_type,display_order)&status=neq.archived&order=created_at.desc`;
     const res = await fetch(url, { headers: { 'apikey': SUPABASE_API_KEY } });
     if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
     const products = await res.json();
@@ -70,7 +133,7 @@ async function generateDynamicFeed() {
       const slug = p.slug || p.id;
       const link = `https://rizdviana.art/?item=${slug}`;
       const title = escapeXml(p.title || 'Прикраса RIZDVIANA.ART');
-      const desc = escapeXml(p.description || `Авторська прикраса з бісеру від майстерні RIZDVIANA.ART. Ціна: ${p.price || ''} ₴.`);
+      const desc = escapeXml(buildPinterestFeedDescription(p));
       const pubDate = p.created_at ? new Date(p.created_at).toUTCString() : new Date().toUTCString();
 
       const media = p.media || [];
@@ -132,7 +195,7 @@ export async function onRequest(context) {
   try {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item);
     const filter = isUuid ? `id=eq.${encodeURIComponent(item)}` : `slug=eq.${encodeURIComponent(item)}`;
-    const supabaseUrl = `${SUPABASE_REST_URL}/products?${filter}&select=id,title,description,price,product_type,media:product_media(url,media_type,display_order)&limit=1`;
+    const supabaseUrl = `${SUPABASE_REST_URL}/products?${filter}&select=id,title,description,price,product_type,materials,media:product_media(url,media_type,display_order)&limit=1`;
     const res = await fetch(supabaseUrl, {
       headers: { 'apikey': SUPABASE_API_KEY }
     });
@@ -148,36 +211,9 @@ export async function onRequest(context) {
     const images = media.filter(m => m.media_type === 'image' && !m.url.endsWith('.mp4'));
     const primaryImage = images.length > 0 ? images[0].url : (media[0]?.url || '');
 
-    const itemType = (product.product_type || 'прикраса').toLowerCase();
-    
-    let enType = "Ukrainian Beaded Folk Jewelry";
-    let tags = "#прикрасизбісеру #українськіприкраси #до_вишиванки #beadedjewelry #ukrainianjewelry #folkjewelry #rizdviana";
-    
-    if (itemType.includes("силянк")) {
-      enType = "Ukrainian Sylyanka Beaded Necklace";
-      tags = "#силянка #силянказбісеру #українськіприкраси #до_вишиванки #beadedjewelry #sylyanka #ukrainianjewelry #seedbeadnecklace #folkjewelry #rizdviana";
-    } else if (itemType.includes("гердан")) {
-      enType = "Traditional Ukrainian Beaded Gerdan Necklace";
-      tags = "#гердан #герданзбісеру #українськіприкраси #до_вишиванки #beadedjewelry #gerdan #ukrainianjewelry #folkjewelry #rizdviana";
-    } else if (itemType.includes("чокер")) {
-      enType = "Handmade Seed Bead Choker Necklace";
-      tags = "#чокер #чокерзбісеру #прикрасизбісеру #beadedchoker #seedbeadjewelry #handmadechoker #rizdviana";
-    } else if (itemType.includes("браслет")) {
-      enType = "Handmade Beaded Bracelet";
-      tags = "#браслет #браслетзбісеру #прикрасизбісеру #beadedbracelet #handmadejewelry #rizdviana";
-    }
-
-    const title = `${product.title} — ${enType} | RIZDVIANA.ART`;
-    
-    const rawDesc = (product.description || '').trim();
-    const priceText = product.price ? `Ціна: ${product.price} ₴.` : '';
-    const uaPart = rawDesc 
-      ? `${rawDesc} ${priceText}`.trim()
-      : `Авторська ${itemType} «${product.title}» ручної роботи від майстерні RIZDVIANA.ART. Якісний чеський та японський бісер, автентичний орнамент. ${priceText}`.trim();
-      
-    const enPart = `Handmade ${enType} by RIZDVIANA.ART. High-quality seed beads, authentic Ukrainian folk design. Worldwide shipping. Order directly on rizdviana.art.`;
-
-    const fullDesc = `${uaPart}\n\n✨ ${enPart}\n\n${tags}`;
+    const cat = getPinterestCategoryInfo(product.product_type);
+    const title = `${product.title} — ${cat.enTitleType} | RIZDVIANA.ART`;
+    const fullDesc = buildPinterestFeedDescription(product);
     const pageUrl = url.href;
 
     const safeDesc = escapeXml(fullDesc);
