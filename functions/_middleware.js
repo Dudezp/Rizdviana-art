@@ -405,42 +405,64 @@ async function handleAnalyticsApi(context, url) {
       }
       sourcesList.sort((a, b) => b.visits - a.visits);
 
+      let regionNames = null;
+      try {
+        regionNames = new Intl.DisplayNames(['uk'], { type: 'region' });
+      } catch (e) {}
+
+      function getCountryFlag(code) {
+        if (!code || code.length !== 2) return '🌍';
+        try {
+          const codePoints = code
+            .toUpperCase()
+            .split('')
+            .map(char => 127397 + char.charCodeAt(0));
+          return String.fromCodePoint(...codePoints);
+        } catch (e) {
+          return '🌍';
+        }
+      }
+
       const countryNames = {
-        'UA': { name: 'Україна', flag: '🇺🇦' },
-        'US': { name: 'США', flag: '🇺🇸' },
-        'GB': { name: 'Велика Британія', flag: '🇬🇧' },
-        'PL': { name: 'Польща', flag: '🇵🇱' },
-        'CA': { name: 'Канада', flag: '🇨🇦' },
-        'DE': { name: 'Німеччина', flag: '🇩🇪' },
-        'NO': { name: 'Норвегія', flag: '🇳🇴' },
-        'IE': { name: 'Ірландія', flag: '🇮🇪' },
-        'PH': { name: 'Філіппіни', flag: '🇵🇭' },
-        'SE': { name: 'Швеція', flag: '🇸🇪' },
-        'IT': { name: 'Італія', flag: '🇮🇹' },
-        'FR': { name: 'Франція', flag: '🇫🇷' },
-        'CZ': { name: 'Чехія', flag: '🇨🇿' },
-        'NL': { name: 'Нідерланди', flag: '🇳🇱' },
-        'ES': { name: 'Іспанія', flag: '🇪🇸' },
-        'KR': { name: 'Південна Корея', flag: '🇰🇷' },
-        'HR': { name: 'Хорватія', flag: '🇭🇷' },
-        'TR': { name: 'Туреччина', flag: '🇹🇷' },
-        'MD': { name: 'Молдова', flag: '🇲🇩' },
-        'AT': { name: 'Австрія', flag: '🇦🇹' },
-        'CH': { name: 'Швейцарія', flag: '🇨🇭' },
-        'LT': { name: 'Литва', flag: '🇱🇹' },
-        'LV': { name: 'Латвія', flag: '🇱🇻' },
-        'EE': { name: 'Естонія', flag: '🇪🇪' },
-        'IL': { name: 'Ізраїль', flag: '🇮🇱' },
-        'AU': { name: 'Австралія', flag: '🇦🇺' }
+        'UA': 'Україна',
+        'US': 'США',
+        'GB': 'Велика Британія',
+        'PL': 'Польща',
+        'CA': 'Канада',
+        'DE': 'Німеччина',
+        'NO': 'Норвегія',
+        'IE': 'Ірландія',
+        'PH': 'Філіппіни',
+        'SE': 'Швеція',
+        'IT': 'Італія',
+        'FR': 'Франція',
+        'CZ': 'Чехія',
+        'NL': 'Нідерланди',
+        'ES': 'Іспанія',
+        'KR': 'Південна Корея',
+        'HR': 'Хорватія',
+        'TR': 'Туреччина',
+        'MD': 'Молдова',
+        'AT': 'Австрія',
+        'CH': 'Швейцарія',
+        'LT': 'Литва',
+        'LV': 'Латвія',
+        'EE': 'Естонія',
+        'IL': 'Ізраїль',
+        'AU': 'Австралія'
       };
 
       const countriesList = Object.entries(countryMap)
         .map(([code, stat]) => {
-          const info = countryNames[code] || { name: code, flag: '🌍' };
+          let name = countryNames[code];
+          if (!name && regionNames) {
+            try { name = regionNames.of(code); } catch (e) {}
+          }
+          if (!name) name = code;
           return {
             code,
-            name: info.name,
-            flag: info.flag,
+            name,
+            flag: getCountryFlag(code),
             visits: stat.visits,
             views: stat.views,
             percent: totalVisits > 0 ? Math.round((stat.visits / totalVisits) * 100) : 0
