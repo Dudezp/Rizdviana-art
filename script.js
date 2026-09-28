@@ -144,6 +144,26 @@ function syncFavoriteWithServer(productId, isAdded) {
     }
 }
 
+function syncExistingFavoritesToServer() {
+    try {
+        const hasSynced = localStorage.getItem('rizdviana_favorites_synced_v1');
+        if (hasSynced) return;
+        const stored = getStoredFavorites();
+        if (!Array.isArray(stored) || stored.length === 0) {
+            localStorage.setItem('rizdviana_favorites_synced_v1', 'true');
+            return;
+        }
+        stored.forEach((id, i) => {
+            setTimeout(() => {
+                syncFavoriteWithServer(id, true);
+            }, i * 300);
+        });
+        localStorage.setItem('rizdviana_favorites_synced_v1', 'true');
+    } catch (e) {
+        console.debug('Favorites auto-sync note:', e);
+    }
+}
+
 function updateFavoritesBadges(isAdded = false) {
     const count = favoriteIds.size;
     const deskBadge = document.getElementById('fav-count-badge-desktop');
@@ -510,6 +530,7 @@ async function loadCatalog() {
         updateFavoritesBadges();
         applyFilters();
         renderRecentlyViewed();
+        syncExistingFavoritesToServer();
 
         // Автоматичне відкриття прикраси за прямим посиланням у URL (?item=ID або ?item=slug)
         const urlParams = new URLSearchParams(window.location.search);

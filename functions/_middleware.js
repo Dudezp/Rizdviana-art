@@ -340,7 +340,7 @@ async function handleAnalyticsApi(context, url) {
           headers: { 'apikey': SUPABASE_API_KEY }
         }).then(r => r.json()).catch(() => []),
 
-        fetch(`${SUPABASE_REST_URL}/product_favorites?select=id,action,created_at,product:products(title,price)&order=created_at.desc&limit=15`, {
+        fetch(`${SUPABASE_REST_URL}/product_favorites_recent?select=id,action,created_at,title,price,slug&limit=15`, {
           headers: { 'apikey': SUPABASE_API_KEY }
         }).then(r => r.json()).catch(() => [])
       ]);
@@ -503,8 +503,9 @@ async function handleAnalyticsApi(context, url) {
         id: ev.id,
         action: ev.action,
         created_at: ev.created_at,
-        title: ev.product?.title || 'Прикраса',
-        price: ev.product?.price || ''
+        title: ev.title || 'Прикраса',
+        price: ev.price || '',
+        slug: ev.slug || ''
       }));
 
       const categoriesList = Object.entries(catCount)
