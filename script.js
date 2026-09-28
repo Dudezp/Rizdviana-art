@@ -112,6 +112,38 @@ function saveStoredFavorites(favs) {
 
 const favoriteIds = new Set(getStoredFavorites());
 
+function getAnonymousVisitorId() {
+    try {
+        let vid = localStorage.getItem('rizdviana_visitor_id');
+        if (!vid) {
+            vid = 'v_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+            localStorage.setItem('rizdviana_visitor_id', vid);
+        }
+        return vid;
+    } catch {
+        return 'v_anon';
+    }
+}
+
+function syncFavoriteWithServer(productId, isAdded) {
+    if (!productId || typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    try {
+        const visitorId = getAnonymousVisitorId();
+        supabaseClient
+            .rpc('record_favorite_event', {
+                p_product_id: productId,
+                p_action: isAdded ? 'add' : 'remove',
+                p_visitor_id: visitorId
+            })
+            .then(({ error }) => {
+                if (error) console.debug('Favorites sync note:', error.message);
+            })
+            .catch(() => {});
+    } catch {
+        // Завжди мовчки ігноруємо помилки, щоб інтерфейс працював без жодних затримок
+    }
+}
+
 function updateFavoritesBadges(isAdded = false) {
     const count = favoriteIds.size;
     const deskBadge = document.getElementById('fav-count-badge-desktop');
@@ -154,6 +186,7 @@ function toggleFavorite(productId, event) {
     }
     saveStoredFavorites(favoriteIds);
     updateFavoritesBadges(isNowFav);
+    syncFavoriteWithServer(productId, isNowFav);
 
     // Тактильна мікровібрація для мобільних пристроїв
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
