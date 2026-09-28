@@ -344,12 +344,24 @@
         
         <!-- Графік відвідувань (2 колонки) -->
         <div class="lg:col-span-2 craft-card p-4 sm:p-6 flex flex-col">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-sm font-bold font-serif text-stoneDark">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold font-serif text-stoneDark truncate">
                 Динаміка відвідуваності
               </h3>
-              <p class="text-xs text-stoneMuted">Перегляди та унікальні візити за днями</p>
+              <p class="text-xs text-stoneMuted truncate">Перегляди та унікальні візити</p>
+            </div>
+            
+            <!-- Перемикач стилю графіка -->
+            <div class="inline-flex items-center p-0.5 rounded-lg bg-linen border border-craft flex-shrink-0 shadow-xs">
+              <button type="button" id="chart-mode-line" onclick="setChartMode('line')" class="px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 bg-stoneDark text-white shadow-xs">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18l6-6 4 4 8-8"/></svg>
+                <span>Хвиля</span>
+              </button>
+              <button type="button" id="chart-mode-bar" onclick="setChartMode('bar')" class="px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 text-stone-600 hover:text-stoneDark">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="4" height="10" rx="1"/><rect x="10" y="5" width="4" height="15" rx="1"/><rect x="17" y="2" width="4" height="18" rx="1"/></svg>
+                <span>Стовпці</span>
+              </button>
             </div>
           </div>
           <div class="flex-1 w-full min-h-[220px] relative">
@@ -797,50 +809,146 @@
       });
     }
 
-    // Побудова графіка Chart.js
+    let currentTimeline = [];
+    let currentChartMode = localStorage.getItem('rizdviana_chart_mode') || 'line';
+
+    function setChartMode(mode) {
+      currentChartMode = mode;
+      localStorage.setItem('rizdviana_chart_mode', mode);
+      renderChart(currentTimeline);
+    }
+
+    // Побудова графіка Chart.js (Хвиля або Стовпці)
     function renderChart(timeline) {
-      const ctx = document.getElementById('traffic-chart');
-      if (!ctx) return;
+      currentTimeline = timeline || [];
+      const canvas = document.getElementById('traffic-chart');
+      if (!canvas) return;
 
       const isMobile = window.innerWidth < 640;
+
+      // Оновлення стану кнопок-перемикачів
+      const lineBtn = document.getElementById('chart-mode-line');
+      const barBtn = document.getElementById('chart-mode-bar');
+      if (lineBtn && barBtn) {
+        if (currentChartMode === 'line') {
+          lineBtn.className = 'px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 bg-stoneDark text-white shadow-xs';
+          barBtn.className = 'px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 text-stone-600 hover:text-stoneDark';
+        } else {
+          barBtn.className = 'px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 bg-stoneDark text-white shadow-xs';
+          lineBtn.className = 'px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 text-stone-600 hover:text-stoneDark';
+        }
+      }
+
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      if (!timeline || timeline.length === 0) {
+        return;
+      }
+
+      const isHourly = timeline.some(t => (t.date && t.date.includes('T')) || t.isHourly);
+
       const labels = timeline.map(t => {
         const d = new Date(t.date);
+        if (isHourly) {
+          return `${String(d.getHours()).padStart(2, '0')}:00`;
+        }
         if (isMobile) {
           return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
         }
         return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
       });
-      const visitsData = timeline.map(t => t.visits);
-      const viewsData = timeline.map(t => t.views);
 
-      if (chartInstance) {
-        chartInstance.destroy();
+      const visitsData = timeline.map(t => t.visits || 0);
+      const viewsData = timeline.map(t => t.views || 0);
+
+      const ctx = canvas.getContext('2d');
+      let datasetsConfig = [];
+      const chartType = currentChartMode;
+
+      if (chartType === 'line') {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+        gradient.addColorStop(0, 'rgba(194, 142, 92, 0.26)');
+        gradient.addColorStop(0.65, 'rgba(223, 213, 200, 0.12)');
+        gradient.addColorStop(1, 'rgba(249, 246, 240, 0.0)');
+
+        datasetsConfig = [
+          {
+            label: 'Перегляди',
+            data: viewsData,
+            borderColor: '#C28E5C',
+            borderWidth: 2,
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.35,
+            pointRadius: timeline.length <= 7 ? 3 : 0,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#C28E5C',
+            pointHoverBorderColor: '#FFFFFF',
+            pointHoverBorderWidth: 2,
+            order: 2
+          },
+          {
+            label: 'Візити',
+            data: visitsData,
+            borderColor: '#2C2825',
+            borderWidth: 2.5,
+            backgroundColor: 'transparent',
+            fill: false,
+            tension: 0.35,
+            pointRadius: timeline.length <= 7 ? 3.5 : 0,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#2C2825',
+            pointHoverBorderColor: '#FFFFFF',
+            pointHoverBorderWidth: 2,
+            order: 1
+          }
+        ];
+      } else {
+        datasetsConfig = [
+          {
+            label: 'Візити',
+            data: visitsData,
+            backgroundColor: '#2C2825',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
+            maxBarThickness: isMobile ? (timeline.length > 14 ? 8 : 12) : 18
+          },
+          {
+            label: 'Перегляди',
+            data: viewsData,
+            backgroundColor: '#DFD5C8',
+            hoverBackgroundColor: '#C28E5C',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
+            maxBarThickness: isMobile ? (timeline.length > 14 ? 8 : 12) : 18
+          }
+        ];
       }
 
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
+      chartInstance = new Chart(canvas, {
+        type: chartType === 'line' ? 'line' : 'bar',
         data: {
-          labels: labels.length > 0 ? labels : ['Немає даних'],
-          datasets: [
-            {
-              label: 'Візити',
-              data: visitsData.length > 0 ? visitsData : [0],
-              backgroundColor: '#2C2825',
-              borderRadius: 6,
-              barThickness: isMobile ? 10 : 16
-            },
-            {
-              label: 'Перегляди сторінок',
-              data: viewsData.length > 0 ? viewsData : [0],
-              backgroundColor: '#DFD5C8',
-              borderRadius: 6,
-              barThickness: isMobile ? 10 : 16
-            }
-          ]
+          labels: labels,
+          datasets: datasetsConfig
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: {
+              left: 4,
+              right: 10,
+              top: 6,
+              bottom: 2
+            }
+          },
+          categoryPercentage: 0.72,
+          barPercentage: 0.82,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
           plugins: {
             legend: {
               position: 'top',
@@ -850,7 +958,8 @@
                 boxHeight: 8,
                 usePointStyle: true,
                 pointStyle: 'circle',
-                font: { family: 'Plus Jakarta Sans', size: isMobile ? 10 : 11 }
+                padding: 14,
+                font: { family: 'Plus Jakarta Sans', size: isMobile ? 10 : 11, weight: '500' }
               }
             },
             tooltip: {
@@ -858,25 +967,44 @@
               titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: 'bold' },
               bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
               padding: 10,
-              cornerRadius: 8
+              cornerRadius: 8,
+              usePointStyle: true,
+              boxPadding: 4,
+              callbacks: {
+                title: function(tooltipItems) {
+                  const idx = tooltipItems[0].dataIndex;
+                  const item = timeline[idx];
+                  if (!item) return '';
+                  const d = new Date(item.date);
+                  if (isHourly) {
+                    return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' }) + `, ${String(d.getHours()).padStart(2, '0')}:00`;
+                  }
+                  return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+              }
             }
           },
           scales: {
             x: {
+              stacked: false,
               grid: { display: false },
-              ticks: { 
-                font: { family: 'Plus Jakarta Sans', size: isMobile ? 9 : 10 }, 
+              ticks: {
+                font: { family: 'Plus Jakarta Sans', size: isMobile ? 9 : 10 },
                 color: '#78716C',
                 maxRotation: 0,
                 minRotation: 0,
                 autoSkip: true,
-                maxTicksLimit: isMobile ? 7 : 12
+                maxTicksLimit: isMobile ? 6 : 10
               }
             },
             y: {
+              stacked: false,
+              beginAtZero: true,
+              grace: '8%',
               border: { dash: [4, 4] },
               grid: { color: '#EBE4DA' },
               ticks: {
+                precision: 0,
                 stepSize: 5,
                 font: { family: 'Plus Jakarta Sans', size: 10 },
                 color: '#78716C'

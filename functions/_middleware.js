@@ -448,18 +448,19 @@ async function handleAnalyticsApi(context, url) {
         })
         .sort((a, b) => b.visits - a.visits);
 
+      const isHourly = period === '24h';
       const dayTrendMap = {};
       for (const tg of trendGroups) {
         const h = tg.dimensions?.datetimeHour;
-        const day = h ? h.slice(0, 10) : '';
-        if (day) {
-          if (!dayTrendMap[day]) dayTrendMap[day] = { visits: 0, views: 0 };
-          dayTrendMap[day].visits += (tg.sum?.visits || 0);
-          dayTrendMap[day].views += (tg.count || 0);
+        const key = isHourly ? h : (h ? h.slice(0, 10) : '');
+        if (key) {
+          if (!dayTrendMap[key]) dayTrendMap[key] = { visits: 0, views: 0 };
+          dayTrendMap[key].visits += (tg.sum?.visits || 0);
+          dayTrendMap[key].views += (tg.count || 0);
         }
       }
       const timeline = Object.entries(dayTrendMap)
-        .map(([date, d]) => ({ date, visits: d.visits, views: d.views }))
+        .map(([date, d]) => ({ date, visits: d.visits, views: d.views, isHourly }))
         .sort((a, b) => a.date.localeCompare(b.date));
 
       const prods = Array.isArray(productsRes) ? productsRes : [];
