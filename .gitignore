@@ -24,3 +24,7 @@ pinterest_catalog.md
 pinterest_published.json
 
 pinterest_bulk_pins.csv
+
+.wrangler/
+.dev.vars
+

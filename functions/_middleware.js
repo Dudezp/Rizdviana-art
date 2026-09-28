@@ -166,6 +166,386 @@ async function generateDynamicFeed() {
   }
 }
 
+// 3. ЗАХИЩЕНА АНАЛІТИКА (DASHBOARD API)
+const CF_ACCOUNT_ID = 'd5c50adce336f113924b6c843f45c076';
+const CF_SITE_TAG = 'a168503423bb4fd59fb1d8d9bf15803e';
+// CF_ANALYTICS_TOKEN передається через Cloudflare Pages Secrets / context.env
+const SESSION_SECRET = 'rizdviana-analytics-session-secret-salt-2026';
+const DEFAULT_ADMIN_USER = 'admin';
+const DEFAULT_ADMIN_PASS = 'RizdvianaArt#2026';
+
+async function generateSessionToken(username) {
+  const period = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 30));
+  const data = new TextEncoder().encode(`${username}:${period}:${SESSION_SECRET}`);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${username}.${period}.${hashHex}`;
+}
+
+async function verifySessionToken(token) {
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 3) return false;
+  const [username, periodStr] = parts;
+  const period = parseInt(periodStr, 10);
+  const currentPeriod = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 30));
+  if (Math.abs(currentPeriod - period) > 1) return false;
+  const expected = await generateSessionToken(username);
+  return token === expected;
+}
+
+function getCookie(request, name) {
+  const cookieStr = request.headers.get('Cookie') || '';
+  const match = cookieStr.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+async function handleAnalyticsApi(context, url) {
+  const path = url.pathname;
+  const req = context.request;
+
+  // А. Вхід (Login)
+  if (path === '/api/analytics/auth' && req.method === 'POST') {
+    try {
+      const body = await req.json();
+      const expectedUser = (context.env?.ANALYTICS_USER || DEFAULT_ADMIN_USER).trim().toLowerCase();
+      const expectedPass = (context.env?.ANALYTICS_PASSWORD || DEFAULT_ADMIN_PASS).trim();
+
+      const user = (body.username || '').trim().toLowerCase();
+      const pass = (body.password || '').trim();
+
+      if (user === expectedUser && pass === expectedPass) {
+        const token = await generateSessionToken(user);
+        return new Response(JSON.stringify({ success: true }), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Set-Cookie': `rizdviana_auth=${token}; Path=/; Max-Age=2592000; SameSite=Lax; Secure; HttpOnly`
+          }
+        });
+      } else {
+        return new Response(JSON.stringify({ success: false, error: 'Невірний логін або пароль' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    } catch {
+      return new Response(JSON.stringify({ success: false, error: 'Помилка запиту' }), { status: 400 });
+    }
+  }
+
+  // Б. Вихід (Logout)
+  if (path === '/api/analytics/logout' && req.method === 'POST') {
+    return new Response(JSON.stringify({ success: true }), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Set-Cookie': 'rizdviana_auth=; Path=/; Max-Age=0; SameSite=Lax; Secure; HttpOnly'
+      }
+    });
+  }
+
+  // В. Перевірка статусу сесії
+  if (path === '/api/analytics/check-auth') {
+    const token = getCookie(req, 'rizdviana_auth');
+    const isAuth = await verifySessionToken(token);
+    return new Response(JSON.stringify({ authenticated: isAuth }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Г. Отримання агрегованих даних аналітики
+  if (path === '/api/analytics/data') {
+    const token = getCookie(req, 'rizdviana_auth');
+    const isAuth = await verifySessionToken(token);
+    if (!isAuth) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    try {
+      const period = url.searchParams.get('period') || '7d';
+      const now = new Date();
+      let sinceDate = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+      if (period === '24h') {
+        sinceDate = new Date(now.getTime() - 24 * 3600 * 1000);
+      } else if (period === '30d') {
+        sinceDate = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+      }
+
+      const sinceIso = sinceDate.toISOString();
+      const untilIso = now.toISOString();
+      const cfToken = context.env?.CF_ANALYTICS_TOKEN || '';
+
+      const queryRum = `
+      query GetRum($accountTag: string!, $siteTag: string!, $since: string!, $until: string!) {
+        viewer {
+          accounts(filter: {accountTag: $accountTag}) {
+            rumPageloadEventsAdaptiveGroups(
+              limit: 500,
+              filter: {siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until},
+              orderBy: [count_DESC]
+            ) {
+              count
+              sum { visits }
+              dimensions {
+                refererHost
+                countryName
+                requestPath
+              }
+            }
+          }
+        }
+      }
+      `;
+
+      const queryTrend = `
+      query GetRumTrend($accountTag: string!, $siteTag: string!, $since: string!, $until: string!) {
+        viewer {
+          accounts(filter: {accountTag: $accountTag}) {
+            rumPageloadEventsAdaptiveGroups(
+              limit: 500,
+              filter: {siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until},
+              orderBy: [count_DESC]
+            ) {
+              count
+              sum { visits }
+              dimensions {
+                datetimeHour
+              }
+            }
+          }
+        }
+      }
+      `;
+
+      const [rumRes, trendRes, productsRes, favStatsRes, favEventsRes] = await Promise.all([
+        fetch('https://api.cloudflare.com/client/v4/graphql', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${cfToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: queryRum, variables: { accountTag: CF_ACCOUNT_ID, siteTag: CF_SITE_TAG, since: sinceIso, until: untilIso } })
+        }).then(r => r.json()).catch(() => ({})),
+
+        fetch('https://api.cloudflare.com/client/v4/graphql', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${cfToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: queryTrend, variables: { accountTag: CF_ACCOUNT_ID, siteTag: CF_SITE_TAG, since: sinceIso, until: untilIso } })
+        }).then(r => r.json()).catch(() => ({})),
+
+        fetch(`${SUPABASE_REST_URL}/products?select=id,title,price,status,product_type,media:product_media(url,media_type,display_order)&status=neq.archived`, {
+          headers: { 'apikey': SUPABASE_API_KEY }
+        }).then(r => r.json()).catch(() => []),
+
+        fetch(`${SUPABASE_REST_URL}/product_favorites_stats?select=product_id,title,price,product_type,active_favorites_count,total_adds_count,last_added_at&order=active_favorites_count.desc,total_adds_count.desc&limit=15`, {
+          headers: { 'apikey': SUPABASE_API_KEY }
+        }).then(r => r.json()).catch(() => []),
+
+        fetch(`${SUPABASE_REST_URL}/product_favorites?select=id,action,created_at,product:products(title,price)&order=created_at.desc&limit=15`, {
+          headers: { 'apikey': SUPABASE_API_KEY }
+        }).then(r => r.json()).catch(() => [])
+      ]);
+
+      const rumGroups = rumRes?.data?.viewer?.accounts?.[0]?.rumPageloadEventsAdaptiveGroups || [];
+      const trendGroups = trendRes?.data?.viewer?.accounts?.[0]?.rumPageloadEventsAdaptiveGroups || [];
+
+      let totalVisits = 0;
+      let totalViews = 0;
+      const refMap = {};
+      const countryMap = {};
+
+      for (const g of rumGroups) {
+        const count = g.count || 0;
+        const visits = g.sum?.visits || 0;
+        const dims = g.dimensions || {};
+        const ref = (dims.refererHost || '').trim();
+        const country = dims.countryName || 'Невідомо';
+
+        totalViews += count;
+        totalVisits += visits;
+
+        const refKey = ref || 'Direct';
+        if (!refMap[refKey]) refMap[refKey] = { visits: 0, views: 0 };
+        refMap[refKey].visits += visits;
+        refMap[refKey].views += count;
+
+        if (!countryMap[country]) countryMap[country] = { visits: 0, views: 0 };
+        countryMap[country].visits += visits;
+        countryMap[country].views += count;
+      }
+
+      const socialSummary = {
+        'Threads': 0,
+        'Instagram': 0,
+        'Facebook': 0,
+        'Pinterest': 0,
+        'Direct': 0,
+        'Other': 0
+      };
+
+      for (const [r, stat] of Object.entries(refMap)) {
+        const rLow = r.toLowerCase();
+        if (rLow.includes('threads')) socialSummary['Threads'] += stat.visits;
+        else if (rLow.includes('instagram')) socialSummary['Instagram'] += stat.visits;
+        else if (rLow.includes('facebook')) socialSummary['Facebook'] += stat.visits;
+        else if (rLow.includes('pinterest')) socialSummary['Pinterest'] += stat.visits;
+        else if (r === 'Direct' || !r) socialSummary['Direct'] += stat.visits;
+        else if (!rLow.includes('rizdviana.art')) socialSummary['Other'] += stat.visits;
+      }
+
+      const sourcesList = [
+        { name: 'Threads', visits: socialSummary['Threads'], icon: 'threads', color: '#101010' },
+        { name: 'Instagram', visits: socialSummary['Instagram'], icon: 'instagram', color: '#E1306C' },
+        { name: 'Facebook', visits: socialSummary['Facebook'], icon: 'facebook', color: '#1877F2' },
+        { name: 'Pinterest', visits: socialSummary['Pinterest'], icon: 'pinterest', color: '#E60023' },
+        { name: 'Прямий / Месенджери', visits: socialSummary['Direct'], icon: 'direct', color: '#78716C' }
+      ];
+      if (socialSummary['Other'] > 0) {
+        sourcesList.push({ name: 'Інші сайти', visits: socialSummary['Other'], icon: 'web', color: '#A8A29E' });
+      }
+      sourcesList.sort((a, b) => b.visits - a.visits);
+
+      const countryNames = {
+        'UA': { name: 'Україна', flag: '🇺🇦' },
+        'US': { name: 'США', flag: '🇺🇸' },
+        'GB': { name: 'Велика Британія', flag: '🇬🇧' },
+        'PL': { name: 'Польща', flag: '🇵🇱' },
+        'CA': { name: 'Канада', flag: '🇨🇦' },
+        'DE': { name: 'Німеччина', flag: '🇩🇪' },
+        'NO': { name: 'Норвегія', flag: '🇳🇴' },
+        'IE': { name: 'Ірландія', flag: '🇮🇪' },
+        'PH': { name: 'Філіппіни', flag: '🇵🇭' },
+        'SE': { name: 'Швеція', flag: '🇸🇪' },
+        'IT': { name: 'Італія', flag: '🇮🇹' },
+        'FR': { name: 'Франція', flag: '🇫🇷' },
+        'CZ': { name: 'Чехія', flag: '🇨🇿' },
+        'NL': { name: 'Нідерланди', flag: '🇳🇱' },
+        'ES': { name: 'Іспанія', flag: '🇪🇸' },
+        'KR': { name: 'Південна Корея', flag: '🇰🇷' },
+        'HR': { name: 'Хорватія', flag: '🇭🇷' },
+        'TR': { name: 'Туреччина', flag: '🇹🇷' },
+        'MD': { name: 'Молдова', flag: '🇲🇩' },
+        'AT': { name: 'Австрія', flag: '🇦🇹' },
+        'CH': { name: 'Швейцарія', flag: '🇨🇭' },
+        'LT': { name: 'Литва', flag: '🇱🇹' },
+        'LV': { name: 'Латвія', flag: '🇱🇻' },
+        'EE': { name: 'Естонія', flag: '🇪🇪' },
+        'IL': { name: 'Ізраїль', flag: '🇮🇱' },
+        'AU': { name: 'Австралія', flag: '🇦🇺' }
+      };
+
+      const countriesList = Object.entries(countryMap)
+        .map(([code, stat]) => {
+          const info = countryNames[code] || { name: code, flag: '🌍' };
+          return {
+            code,
+            name: info.name,
+            flag: info.flag,
+            visits: stat.visits,
+            views: stat.views,
+            percent: totalVisits > 0 ? Math.round((stat.visits / totalVisits) * 100) : 0
+          };
+        })
+        .sort((a, b) => b.visits - a.visits);
+
+      const dayTrendMap = {};
+      for (const tg of trendGroups) {
+        const h = tg.dimensions?.datetimeHour;
+        const day = h ? h.slice(0, 10) : '';
+        if (day) {
+          if (!dayTrendMap[day]) dayTrendMap[day] = { visits: 0, views: 0 };
+          dayTrendMap[day].visits += (tg.sum?.visits || 0);
+          dayTrendMap[day].views += (tg.count || 0);
+        }
+      }
+      const timeline = Object.entries(dayTrendMap)
+        .map(([date, d]) => ({ date, visits: d.visits, views: d.views }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const prods = Array.isArray(productsRes) ? productsRes : [];
+      const prodImagesMap = {};
+      const catCount = {};
+      let inStockCount = 0;
+      let totalValue = 0;
+
+      for (const p of prods) {
+        if (p.status === 'in_stock') inStockCount++;
+        const pType = p.product_type || 'Прикраса';
+        catCount[pType] = (catCount[pType] || 0) + 1;
+        totalValue += (p.price || 0);
+
+        const media = p.media || [];
+        media.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+        const firstImg = media.find(m => m.media_type === 'image' && !m.url.endsWith('.mp4'));
+        if (firstImg) prodImagesMap[p.id] = firstImg.url;
+      }
+
+      const favStats = Array.isArray(favStatsRes) ? favStatsRes : [];
+      let totalActiveFavs = 0;
+      let totalLifetimeAdds = 0;
+
+      const topFavorites = favStats.map(f => {
+        totalActiveFavs += (f.active_favorites_count || 0);
+        totalLifetimeAdds += (f.total_adds_count || 0);
+        return {
+          id: f.product_id,
+          title: f.title,
+          price: f.price,
+          product_type: f.product_type,
+          active_count: f.active_favorites_count,
+          total_adds: f.total_adds_count,
+          last_added_at: f.last_added_at,
+          image_url: prodImagesMap[f.product_id] || ''
+        };
+      }).filter(f => f.total_adds > 0 || f.active_count > 0);
+
+      const recentFavs = (Array.isArray(favEventsRes) ? favEventsRes : []).map(ev => ({
+        id: ev.id,
+        action: ev.action,
+        created_at: ev.created_at,
+        title: ev.product?.title || 'Прикраса',
+        price: ev.product?.price || ''
+      }));
+
+      const categoriesList = Object.entries(catCount)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+
+      return new Response(JSON.stringify({
+        period,
+        totals: {
+          visits: totalVisits,
+          views: totalViews,
+          total_products: prods.length,
+          in_stock: inStockCount,
+          made_to_order: prods.length - inStockCount,
+          active_favorites: totalActiveFavs,
+          total_favorites_clicks: totalLifetimeAdds,
+          catalog_avg_price: prods.length > 0 ? Math.round(totalValue / prods.length) : 0
+        },
+        sources: sourcesList,
+        countries: countriesList,
+        timeline,
+        top_favorites: topFavorites,
+        recent_favorites: recentFavs,
+        categories: categoriesList,
+        last_updated: new Date().toISOString()
+      }), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
+        }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  }
+
+  return new Response('Not found', { status: 404 });
+}
+
 // ГОЛОВНИЙ MIDDLEWARE
 export async function onRequest(context) {
   const url = new URL(context.request.url);
@@ -178,6 +558,11 @@ export async function onRequest(context) {
   // 2. Динамічний feed.xml
   if (url.pathname === '/feed.xml') {
     return generateDynamicFeed();
+  }
+
+  // 3. Захищене API аналітики
+  if (url.pathname.startsWith('/api/analytics')) {
+    return handleAnalyticsApi(context, url);
   }
 
   // 3. Динамічні SSR теги для товару (?item=...)
