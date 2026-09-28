@@ -275,7 +275,7 @@ async function handleAnalyticsApi(context, url) {
 
       const sinceIso = sinceDate.toISOString();
       const untilIso = now.toISOString();
-      const cfToken = context.env?.CF_ANALYTICS_TOKEN || '';
+      const cfToken = (context.env?.CF_ANALYTICS_TOKEN || '').trim().replace(/[\r\n"']/g, '');
 
       const queryRum = `
       query GetRum($accountTag: string!, $siteTag: string!, $since: string!, $until: string!) {
@@ -347,6 +347,7 @@ async function handleAnalyticsApi(context, url) {
 
       const rumGroups = rumRes?.data?.viewer?.accounts?.[0]?.rumPageloadEventsAdaptiveGroups || [];
       const trendGroups = trendRes?.data?.viewer?.accounts?.[0]?.rumPageloadEventsAdaptiveGroups || [];
+      if (rumRes?.errors) console.error('Cloudflare RUM GraphQL error:', JSON.stringify(rumRes.errors));
 
       let totalVisits = 0;
       let totalViews = 0;
