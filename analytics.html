@@ -77,9 +77,16 @@
     .tab-btn.is-active svg {
       color: #FFFFFF !important;
       stroke: #FFFFFF !important;
-    }
     .hm-cell {
-      transition: background-color 450ms cubic-bezier(0.23, 1, 0.32, 1), color 350ms ease, transform 150ms ease;
+      transition: background-color 450ms cubic-bezier(0.23, 1, 0.32, 1), color 350ms ease, transform 150ms ease, box-shadow 150ms ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .hm-cell.is-selected {
+      box-shadow: 0 0 0 2px #C28E5C, 0 4px 12px rgba(44, 40, 37, 0.25);
+      transform: scale(1.22);
+      z-index: 30;
+      position: relative;
     }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -511,10 +518,21 @@
               <!-- 7 рядків (Пн-Нд) -->
             </div>
           </div>
+        <!-- Інтерактивна плашка точних даних при кліку / тапі на клітинку (Touch & Click Info) -->
+        <div id="heatmap-cell-detail" class="mt-3 p-2.5 sm:p-3 rounded-xl bg-linen border border-craft/80 flex items-center justify-between text-xs transition-all duration-300">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#C28E5C] flex-shrink-0 animate-pulse"></span>
+            <span id="hm-detail-label" class="font-medium text-stoneDark truncate">
+              Торкніться або наведіть на клітинку для точних даних
+            </span>
+          </div>
+          <div id="hm-detail-stats" class="text-right flex-shrink-0 ml-2 font-mono font-semibold text-stoneDark">
+            <span class="text-stone-400 font-normal">—</span>
+          </div>
         </div>
 
         <!-- Легенда інтенсивності -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3 pt-3 border-t border-craft/60 text-[11px] text-stone-500">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-2 border-t border-craft/60 text-[11px] text-stone-500">
           <span class="flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-stone-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Час за Києвом. Наведіть курсор або торкніться клітинки для точних цифр</span>
@@ -959,7 +977,7 @@
       loadDashboardData(`since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`);
     }
 
-    // Закриття попапу календаря при кліку поза ним
+    // Закриття попапу календаря та підказки матриці при кліку або скролі
     document.addEventListener('click', (e) => {
       const popover = document.getElementById('date-picker-popover');
       const customBtn = document.getElementById('tab-custom');
@@ -968,7 +986,20 @@
           closeDatePicker();
         }
       }
+      const popup = document.getElementById('heatmap-floating-popup');
+      if (popup && popup.classList.contains('opacity-100') && !e.target.closest('.hm-cell')) {
+        popup.classList.remove('opacity-100', 'scale-100');
+        popup.classList.add('opacity-0', 'scale-95');
+      }
     });
+
+    window.addEventListener('scroll', () => {
+      const popup = document.getElementById('heatmap-floating-popup');
+      if (popup && popup.classList.contains('opacity-100')) {
+        popup.classList.remove('opacity-100', 'scale-100');
+        popup.classList.add('opacity-0', 'scale-95');
+      }
+    }, { passive: true });
 
     // Плавний лічильник чисел (Emil Kowalski / ease-out cubic number counter)
     function animateCount(element, start, end, duration = 450, prefix = '', suffix = '') {
@@ -1343,6 +1374,80 @@
     }
 
     let prevHeatmapSlots = new Map();
+    let selectedHeatmapCell = null;
+    let selectedHeatmapCoords = null;
+    let popupTimeout = null;
+
+    // Інтерактивний вибір клітинки матриці для мобільних та ПК
+    function selectHeatmapCell(dayIdx, hour, visits, views, dayName, hourLabel, showPopup = true) {
+      if (selectedHeatmapCell) {
+        selectedHeatmapCell.classList.remove('is-selected');
+      }
+      selectedHeatmapCoords = { dayIdx, hour };
+      const cellEl = document.getElementById(`hm-cell-${dayIdx}-${hour}`);
+      if (cellEl) {
+        cellEl.classList.add('is-selected');
+        selectedHeatmapCell = cellEl;
+      }
+
+      // Тактильна вібрація на смартфонах
+      if (window.navigator && window.navigator.vibrate) {
+        try { window.navigator.vibrate(10); } catch(e) {}
+      }
+
+      // Оновлення інтерактивної плашки під матрицею
+      const detailLabel = document.getElementById('hm-detail-label');
+      const detailStats = document.getElementById('hm-detail-stats');
+      const detailCard = document.getElementById('heatmap-cell-detail');
+      
+      if (detailLabel && detailStats) {
+        detailLabel.innerHTML = `<span class="font-bold text-stoneDark">${dayName}</span>, <span class="font-mono text-stone-600">${hourLabel}</span>`;
+        if (visits === 0 && views === 0) {
+          detailStats.innerHTML = `<span class="text-stone-400 font-normal">0 візитів (тиша)</span>`;
+        } else {
+          detailStats.innerHTML = `<span class="text-[#C28E5C] font-bold text-sm">${visits}</span> ${visits === 1 ? 'візит' : 'візитів'} <span class="text-stone-300 mx-1">•</span> <span class="text-stone-700 font-medium">${views}</span> переглядів`;
+        }
+
+        if (detailCard) {
+          detailCard.classList.remove('bg-linen', 'border-craft/80');
+          detailCard.classList.add('bg-amber-50', 'border-amber-300', 'shadow-xs');
+        }
+      }
+
+      // Плаваюча підказка (Floating Tooltip) безпосередньо над клітинкою на мобільному
+      if (showPopup && cellEl) {
+        let popup = document.getElementById('heatmap-floating-popup');
+        if (!popup) {
+          popup = document.createElement('div');
+          popup.id = 'heatmap-floating-popup';
+          popup.className = 'fixed z-50 pointer-events-none transition-all duration-200 bg-[#2C2825] text-white px-3 py-1.5 rounded-xl shadow-2xl border border-stone-700/80 text-xs font-sans -translate-x-1/2 -translate-y-full opacity-0 scale-95';
+          document.body.appendChild(popup);
+        }
+
+        popup.innerHTML = `
+          <div class="text-[10px] text-[#DFD5C8] font-medium whitespace-nowrap">${dayName}, ${hourLabel}</div>
+          <div class="font-mono font-bold text-xs text-white whitespace-nowrap mt-0.5">
+            <span class="text-[#C28E5C]">${visits}</span> ${visits === 1 ? 'візит' : 'візитів'} <span class="text-stone-400 font-normal text-[10px]">(${views} перегл.)</span>
+          </div>
+        `;
+
+        const rect = cellEl.getBoundingClientRect();
+        const popupWidth = 140;
+        const left = Math.max(popupWidth / 2 + 8, Math.min(window.innerWidth - popupWidth / 2 - 8, rect.left + rect.width / 2));
+        const top = Math.max(10, rect.top - 8);
+
+        popup.style.left = `${left}px`;
+        popup.style.top = `${top}px`;
+        popup.classList.remove('opacity-0', 'scale-95');
+        popup.classList.add('opacity-100', 'scale-100');
+
+        if (popupTimeout) clearTimeout(popupTimeout);
+        popupTimeout = setTimeout(() => {
+          popup.classList.remove('opacity-100', 'scale-100');
+          popup.classList.add('opacity-0', 'scale-95');
+        }, 3000);
+      }
+    }
 
     // 4.1 Теплова карта активності (Heatmap) з плавними переходами без руйнування DOM
     function renderHeatmap(heatmap) {
@@ -1526,7 +1631,17 @@
 
             const nextH = (hour + 1) % 24;
             const hourLabel = `${String(hour).padStart(2, '0')}:00–${String(nextH).padStart(2, '0')}:00`;
-            cellEl.title = `${dayFullNames[dayIdx]}, ${hourLabel}\n${v} ${v === 1 ? 'візит' : 'візитів'}, ${w} ${w === 1 ? 'перегляд' : 'переглядів'}`;
+            const dayName = dayFullNames[dayIdx];
+            cellEl.title = `${dayName}, ${hourLabel}\n${v} ${v === 1 ? 'візит' : 'візитів'}, ${w} ${w === 1 ? 'перегляд' : 'переглядів'}`;
+
+            // Інтерактивний вибір клітинки для смартфонів (tap) та ПК (hover/click)
+            cellEl.onclick = () => selectHeatmapCell(dayIdx, hour, v, w, dayName, hourLabel, true);
+            cellEl.onmouseenter = () => selectHeatmapCell(dayIdx, hour, v, w, dayName, hourLabel, false);
+
+            if (selectedHeatmapCoords && selectedHeatmapCoords.dayIdx === dayIdx && selectedHeatmapCoords.hour === hour) {
+              cellEl.classList.add('is-selected');
+              selectedHeatmapCell = cellEl;
+            }
           });
         });
       }
