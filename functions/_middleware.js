@@ -939,7 +939,10 @@ async function handleAdminApi(context, url) {
       }
 
       const rawExt = file.name ? file.name.split('.').pop().toLowerCase() : 'jpg';
-      const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
+      const isVideo = ['mp4', 'mov', 'webm', 'm4v'].includes(rawExt) || (file.type && file.type.startsWith('video/'));
+      const ext = isVideo ? (rawExt === 'mov' ? 'mp4' : rawExt) : (['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg');
+      const mediaType = isVideo ? 'video' : 'image';
+      const mimeType = file.type || (isVideo ? 'video/mp4' : 'image/jpeg');
       const fileName = `${crypto.randomUUID()}.${ext}`;
 
       const arrayBuffer = await file.arrayBuffer();
@@ -948,7 +951,7 @@ async function handleAdminApi(context, url) {
         headers: {
           'apikey': serviceKey,
           'Authorization': `Bearer ${serviceKey}`,
-          'Content-Type': file.type || 'image/jpeg'
+          'Content-Type': mimeType
         },
         body: arrayBuffer
       });
@@ -984,7 +987,7 @@ async function handleAdminApi(context, url) {
         body: JSON.stringify({
           product_id: productId,
           url: publicUrl,
-          media_type: 'image',
+          media_type: mediaType,
           display_order: order,
           created_at: new Date().toISOString()
         })

@@ -330,23 +330,78 @@
           </div>
         </div>
 
-        <!-- Список прикрас -->
-        <div class="craft-card overflow-hidden">
-          <div class="p-4 sm:p-5 border-b border-craft flex items-center justify-between">
-            <h2 class="text-sm font-bold font-serif text-stoneDark flex items-center gap-2">
-              <span>Каталог майстерні</span>
-              <span id="filtered-count-badge" class="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amberCraft text-[11px] font-mono font-bold">0</span>
-            </h2>
-            <div class="text-xs text-stone-400">
-              Сортування: <span class="font-medium text-stone-600">⭐ ТОП та нові</span>
+        <!-- Список прикрас з пагінацією та перемикачем режимів -->
+        <div id="catalog-section" class="craft-card overflow-hidden">
+          <div class="p-3.5 sm:p-5 border-b border-craft flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-sm sm:text-base font-bold font-serif text-stoneDark flex items-center gap-2">
+                <span>Каталог майстерні</span>
+                <span id="filtered-count-badge" class="px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amberCraft text-[11px] font-mono font-bold">0</span>
+              </h2>
+              <span id="page-indicator-text" class="text-xs text-stoneMuted hidden sm:inline"></span>
+            </div>
+
+            <!-- Права частина: Перемикач режимів (Рядки / Картки) + Кількість на сторінці -->
+            <div class="flex items-center justify-between sm:justify-end gap-2.5">
+              
+              <!-- Перемикач вигляду: Рядки vs Картки -->
+              <div class="inline-flex items-center p-1 bg-linen rounded-xl border border-craft text-xs">
+                <button 
+                  id="view-mode-rows-btn"
+                  type="button" 
+                  onclick="setViewMode('rows')" 
+                  class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 bg-stoneDark text-white shadow-xs"
+                  title="Компактний вигляд таблицею"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                  <span class="hidden md:inline">Рядки</span>
+                </button>
+                <button 
+                  id="view-mode-cards-btn"
+                  type="button" 
+                  onclick="setViewMode('cards')" 
+                  class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 text-stone-600 hover:text-stoneDark"
+                  title="Візуальний вигляд картками"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                  <span class="hidden md:inline">Картки</span>
+                </button>
+              </div>
+
+              <!-- Селектор кількості на сторінці -->
+              <div class="flex items-center gap-1.5 text-xs text-stone-500">
+                <label for="page-size-select" class="hidden sm:inline text-[11px] font-medium text-stone-400">На сторінці:</label>
+                <select 
+                  id="page-size-select" 
+                  onchange="changePageSize(this.value)" 
+                  class="px-2 py-1 bg-white border border-craft rounded-lg text-xs font-semibold text-stoneDark focus:outline-none focus:border-amberCraft shadow-2xs"
+                >
+                  <option value="12" selected>12</option>
+                  <option value="24">24</option>
+                  <option value="48">48</option>
+                  <option value="all">Всі (70+)</option>
+                </select>
+              </div>
+
             </div>
           </div>
 
-          <div id="products-list-container" class="divide-y divide-craft/60">
+          <!-- Контейнер прикрас -->
+          <div id="products-list-container" class="divide-y divide-craft/60 transition-all duration-200 min-h-[200px]">
             <!-- Динамічно заповнюється -->
             <div class="p-8 text-center text-xs text-stone-400">
               <div class="w-6 h-6 border-2 border-[#C28E5C] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
               Завантажуємо прикраси з бази даних...
+            </div>
+          </div>
+
+          <!-- Нижня панель пагінації -->
+          <div id="pagination-bar" class="p-3.5 sm:p-4 border-t border-craft bg-linen/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div id="pagination-info" class="text-xs text-stoneMuted order-2 sm:order-1 text-center sm:text-left">
+              <!-- Інформація про сторінки -->
+            </div>
+            <div id="pagination-controls" class="flex items-center gap-1 sm:gap-1.5 order-1 sm:order-2 flex-wrap justify-center">
+              <!-- Кнопки: « ‹ 1 2 3 ... 6 › » -->
             </div>
           </div>
         </div>
@@ -546,12 +601,12 @@
           ></textarea>
         </div>
 
-        <!-- Завантаження першого фото при створенні нового товару -->
+        <!-- Завантаження першого фото або відео при створенні нового товару -->
         <div id="new-prod-photo-upload" class="p-3.5 rounded-xl border border-dashed border-stone-300 bg-linen/30 text-center">
           <label class="cursor-pointer block">
-            <span class="text-xs font-medium text-stoneDark block mb-1">📷 Завантажити головне фото виробу</span>
-            <span class="text-[11px] text-stone-500 block mb-2">Підтримуються формати JPG, PNG, WEBP</span>
-            <input type="file" id="prod-form-initial-photo" accept="image/*" class="text-xs text-stone-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200" />
+            <span class="text-xs font-medium text-stoneDark block mb-1">📷 / 🎬 Завантажити головне фото або відео виробу</span>
+            <span class="text-[11px] text-stone-500 block mb-2">Підтримуються формати JPG, PNG, WEBP, MP4</span>
+            <input type="file" id="prod-form-initial-photo" accept="image/*,video/mp4,video/*" class="text-xs text-stone-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200" />
           </label>
         </div>
 
@@ -577,7 +632,7 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНЕ ВІКНО: КЕРУВАННЯ МЕДІА (ГАЛЕРЕЯ ТА ЗАВАНТАЖЕННЯ ФОТО) -->
+  <!-- МОДАЛЬНЕ ВІКНО: КЕРУВАННЯ МЕДІА (ГАЛЕРЕЯ ТА ЗАВАНТАЖЕННЯ ФОТО / ВІДЕО) -->
   <div id="media-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="modal-backdrop fixed inset-0" onclick="closeMediaModal()"></div>
     
@@ -585,7 +640,9 @@
       
       <div class="p-4 sm:p-5 border-b border-craft flex items-center justify-between bg-linen/50">
         <div>
-          <h3 class="text-base font-bold font-serif text-stoneDark">📷 Фотогалерея виробу</h3>
+          <h3 class="text-base font-bold font-serif text-stoneDark flex items-center gap-2">
+            <span>📷 / 🎬 Медіагалерея виробу</span>
+          </h3>
           <p id="media-modal-prod-title" class="text-[11px] text-stoneMuted truncate max-w-[280px] sm:max-w-md">—</p>
         </div>
         <button onclick="closeMediaModal()" class="w-8 h-8 rounded-full bg-white border border-craft text-stone-400 hover:text-stoneDark flex items-center justify-center transition">✕</button>
@@ -593,31 +650,31 @@
 
       <div class="overflow-y-auto p-4 sm:p-6 space-y-4 flex-1">
         
-        <!-- Дропзона завантаження нових фото -->
+        <!-- Дропзона завантаження нових фото та відео -->
         <div class="p-4 border-2 border-dashed border-amberCraft/50 hover:border-amberCraft rounded-xl bg-amber-50/40 text-center transition">
           <input 
             type="file" 
             id="media-file-input" 
-            accept="image/*" 
+            accept="image/*,video/mp4,video/quicktime,video/*" 
             multiple 
             onchange="handleFilesSelected(this.files)" 
             class="hidden" 
           />
           <label for="media-file-input" class="cursor-pointer block">
             <svg class="w-8 h-8 mx-auto text-amberCraft mb-2 stroke-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <span class="text-xs font-bold text-stoneDark block">Натисніть або перетягніть нові фото сюди</span>
-            <span class="text-[11px] text-stoneMuted block mt-0.5">Підтримує вибір кількох фото або фото з камери смартфона</span>
+            <span class="text-xs font-bold text-stoneDark block">Натисніть або перетягніть нові фото чи відео сюди</span>
+            <span class="text-[11px] text-stoneMuted block mt-0.5">Підтримує фото (JPG, PNG, WEBP) та відео (MP4, MOV). Можна вибрати кілька файлів або зняти на камеру</span>
           </label>
         </div>
 
         <div id="media-upload-progress" class="hidden p-3 rounded-xl bg-amber-100/70 border border-amber-300 text-xs font-medium text-amber-900 flex items-center gap-2">
           <div class="w-4 h-4 border-2 border-amber-800 border-t-transparent rounded-full animate-spin"></div>
-          <span id="media-upload-status-text">Завантажуємо фото в сховище...</span>
+          <span id="media-upload-status-text">Завантажуємо файли в сховище...</span>
         </div>
 
-        <!-- Список існуючих фото -->
+        <!-- Список існуючих фото та відео -->
         <div>
-          <span class="text-xs font-semibold text-stoneDark block mb-2">Наявні фотографії (<span id="media-count-label">0</span>):</span>
+          <span class="text-xs font-semibold text-stoneDark block mb-2">Наявні медіафайли (<span id="media-count-label">0</span>):</span>
           <div id="media-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <!-- Динамічно -->
           </div>
@@ -639,7 +696,11 @@
   <script>
     // Глобальний стан
     let allProducts = [];
+    let currentFilteredList = [];
     let currentFilterStatus = 'all';
+    let currentPage = 1;
+    let pageSize = 12;
+    let viewMode = localStorage.getItem('admin_view_mode') || 'rows';
     let activeMediaProductId = null;
     let selectedColors = new Set();
 
@@ -839,7 +900,7 @@
       applyFilters();
     }
 
-    function applyFilters() {
+    function applyFilters(keepPage = false) {
       const query = (document.getElementById('search-input').value || '').trim().toLowerCase();
       const cat = document.getElementById('filter-category-select').value;
       const clearBtn = document.getElementById('search-clear-btn');
@@ -848,7 +909,7 @@
         else clearBtn.classList.add('hidden');
       }
 
-      let filtered = allProducts.filter(p => {
+      currentFilteredList = allProducts.filter(p => {
         // Статус фільтр
         if (currentFilterStatus === 'in_stock' && p.status !== 'in_stock') return false;
         if (currentFilterStatus === 'made_to_order' && p.status !== 'made_to_order') return false;
@@ -871,141 +932,485 @@
         return true;
       });
 
-      document.getElementById('filtered-count-badge').innerText = filtered.length;
-      renderProductsList(filtered);
+      if (!keepPage) {
+        currentPage = 1;
+      }
+      renderCurrentPage();
     }
 
-    // Рендеринг списку прикрас
-    function renderProductsList(products) {
+    function changePageSize(size) {
+      pageSize = size === 'all' ? 'all' : parseInt(size, 10);
+      currentPage = 1;
+      renderCurrentPage();
+    }
+
+    function goToPage(page) {
+      const total = currentFilteredList.length;
+      const isAll = pageSize === 'all';
+      const totalPages = isAll ? 1 : Math.max(1, Math.ceil(total / pageSize));
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderCurrentPage();
+      const el = document.getElementById('catalog-section');
+      if (el) {
+        const yOffset = -20;
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      localStorage.setItem('admin_view_mode', mode);
+      updateViewModeButtons();
+      renderCurrentPage();
+    }
+
+    function updateViewModeButtons() {
+      const rowsBtn = document.getElementById('view-mode-rows-btn');
+      const cardsBtn = document.getElementById('view-mode-cards-btn');
+      if (!rowsBtn || !cardsBtn) return;
+      if (viewMode === 'rows') {
+        rowsBtn.className = 'px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 bg-stoneDark text-white shadow-xs';
+        cardsBtn.className = 'px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 text-stone-600 hover:text-stoneDark';
+      } else {
+        cardsBtn.className = 'px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 bg-stoneDark text-white shadow-xs';
+        rowsBtn.className = 'px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 text-stone-600 hover:text-stoneDark';
+      }
+    }
+
+    function renderCurrentPage() {
+      const total = currentFilteredList.length;
+      const isAll = pageSize === 'all';
+      const totalPages = isAll ? 1 : Math.max(1, Math.ceil(total / pageSize));
+
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = isAll ? 0 : (currentPage - 1) * pageSize;
+      const endIdx = isAll ? total : Math.min(startIdx + pageSize, total);
+      const pagedItems = isAll ? currentFilteredList : currentFilteredList.slice(startIdx, endIdx);
+
+      // Оновлюємо бейджі
+      const badge = document.getElementById('filtered-count-badge');
+      if (badge) badge.innerText = total;
+
+      const indText = document.getElementById('page-indicator-text');
+      if (indText) {
+        if (total === 0) indText.innerText = '';
+        else indText.innerText = `(показано ${startIdx + 1}–${endIdx} із ${total})`;
+      }
+
+      renderProductsList(pagedItems, startIdx);
+      renderPaginationBar(total, totalPages, startIdx, endIdx);
+    }
+
+    function renderPaginationBar(total, totalPages, startIdx, endIdx) {
+      const bar = document.getElementById('pagination-bar');
+      const info = document.getElementById('pagination-info');
+      const controls = document.getElementById('pagination-controls');
+      if (!bar || !info || !controls) return;
+
+      if (total === 0) {
+        bar.classList.add('hidden');
+        return;
+      }
+      bar.classList.remove('hidden');
+
+      info.innerHTML = `Показано <strong class="text-stoneDark font-mono">${startIdx + 1}–${endIdx}</strong> із <strong class="text-stoneDark font-mono">${total}</strong> • Стор. <strong class="text-stoneDark font-mono">${currentPage}</strong> / <strong class="text-stoneDark font-mono">${totalPages}</strong>`;
+
+      if (totalPages <= 1) {
+        controls.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      const prevDisabled = currentPage === 1;
+      const nextDisabled = currentPage === totalPages;
+
+      // Перша «
+      html += `
+        <button 
+          onclick="goToPage(1)" 
+          ${prevDisabled ? 'disabled' : ''}
+          class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition tactile-btn flex items-center justify-center ${prevDisabled ? 'opacity-30 cursor-not-allowed text-stone-400' : 'bg-white hover:bg-linen text-stoneDark border border-craft'}"
+          title="Перша сторінка"
+        >
+          «
+        </button>
+      `;
+
+      // Назад ‹
+      html += `
+        <button 
+          onclick="goToPage(${currentPage - 1})" 
+          ${prevDisabled ? 'disabled' : ''}
+          class="px-2 sm:px-2.5 h-7 sm:h-8 rounded-lg text-xs font-semibold transition tactile-btn flex items-center gap-1 ${prevDisabled ? 'opacity-30 cursor-not-allowed text-stone-400' : 'bg-white hover:bg-linen text-stoneDark border border-craft'}"
+          title="Попередня сторінка"
+        >
+          ‹ <span class="hidden sm:inline">Назад</span>
+        </button>
+      `;
+
+      // Розумний діапазон сторінок
+      const pageNumbers = [];
+      if (totalPages <= 6) {
+        for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+      } else {
+        pageNumbers.push(1);
+        if (currentPage > 3) pageNumbers.push('...');
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) {
+          if (!pageNumbers.includes(i)) pageNumbers.push(i);
+        }
+        if (currentPage < totalPages - 2) pageNumbers.push('...');
+        if (!pageNumbers.includes(totalPages)) pageNumbers.push(totalPages);
+      }
+
+      pageNumbers.forEach(p => {
+        if (p === '...') {
+          html += `<span class="px-1.5 py-1 text-xs text-stone-400">…</span>`;
+        } else {
+          const isActive = p === currentPage;
+          html += `
+            <button 
+              onclick="goToPage(${p})" 
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition tactile-btn flex items-center justify-center ${
+                isActive 
+                  ? 'bg-[#2C2825] text-white shadow-xs ring-1 ring-[#C28E5C]/50' 
+                  : 'bg-white hover:bg-linen text-stone-700 border border-craft'
+              }"
+            >
+              ${p}
+            </button>
+          `;
+        }
+      });
+
+      // Вперед ›
+      html += `
+        <button 
+          onclick="goToPage(${currentPage + 1})" 
+          ${nextDisabled ? 'disabled' : ''}
+          class="px-2 sm:px-2.5 h-7 sm:h-8 rounded-lg text-xs font-semibold transition tactile-btn flex items-center gap-1 ${nextDisabled ? 'opacity-30 cursor-not-allowed text-stone-400' : 'bg-white hover:bg-linen text-stoneDark border border-craft'}"
+          title="Наступна сторінка"
+        >
+          <span class="hidden sm:inline">Вперед</span> ›
+        </button>
+      `;
+
+      // Остання »
+      html += `
+        <button 
+          onclick="goToPage(${totalPages})" 
+          ${nextDisabled ? 'disabled' : ''}
+          class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition tactile-btn flex items-center justify-center ${nextDisabled ? 'opacity-30 cursor-not-allowed text-stone-400' : 'bg-white hover:bg-linen text-stoneDark border border-craft'}"
+          title="Остання сторінка"
+        >
+          »
+        </button>
+      `;
+
+      controls.innerHTML = html;
+    }
+
+    // Рендеринг списку прикрас (підтримує режими 'rows' та 'cards')
+    function renderProductsList(products, startIdx = 0) {
       const container = document.getElementById('products-list-container');
       if (!container) return;
 
       if (products.length === 0) {
+        container.className = 'p-12 text-center text-stoneMuted text-xs';
         container.innerHTML = `
-          <div class="p-12 text-center text-stoneMuted text-xs">
-            <span class="text-3xl block mb-2">🔍</span>
-            <p class="font-medium text-stoneDark">Не знайдено жодної прикраси</p>
-            <p class="text-[11px] text-stone-400 mt-1">Спробуйте змінити фільтри або очистити пошуковий запит.</p>
-          </div>
+          <span class="text-3xl block mb-2">🔍</span>
+          <p class="font-medium text-stoneDark text-sm">Не знайдено жодної прикраси</p>
+          <p class="text-[11px] text-stone-400 mt-1">Спробуйте змінити фільтри або очистити пошуковий запит.</p>
         `;
         return;
       }
 
       container.innerHTML = '';
-      products.forEach((p, idx) => {
-        const row = document.createElement('div');
-        row.className = `prod-row p-3.5 sm:p-4 hover:bg-linen/50 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 transition ${p.status === 'archived' ? 'opacity-60 bg-stone-100/40' : ''}`;
-        row.id = `prod-row-${p.id}`;
 
-        const primaryMedia = (p.media && p.media.length > 0) ? p.media[0] : null;
-        const imgHtml = primaryMedia
-          ? `<img src="${primaryMedia.url}" alt="${p.title}" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-craft flex-shrink-0 shadow-2xs" />`
-          : `<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-craft border border-stone-200 text-stone-400 flex items-center justify-center text-lg flex-shrink-0">📿</div>`;
+      if (viewMode === 'cards') {
+        container.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-5 bg-linen/20';
 
-        const isInStock = p.status === 'in_stock';
-        const isTop = Boolean(p.is_top);
-        const favsCount = p.active_favorites || 0;
+        products.forEach((p, idx) => {
+          const globalIdx = startIdx + idx + 1;
+          const card = document.createElement('div');
+          const isInStock = p.status === 'in_stock';
+          const isTop = Boolean(p.is_top);
+          const favsCount = p.active_favorites || 0;
+          const media = p.media || [];
+          const photosCount = media.filter(m => m.media_type !== 'video' && !/\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(m.url)).length;
+          const videosCount = media.filter(m => m.media_type === 'video' || /\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(m.url)).length;
+          
+          const firstImg = media.find(m => m.media_type !== 'video' && !/\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(m.url));
+          const primaryMedia = firstImg || (media.length > 0 ? media[0] : null);
+          const isPrimaryVid = primaryMedia && (primaryMedia.media_type === 'video' || /\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(primaryMedia.url));
 
-        row.innerHTML = `
-          <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-            <span class="text-xs font-mono text-stone-400 w-5 hidden sm:block">${idx + 1}</span>
-            ${imgHtml}
-            <div class="min-w-0 flex-1">
-              <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
-                <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200">
-                  ${p.product_type || 'Прикраса'}
-                </span>
-                ${isTop ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">⭐ ТОП</span>' : ''}
-                ${p.status === 'archived' ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-stone-200 text-stone-600">В архіві</span>' : ''}
+          let mediaPreviewHtml;
+          if (isPrimaryVid) {
+            mediaPreviewHtml = `
+              <div class="relative w-full h-full bg-stone-900 flex items-center justify-center">
+                <video src="${primaryMedia.url}#t=0.1" muted playsinline preload="metadata" class="w-full h-full object-cover"></video>
+                <div class="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                  <span class="w-10 h-10 rounded-full bg-white/80 backdrop-blur text-stoneDark flex items-center justify-center text-sm shadow">▶</span>
+                </div>
+              </div>
+            `;
+          } else if (primaryMedia) {
+            mediaPreviewHtml = `<img src="${primaryMedia.url}" alt="${p.title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />`;
+          } else {
+            mediaPreviewHtml = `<div class="w-full h-full bg-craft text-stone-400 flex items-center justify-center text-3xl">📿</div>`;
+          }
+
+          card.className = `craft-card overflow-hidden flex flex-col justify-between group transition ${p.status === 'archived' ? 'opacity-60 bg-stone-100/60' : ''}`;
+          card.id = `prod-card-${p.id}`;
+
+          card.innerHTML = `
+            <div>
+              <!-- Прев'ю зображення з кліком на медіагалерею -->
+              <div class="aspect-square relative overflow-hidden bg-stone-100 cursor-pointer" onclick="openMediaModal('${p.id}')">
+                ${mediaPreviewHtml}
+
+                <!-- Бейджі зліва -->
+                <div class="absolute top-2 left-2 flex flex-wrap gap-1 pointer-events-none">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-900/80 backdrop-blur text-white shadow-xs">
+                    ${p.product_type || 'Прикраса'}
+                  </span>
+                  ${isTop ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-xs">⭐ ТОП</span>' : ''}
+                </div>
+
+                <!-- Лічильники медіа справа -->
+                <div class="absolute top-2 right-2 flex items-center gap-1 pointer-events-none">
+                  <span class="px-1.5 py-0.5 rounded-md bg-stone-900/80 backdrop-blur text-white text-[10px] font-medium shadow-xs">📷 ${photosCount}</span>
+                  ${videosCount > 0 ? `<span class="px-1.5 py-0.5 rounded-md bg-purple-600 text-white text-[10px] font-bold shadow-xs">🎬 ${videosCount}</span>` : ''}
+                </div>
+
+                <!-- Оверлей при наведенні -->
+                <div class="absolute inset-0 bg-stone-900/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none">
+                  <span class="px-3 py-1.5 bg-white/95 backdrop-blur text-stoneDark rounded-full text-xs font-semibold shadow-lg">📷 Медіа (${media.length})</span>
+                </div>
               </div>
 
-              <h4 class="text-xs sm:text-sm font-bold text-stoneDark truncate block">
-                ${p.title}
-              </h4>
+              <!-- Інформаційна частина картки -->
+              <div class="p-3.5 space-y-1.5">
+                <div class="flex items-start justify-between gap-2">
+                  <h4 class="text-xs sm:text-sm font-bold text-stoneDark line-clamp-1 group-hover:text-amberDeep transition" title="${p.title}">
+                    ${p.title}
+                  </h4>
+                  <span class="font-mono font-bold text-amberDeep text-xs sm:text-sm flex-shrink-0">${p.price} ₴</span>
+                </div>
 
-              <div class="text-[11px] text-stoneMuted flex flex-wrap items-center gap-2 mt-0.5">
-                <span class="font-mono font-bold text-amberDeep text-xs">${p.price} ₴</span>
-                <span>•</span>
-                <span class="truncate">${p.ornament || 'Геометричний'}, ${p.shape || 'Стрічка'}</span>
-                <span>•</span>
-                <span class="text-rose-600 font-medium">❤️ ${favsCount}</span>
-                <span>•</span>
-                <span class="text-stone-400">📷 ${p.media ? p.media.length : 0}</span>
+                <div class="text-[11px] text-stoneMuted flex items-center justify-between">
+                  <span class="truncate">${p.ornament || 'Геометричний'}</span>
+                  <span class="text-rose-600 font-medium flex items-center gap-0.5 flex-shrink-0">❤️ ${favsCount}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Інтерактивні швидкі перемикачі (1-Click Toggles) -->
-          <div class="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-craft/60">
-            
-            <!-- Перемикач наявності (В наявності / Під замовлення) -->
-            <button 
-              onclick="toggleStock('${p.id}', '${isInStock ? 'made_to_order' : 'in_stock'}')"
-              class="px-2.5 py-1.5 rounded-xl text-xs font-semibold tactile-btn transition flex items-center gap-1.5 ${
-                isInStock 
-                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100' 
-                  : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
-              }"
-              title="Натисніть для зміни статусу наявності"
-            >
-              <span class="w-2 h-2 rounded-full ${isInStock ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-              <span>${isInStock ? 'В наявності' : 'Під замовлення'}</span>
-            </button>
+            <!-- Нижня панель швидких дій -->
+            <div class="p-3 pt-0 border-t border-craft/40 mt-1 space-y-2">
+              <div class="flex items-center justify-between gap-1.5 pt-2">
+                <!-- 1-Click статус наявності -->
+                <button 
+                  onclick="toggleStock('${p.id}', '${isInStock ? 'made_to_order' : 'in_stock'}')"
+                  class="flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold tactile-btn transition flex items-center justify-center gap-1.5 ${
+                    isInStock 
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100' 
+                      : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
+                  }"
+                  title="Змінити наявність"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full ${isInStock ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                  <span class="truncate">${isInStock ? 'В наявності' : 'Під замовл.'}</span>
+                </button>
 
-            <!-- Перемикач ТОП -->
-            <button 
-              onclick="toggleTop('${p.id}', ${!isTop})"
-              class="p-1.5 rounded-xl border tactile-btn transition ${
-                isTop 
-                  ? 'bg-amber-100 border-amber-300 text-amber-900 shadow-2xs' 
-                  : 'bg-white border-craft text-stone-400 hover:text-amberCraft hover:bg-linen'
-              }"
-              title="${isTop ? 'Прибрати з ТОП' : 'Додати в ТОП продажів'}"
-            >
-              ⭐
-            </button>
+                <!-- ТОП -->
+                <button 
+                  onclick="toggleTop('${p.id}', ${!isTop})"
+                  class="p-1.5 rounded-xl border tactile-btn transition ${
+                    isTop 
+                      ? 'bg-amber-100 border-amber-300 text-amber-900 shadow-2xs' 
+                      : 'bg-white border-craft text-stone-400 hover:text-amberCraft hover:bg-linen'
+                  }"
+                  title="${isTop ? 'Прибрати з ТОП' : 'Додати в ТОП'}"
+                >
+                  ⭐
+                </button>
 
-            <!-- Кнопка фотогалереї -->
-            <button 
-              onclick="openMediaModal('${p.id}')"
-              class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-700 text-xs font-medium tactile-btn transition flex items-center gap-1"
-              title="Керувати фотографіями"
-            >
-              📷 <span class="hidden md:inline">Фото</span> (${p.media ? p.media.length : 0})
-            </button>
+                <!-- Редагувати -->
+                <button 
+                  onclick="openEditProductModal('${p.id}')"
+                  class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-700 hover:text-amberDeep tactile-btn transition"
+                  title="Редагувати характеристики"
+                >
+                  ✏️
+                </button>
 
-            <!-- Редагувати -->
-            <button 
-              onclick="openEditProductModal('${p.id}')"
-              class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-700 hover:text-amberDeep tactile-btn transition"
-              title="Редагувати характеристики"
-            >
-              ✏️
-            </button>
+                <!-- Відкрити на сайті -->
+                <a 
+                  href="/?item=${p.slug || p.id}" 
+                  target="_blank" 
+                  class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-400 hover:text-stoneDark transition"
+                  title="Відкрити на сайті"
+                >
+                  ↗
+                </a>
 
-            <!-- Посилання на сайт -->
-            <a 
-              href="/?item=${p.slug || p.id}" 
-              target="_blank" 
-              class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-400 hover:text-stoneDark transition"
-              title="Відкрити на сайті"
-            >
-              ↗
-            </a>
+                <!-- Видалити / Архів -->
+                <button 
+                  onclick="confirmDeleteProduct('${p.id}', '${p.title.replace(/'/g, "\\'")}')"
+                  class="p-1.5 rounded-xl bg-white hover:bg-rose-50 border border-craft hover:border-rose-300 text-stone-400 hover:text-rose-600 tactile-btn transition"
+                  title="В архів"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
 
-            <!-- Видалити / Архів -->
-            <button 
-              onclick="confirmDeleteProduct('${p.id}', '${p.title.replace(/'/g, "\\'")}')"
-              class="p-1.5 rounded-xl bg-white hover:bg-rose-50 border border-craft hover:border-rose-300 text-stone-400 hover:text-rose-600 tactile-btn transition"
-              title="Видалити або перенести в архів"
-            >
-              🗑️
-            </button>
+      } else {
+        // Режим рядків (Таблиця)
+        container.className = 'divide-y divide-craft/60';
 
-          </div>
-        `;
-        container.appendChild(row);
-      });
+        products.forEach((p, idx) => {
+          const globalIdx = startIdx + idx + 1;
+          const row = document.createElement('div');
+          row.className = `prod-row p-3.5 sm:p-4 hover:bg-linen/50 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 transition ${p.status === 'archived' ? 'opacity-60 bg-stone-100/40' : ''}`;
+          row.id = `prod-row-${p.id}`;
+
+          const media = p.media || [];
+          const photosCount = media.filter(m => m.media_type !== 'video' && !/\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(m.url)).length;
+          const videosCount = media.filter(m => m.media_type === 'video' || /\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(m.url)).length;
+
+          const firstImg = media.find(m => m.media_type !== 'video' && !/\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(m.url));
+          const primaryMedia = firstImg || (media.length > 0 ? media[0] : null);
+          const isPrimaryVid = primaryMedia && (primaryMedia.media_type === 'video' || /\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(primaryMedia.url));
+
+          let imgHtml;
+          if (isPrimaryVid) {
+            imgHtml = `
+              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-stone-900 border border-craft flex-shrink-0 shadow-2xs relative cursor-pointer" onclick="openMediaModal('${p.id}')">
+                <video src="${primaryMedia.url}#t=0.1" muted playsinline preload="metadata" class="w-full h-full object-cover"></video>
+                <span class="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-xs">▶</span>
+              </div>
+            `;
+          } else if (primaryMedia) {
+            imgHtml = `<img src="${primaryMedia.url}" alt="${p.title}" loading="lazy" onclick="openMediaModal('${p.id}')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-craft flex-shrink-0 shadow-2xs cursor-pointer" />`;
+          } else {
+            imgHtml = `<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-craft border border-stone-200 text-stone-400 flex items-center justify-center text-lg flex-shrink-0 cursor-pointer" onclick="openMediaModal('${p.id}')">📿</div>`;
+          }
+
+          const isInStock = p.status === 'in_stock';
+          const isTop = Boolean(p.is_top);
+          const favsCount = p.active_favorites || 0;
+
+          row.innerHTML = `
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+              <span class="text-xs font-mono text-stone-400 w-6 text-center hidden sm:block">${globalIdx}</span>
+              ${imgHtml}
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200">
+                    ${p.product_type || 'Прикраса'}
+                  </span>
+                  ${isTop ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">⭐ ТОП</span>' : ''}
+                  ${p.status === 'archived' ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-stone-200 text-stone-600">В архіві</span>' : ''}
+                </div>
+
+                <h4 class="text-xs sm:text-sm font-bold text-stoneDark truncate block">
+                  ${p.title}
+                </h4>
+
+                <div class="text-[11px] text-stoneMuted flex flex-wrap items-center gap-2 mt-0.5">
+                  <span class="font-mono font-bold text-amberDeep text-xs">${p.price} ₴</span>
+                  <span>•</span>
+                  <span class="truncate">${p.ornament || 'Геометричний'}, ${p.shape || 'Стрічка'}</span>
+                  <span>•</span>
+                  <span class="text-rose-600 font-medium">❤️ ${favsCount}</span>
+                  <span>•</span>
+                  <span class="text-stone-500">📷 ${photosCount}</span>
+                  ${videosCount > 0 ? `<span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-900 font-bold border border-purple-200 text-[10px]">🎬 ${videosCount}</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <!-- Інтерактивні швидкі перемикачі (1-Click Toggles) -->
+            <div class="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-craft/60">
+              
+              <!-- Перемикач наявності -->
+              <button 
+                onclick="toggleStock('${p.id}', '${isInStock ? 'made_to_order' : 'in_stock'}')"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold tactile-btn transition flex items-center gap-1.5 ${
+                  isInStock 
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100' 
+                    : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
+                }"
+                title="Натисніть для зміни статусу наявності"
+              >
+                <span class="w-2 h-2 rounded-full ${isInStock ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                <span>${isInStock ? 'В наявності' : 'Під замовлення'}</span>
+              </button>
+
+              <!-- Перемикач ТОП -->
+              <button 
+                onclick="toggleTop('${p.id}', ${!isTop})"
+                class="p-1.5 rounded-xl border tactile-btn transition ${
+                  isTop 
+                    ? 'bg-amber-100 border-amber-300 text-amber-900 shadow-2xs' 
+                    : 'bg-white border-craft text-stone-400 hover:text-amberCraft hover:bg-linen'
+                }"
+                title="${isTop ? 'Прибрати з ТОП' : 'Додати в ТОП продажів'}"
+              >
+                ⭐
+              </button>
+
+              <!-- Кнопка фотогалереї -->
+              <button 
+                onclick="openMediaModal('${p.id}')"
+                class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-700 text-xs font-medium tactile-btn transition flex items-center gap-1"
+                title="Керувати медіафайлами"
+              >
+                ${videosCount > 0 ? `📷/🎬 <span class="hidden md:inline">Медіа</span> (${media.length})` : `📷 <span class="hidden md:inline">Фото</span> (${photosCount})`}
+              </button>
+
+              <!-- Редагувати -->
+              <button 
+                onclick="openEditProductModal('${p.id}')"
+                class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-700 hover:text-amberDeep tactile-btn transition"
+                title="Редагувати характеристики"
+              >
+                ✏️
+              </button>
+
+              <!-- Посилання на сайт -->
+              <a 
+                href="/?item=${p.slug || p.id}" 
+                target="_blank" 
+                class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-400 hover:text-stoneDark transition"
+                title="Відкрити на сайті"
+              >
+                ↗
+              </a>
+
+              <!-- Видалити / Архів -->
+              <button 
+                onclick="confirmDeleteProduct('${p.id}', '${p.title.replace(/'/g, "\\'")}')"
+                class="p-1.5 rounded-xl bg-white hover:bg-rose-50 border border-craft hover:border-rose-300 text-stone-400 hover:text-rose-600 tactile-btn transition"
+                title="Видалити або перенести в архів"
+              >
+                🗑️
+              </button>
+
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      }
     }
 
     // 1-Click перемикач наявності
@@ -1016,7 +1421,7 @@
       const oldStatus = prod.status;
       prod.status = newStatus; // оптимістичне оновлення
       updateKpis();
-      applyFilters();
+      applyFilters(true);
 
       try {
         const res = await fetch('/api/admin/products/toggle-stock', {
@@ -1029,7 +1434,7 @@
       } catch {
         prod.status = oldStatus;
         updateKpis();
-        applyFilters();
+        applyFilters(true);
         showToast('Помилка оновлення статусу наявності', 'error');
       }
     }
@@ -1042,7 +1447,7 @@
       const oldTop = prod.is_top;
       prod.is_top = newTop;
       updateKpis();
-      applyFilters();
+      applyFilters(true);
 
       try {
         const res = await fetch('/api/admin/products/toggle-top', {
@@ -1055,7 +1460,7 @@
       } catch {
         prod.is_top = oldTop;
         updateKpis();
-        applyFilters();
+        applyFilters(true);
         showToast('Помилка оновлення ТОП', 'error');
       }
     }
@@ -1229,6 +1634,11 @@
     }
 
     function closeMediaModal() {
+      // Зупиняємо відео при закритті
+      const videos = document.querySelectorAll('#media-modal video');
+      videos.forEach(v => {
+        try { v.pause(); } catch {}
+      });
       document.getElementById('media-modal').classList.add('hidden');
       activeMediaProductId = null;
     }
@@ -1239,43 +1649,77 @@
       countLabel.innerText = mediaList.length;
 
       if (mediaList.length === 0) {
-        grid.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-stone-400">Немає завантажених фотографій</div>`;
+        grid.innerHTML = `<div class="col-span-2 sm:col-span-3 py-8 text-center text-xs text-stone-400 bg-linen/30 rounded-xl border border-dashed border-craft">Немає завантажених фотографій або відео</div>`;
         return;
       }
 
       grid.innerHTML = '';
       mediaList.forEach((m, idx) => {
         const isPrimary = (m.display_order === 0) || (idx === 0);
+        const isVideo = m.media_type === 'video' || (m.url && /\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(m.url));
         const card = document.createElement('div');
-        card.className = `relative rounded-xl overflow-hidden border p-1 group bg-white shadow-2xs ${isPrimary ? 'border-amberCraft ring-2 ring-amberCraft/30' : 'border-craft'}`;
+        card.className = `relative rounded-xl overflow-hidden border p-1 group bg-white shadow-2xs hover:shadow-sm transition ${isPrimary ? 'border-amberCraft ring-2 ring-amberCraft/30' : 'border-craft'}`;
+
+        const mediaPreview = isVideo
+          ? `
+            <div class="aspect-square rounded-lg overflow-hidden relative bg-stone-900 flex items-center justify-center">
+              <video 
+                src="${m.url}" 
+                controls 
+                playsinline 
+                preload="metadata"
+                class="w-full h-full object-cover bg-black"
+              ></video>
+              <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-stone-900/85 backdrop-blur text-white text-[9px] font-bold border border-white/20 pointer-events-none flex items-center gap-1 shadow-sm">
+                <span>🎬</span><span>Відео</span>
+              </span>
+              ${isPrimary ? '<span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-amberDeep text-white text-[9px] font-bold shadow-xs pointer-events-none">Головне</span>' : ''}
+            </div>
+          `
+          : `
+            <div class="aspect-square rounded-lg overflow-hidden relative bg-stone-100">
+              <img src="${m.url}" alt="Фото" loading="lazy" class="w-full h-full object-cover" />
+              ${isPrimary ? '<span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-amberDeep text-white text-[9px] font-bold shadow-xs pointer-events-none">Головне</span>' : ''}
+            </div>
+          `;
+
         card.innerHTML = `
-          <div class="aspect-square rounded-lg overflow-hidden relative bg-stone-100">
-            <img src="${m.url}" alt="Фото" class="w-full h-full object-cover" />
-            ${isPrimary ? '<span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-amberDeep text-white text-[9px] font-bold shadow-xs">Головне</span>' : ''}
-          </div>
-          <div class="mt-1.5 flex items-center justify-between gap-1">
+          ${mediaPreview}
+          <div class="mt-1.5 px-1 py-0.5 flex items-center justify-between gap-1 text-[11px]">
             ${!isPrimary ? `
               <button 
                 onclick="setPrimaryMedia('${m.id}')" 
-                class="text-[10px] font-medium text-amberDeep hover:underline"
+                class="text-[10px] font-semibold text-amberDeep hover:underline"
+                title="Зробити першим у списку"
               >
                 Зробити головним
               </button>
             ` : '<span class="text-[10px] font-bold text-stone-400">Обкладинка</span>'}
-            <button 
-              onclick="deleteMedia('${m.id}')" 
-              class="text-[10px] text-stone-400 hover:text-rose-600 transition"
-              title="Видалити фото"
-            >
-              🗑️
-            </button>
+            
+            <div class="flex items-center gap-2">
+              <a 
+                href="${m.url}" 
+                target="_blank" 
+                class="text-stone-400 hover:text-stone-700 transition text-xs font-mono" 
+                title="Відкрити оригінал файлу"
+              >
+                ↗
+              </a>
+              <button 
+                onclick="deleteMedia('${m.id}')" 
+                class="text-stone-400 hover:text-rose-600 transition" 
+                title="Видалити цей файл"
+              >
+                🗑️
+              </button>
+            </div>
           </div>
         `;
         grid.appendChild(card);
       });
     }
 
-    // Завантаження нових фото у медіа модалці
+    // Завантаження нових фото та відео у медіа модалці
     async function handleFilesSelected(files) {
       if (!files || files.length === 0 || !activeMediaProductId) return;
 
@@ -1285,7 +1729,8 @@
 
       let uploaded = 0;
       for (const file of Array.from(files)) {
-        statusText.innerText = `Завантаження ${uploaded + 1} з ${files.length}: ${file.name}...`;
+        const isVid = file.type?.startsWith('video/') || /\.(mp4|mov|webm|m4v)$/i.test(file.name);
+        statusText.innerText = `Завантаження ${uploaded + 1} з ${files.length} (${isVid ? '🎬 відео' : '📷 фото'}): ${file.name}...`;
         const formData = new FormData();
         formData.append('productId', activeMediaProductId);
         formData.append('file', file);
@@ -1296,16 +1741,21 @@
             method: 'POST',
             body: formData
           });
-          if (!res.ok) throw new Error();
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'Помилка завантаження');
+          }
           uploaded++;
-        } catch {
-          showToast(`Помилка завантаження ${file.name}`, 'error');
+        } catch (err) {
+          showToast(`Помилка: ${err.message || file.name}`, 'error');
         }
       }
 
       progressEl.classList.add('hidden');
       document.getElementById('media-file-input').value = '';
-      showToast(`Успішно завантажено ${uploaded} фото!`);
+      if (uploaded > 0) {
+        showToast(`Успішно завантажено ${uploaded} файл(ів)!`);
+      }
       
       // Перезавантажуємо прикраси і оновлюємо модалку
       await loadProducts();
@@ -1315,6 +1765,15 @@
 
     async function setPrimaryMedia(mediaId) {
       if (!activeMediaProductId) return;
+      const prod = allProducts.find(p => p.id === activeMediaProductId);
+      const targetMedia = prod?.media?.find(m => m.id === mediaId);
+      const isVideo = targetMedia && (targetMedia.media_type === 'video' || /\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(targetMedia.url));
+
+      if (isVideo) {
+        const proceed = confirm('Ви робите відео головним медіа виробу.\n(Зверніть увагу: для Pinterest та OpenGraph автоматично підставлятиметься перше фото товару).\n\nПродовжити?');
+        if (!proceed) return;
+      }
+
       try {
         const res = await fetch('/api/admin/media/set-primary', {
           method: 'POST',
@@ -1322,17 +1781,17 @@
           body: JSON.stringify({ productId: activeMediaProductId, mediaId })
         });
         if (!res.ok) throw new Error();
-        showToast('Головне фото оновлено!');
+        showToast('Головне медіа оновлено!');
         await loadProducts();
         const updatedProd = allProducts.find(p => p.id === activeMediaProductId);
         if (updatedProd) renderMediaGrid(updatedProd.media || []);
       } catch {
-        showToast('Помилка встановлення головного фото', 'error');
+        showToast('Помилка встановлення головного медіа', 'error');
       }
     }
 
     async function deleteMedia(mediaId) {
-      if (!confirm('Видалити це фото?')) return;
+      if (!confirm('Видалити цей медіафайл (фото або відео)?')) return;
       try {
         const res = await fetch('/api/admin/media/delete', {
           method: 'POST',
@@ -1340,12 +1799,12 @@
           body: JSON.stringify({ mediaId })
         });
         if (!res.ok) throw new Error();
-        showToast('Фото видалено');
+        showToast('Медіафайл видалено');
         await loadProducts();
         const updatedProd = allProducts.find(p => p.id === activeMediaProductId);
         if (updatedProd) renderMediaGrid(updatedProd.media || []);
       } catch {
-        showToast('Помилка видалення фото', 'error');
+        showToast('Помилка видалення медіафайлу', 'error');
       }
     }
 
@@ -1462,6 +1921,10 @@
 
     // Старт
     document.addEventListener('DOMContentLoaded', () => {
+      // Відновлення розміру сторінки та режиму вигляду
+      const sizeSelect = document.getElementById('page-size-select');
+      if (sizeSelect) sizeSelect.value = String(pageSize);
+      updateViewModeButtons();
       checkAuth();
     });
   </script>
