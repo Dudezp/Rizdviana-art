@@ -265,16 +265,40 @@ async function handleAnalyticsApi(context, url) {
 
     try {
       const period = url.searchParams.get('period') || '7d';
+      const singleDate = url.searchParams.get('date');
+      const customSince = url.searchParams.get('since');
+      const customUntil = url.searchParams.get('until');
+
       const now = new Date();
-      let sinceDate = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
-      if (period === '24h') {
+      let sinceDate;
+      let untilDate = now;
+      let isHourly = false;
+      let activePeriodName = period;
+
+      if (singleDate && /^\d{4}-\d{2}-\d{2}$/.test(singleDate)) {
+        // Запит за один конкретний день (drill-down або вибір у календарі)
+        sinceDate = new Date(`${singleDate}T00:00:00.000Z`);
+        untilDate = new Date(`${singleDate}T23:59:59.999Z`);
+        isHourly = true;
+        activePeriodName = singleDate;
+      } else if (customSince && customUntil) {
+        sinceDate = new Date(customSince);
+        untilDate = new Date(customUntil);
+        const diffHours = (untilDate.getTime() - sinceDate.getTime()) / (3600 * 1000);
+        isHourly = diffHours <= 48;
+        activePeriodName = 'custom';
+      } else if (period === '24h') {
         sinceDate = new Date(now.getTime() - 24 * 3600 * 1000);
+        isHourly = true;
       } else if (period === '30d') {
         sinceDate = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+      } else {
+        // default 7d
+        sinceDate = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
       }
 
       const sinceIso = sinceDate.toISOString();
-      const untilIso = now.toISOString();
+      const untilIso = untilDate.toISOString();
       const cfToken = (context.env?.CF_ANALYTICS_TOKEN || '').trim().replace(/[\r\n"']/g, '');
 
       const queryRum = `
@@ -282,7 +306,7 @@ async function handleAnalyticsApi(context, url) {
         viewer {
           accounts(filter: {accountTag: $accountTag}) {
             rumPageloadEventsAdaptiveGroups(
-              limit: 500,
+              limit: 1000,
               filter: {siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until},
               orderBy: [count_DESC]
             ) {
@@ -304,7 +328,7 @@ async function handleAnalyticsApi(context, url) {
         viewer {
           accounts(filter: {accountTag: $accountTag}) {
             rumPageloadEventsAdaptiveGroups(
-              limit: 500,
+              limit: 1000,
               filter: {siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until},
               orderBy: [count_DESC]
             ) {
@@ -470,8 +494,16 @@ async function handleAnalyticsApi(context, url) {
         })
         .sort((a, b) => b.visits - a.visits);
 
-      const isHourly = period === '24h';
       const dayTrendMap = {};
+
+      // Якщо це конкретна дата, попередньо ініціалізуємо всі 24 години
+      if (singleDate && isHourly) {
+        for (let h = 0; h < 24; h++) {
+          const hh = String(h).padStart(2, '0');
+          dayTrendMap[`${singleDate}T${hh}:00:00Z`] = { visits: 0, views: 0 };
+        }
+      }
+
       for (const tg of trendGroups) {
         const h = tg.dimensions?.datetimeHour;
         const key = isHourly ? h : (h ? h.slice(0, 10) : '');
@@ -484,6 +516,99 @@ async function handleAnalyticsApi(context, url) {
       const timeline = Object.entries(dayTrendMap)
         .map(([date, d]) => ({ date, visits: d.visits, views: d.views, isHourly }))
         .sort((a, b) => a.date.localeCompare(b.date));
+
+      // 5. Теплова карта активності (Дні тижня × Години доби за київським часом)
+      const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+      const dayFullNames = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'];
+
+      const heatmapMatrix = Array.from({ length: 7 }, () =>
+        Array.from({ length: 24 }, () => ({ visits: 0, views: 0 }))
+      );
+
+      const timeSlots = {
+        night: { id: 'night', name: 'Ніч', hours: '00:00–06:00', visits: 0, views: 0 },
+        morning: { id: 'morning', name: 'Ранок', hours: '06:00–12:00', visits: 0, views: 0 },
+        day: { id: 'day', name: 'День', hours: '12:00–18:00', visits: 0, views: 0 },
+        evening: { id: 'evening', name: 'Вечір', hours: '18:00–24:00', visits: 0, views: 0 }
+      };
+
+      let maxCellVisits = 0;
+      const allHourlyCells = [];
+
+      for (const tg of trendGroups) {
+        const dtStr = tg.dimensions?.datetimeHour;
+        if (!dtStr) continue;
+        const dt = new Date(dtStr);
+        const kyivDateStr = dt.toLocaleString('en-US', { timeZone: 'Europe/Kyiv' });
+        const kyivDate = new Date(kyivDateStr);
+        const jsDay = kyivDate.getDay();
+        const dayIdx = (jsDay + 6) % 7; // 0=Пн .. 6=Нд
+        const hour = kyivDate.getHours();
+        const v = tg.sum?.visits || 0;
+        const w = tg.count || 0;
+
+        if (heatmapMatrix[dayIdx] && heatmapMatrix[dayIdx][hour] !== undefined) {
+          heatmapMatrix[dayIdx][hour].visits += v;
+          heatmapMatrix[dayIdx][hour].views += w;
+          if (heatmapMatrix[dayIdx][hour].visits > maxCellVisits) {
+            maxCellVisits = heatmapMatrix[dayIdx][hour].visits;
+          }
+        }
+
+        if (hour < 6) { timeSlots.night.visits += v; timeSlots.night.views += w; }
+        else if (hour < 12) { timeSlots.morning.visits += v; timeSlots.morning.views += w; }
+        else if (hour < 18) { timeSlots.day.visits += v; timeSlots.day.views += w; }
+        else { timeSlots.evening.visits += v; timeSlots.evening.views += w; }
+      }
+
+      for (let d = 0; d < 7; d++) {
+        for (let h = 0; h < 24; h++) {
+          const cell = heatmapMatrix[d][h];
+          if (cell.visits > 0) {
+            allHourlyCells.push({
+              dayIdx: d,
+              dayName: dayFullNames[d],
+              dayShort: dayNames[d],
+              hour: h,
+              visits: cell.visits,
+              views: cell.views
+            });
+          }
+        }
+      }
+
+      allHourlyCells.sort((a, b) => b.visits - a.visits);
+      const topPeakSlots = allHourlyCells.slice(0, 3);
+
+      let recommendation = 'Очікуємо накопичення активності для точної поради';
+      if (topPeakSlots.length > 0 && topPeakSlots[0].visits > 0) {
+        const p1 = topPeakSlots[0];
+        const nextHour = (p1.hour + 2) % 24;
+        const rangeStr = `${String(p1.hour).padStart(2, '0')}:00–${String(nextHour).padStart(2, '0')}:00`;
+        if (topPeakSlots.length > 1 && topPeakSlots[1].dayName !== p1.dayName && topPeakSlots[1].visits > 0) {
+          const p2 = topPeakSlots[1];
+          const p2Next = (p2.hour + 2) % 24;
+          recommendation = `Найкращий час для публікацій: ${p1.dayName} ${rangeStr} та ${p2.dayName} ${String(p2.hour).padStart(2, '0')}:00–${String(p2Next).padStart(2, '0')}:00`;
+        } else {
+          recommendation = `Найкращий час для публікацій: ${p1.dayName} ${rangeStr} (пікова активність)`;
+        }
+      }
+
+      const totalSlotVisits = timeSlots.night.visits + timeSlots.morning.visits + timeSlots.day.visits + timeSlots.evening.visits;
+      const timeSlotsArr = Object.values(timeSlots).map(ts => ({
+        ...ts,
+        percent: totalSlotVisits > 0 ? Math.round((ts.visits / totalSlotVisits) * 100) : 0
+      }));
+
+      const heatmapData = {
+        days: dayNames,
+        day_full_names: dayFullNames,
+        matrix: heatmapMatrix,
+        max_visits: maxCellVisits,
+        top_slots: topPeakSlots,
+        time_slots: timeSlotsArr,
+        recommendation
+      };
 
       const prods = Array.isArray(productsRes) ? productsRes : [];
       const prodImagesMap = {};
@@ -536,7 +661,7 @@ async function handleAnalyticsApi(context, url) {
         .sort((a, b) => b.count - a.count);
 
       return new Response(JSON.stringify({
-        period,
+        period: activePeriodName,
         totals: {
           visits: totalVisits,
           views: totalViews,
@@ -550,6 +675,7 @@ async function handleAnalyticsApi(context, url) {
         sources: sourcesList,
         countries: countriesList,
         timeline,
+        heatmap: heatmapData,
         top_favorites: topFavorites,
         recent_favorites: recentFavs,
         categories: categoriesList,

@@ -228,12 +228,12 @@
           </p>
         </div>
 
-        <div class="inline-flex p-1 bg-linen rounded-xl border border-craft gap-1 self-start sm:self-auto">
+        <div class="inline-flex p-1 bg-linen rounded-xl border border-craft gap-1 self-start sm:self-auto relative">
           <button 
             type="button" 
             onclick="switchPeriod('24h')" 
             id="tab-24h"
-            class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer"
+            class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer"
           >
             24 години
           </button>
@@ -241,7 +241,7 @@
             type="button" 
             onclick="switchPeriod('7d')" 
             id="tab-7d"
-            class="tab-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-stoneDark text-white transition cursor-pointer"
+            class="tab-btn active px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-stoneDark text-white transition cursor-pointer"
           >
             7 днів
           </button>
@@ -249,10 +249,64 @@
             type="button" 
             onclick="switchPeriod('30d')" 
             id="tab-30d"
-            class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer"
+            class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer"
           >
             30 днів
           </button>
+          <button 
+            type="button" 
+            onclick="toggleDatePicker(event)" 
+            id="tab-custom"
+            class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer flex items-center gap-1.5"
+            title="Обрати конкретний день або власний період"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span id="tab-custom-label">Календар</span>
+          </button>
+
+          <!-- Спливаюче вікно календаря (Date Picker Popover) -->
+          <div id="date-picker-popover" class="hidden absolute right-0 top-full mt-2 w-72 max-w-[92vw] z-50 craft-card p-3.5 sm:p-4 shadow-xl border border-craft bg-[#FAF7F2]/98 backdrop-blur-md">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-craft">
+              <span class="text-xs font-serif font-bold text-stoneDark">Вибір дати або періоду</span>
+              <button type="button" onclick="closeDatePicker()" class="text-stone-400 hover:text-stoneDark text-base leading-none p-1 cursor-pointer">&times;</button>
+            </div>
+            
+            <!-- Швидкі вибори -->
+            <div class="grid grid-cols-2 gap-1.5 mb-3 text-[11px]">
+              <button type="button" onclick="applyPreset('yesterday')" class="p-1.5 rounded-lg bg-white border border-craft text-stoneDark hover:bg-stoneDark hover:text-white transition text-center font-medium cursor-pointer shadow-2xs">Вчора</button>
+              <button type="button" onclick="applyPreset('14d')" class="p-1.5 rounded-lg bg-white border border-craft text-stoneDark hover:bg-stoneDark hover:text-white transition text-center font-medium cursor-pointer shadow-2xs">14 днів</button>
+            </div>
+
+            <!-- День погодинно -->
+            <div class="mb-3">
+              <label class="block text-[11px] font-medium text-stone-500 mb-1">День погодинно:</label>
+              <div class="flex gap-1.5">
+                <input type="date" id="date-picker-single" class="flex-1 px-2.5 py-1.5 bg-white border border-craft rounded-lg text-xs text-stoneDark focus:outline-none focus:ring-1 focus:ring-stoneDark" />
+                <button type="button" onclick="applySingleDate()" class="px-3 py-1.5 bg-stoneDark text-white text-xs font-medium rounded-lg hover:bg-stone-800 transition cursor-pointer">Перейти</button>
+              </div>
+            </div>
+
+            <!-- Довільний діапазон -->
+            <div class="pt-2 border-t border-craft">
+              <label class="block text-[11px] font-medium text-stone-500 mb-1">Діапазон дат:</label>
+              <div class="grid grid-cols-2 gap-1.5 mb-2">
+                <div>
+                  <span class="text-[10px] text-stone-400">Від:</span>
+                  <input type="date" id="date-picker-from" class="w-full px-2 py-1 bg-white border border-craft rounded-lg text-[11px] text-stoneDark focus:outline-none" />
+                </div>
+                <div>
+                  <span class="text-[10px] text-stone-400">До:</span>
+                  <input type="date" id="date-picker-to" class="w-full px-2 py-1 bg-white border border-craft rounded-lg text-[11px] text-stoneDark focus:outline-none" />
+                </div>
+              </div>
+              <button type="button" onclick="applyDateRange()" class="w-full py-1.5 bg-linen hover:bg-stoneDark hover:text-white text-stoneDark text-xs font-medium rounded-lg border border-craft transition cursor-pointer">Застосувати період</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -346,10 +400,22 @@
         <div class="lg:col-span-2 craft-card p-4 sm:p-6 flex flex-col">
           <div class="flex items-center justify-between gap-3 mb-4">
             <div class="min-w-0">
-              <h3 class="text-sm font-bold font-serif text-stoneDark truncate">
-                Динаміка відвідуваності
-              </h3>
-              <p class="text-xs text-stoneMuted truncate">Перегляди та унікальні візити</p>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-bold font-serif text-stoneDark truncate" id="chart-card-title">
+                  Динаміка відвідуваності
+                </h3>
+                <button 
+                  type="button" 
+                  id="chart-back-btn" 
+                  onclick="exitDrillDown()" 
+                  class="hidden px-2 py-0.5 rounded-md text-[11px] font-medium bg-linen hover:bg-stoneDark hover:text-white text-stoneDark border border-craft transition cursor-pointer flex items-center gap-1 shadow-2xs"
+                  title="Повернутися до загального графіка"
+                >
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                  <span>До всіх днів</span>
+                </button>
+              </div>
+              <p class="text-xs text-stoneMuted truncate" id="chart-card-subtitle">Перегляди та унікальні візити</p>
             </div>
             
             <!-- Перемикач стилю графіка -->
@@ -379,6 +445,66 @@
           </div>
           <div id="sources-list" class="space-y-3.5 flex-1">
             <!-- Заповнюється динамічно -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Ряд: Теплова карта активності та найкращий час для постів -->
+      <div class="craft-card p-4 sm:p-6 flex flex-col">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-base">🕒</span>
+              <h3 class="text-sm font-bold font-serif text-stoneDark">
+                Карта активності: коли аудиторія онлайн
+              </h3>
+            </div>
+            <p class="text-xs text-stoneMuted mt-0.5">Розподіл відвідувань за днями тижня та годинами доби</p>
+          </div>
+          
+          <!-- Рекомендація для публікацій -->
+          <div id="heatmap-recommendation-pill" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-xs text-amber-900 font-medium self-start md:self-auto">
+            <span class="flex h-2 w-2 relative flex-shrink-0">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <span id="heatmap-recommendation-text">Аналізуємо найкращий час для публікацій...</span>
+          </div>
+        </div>
+
+        <!-- 4 інтервали доби (швидкі зрізи) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" id="heatmap-time-slots">
+          <!-- Заповнюється динамічно -->
+        </div>
+
+        <!-- Детальна теплова матриця (Дні тижня x Години) -->
+        <div class="overflow-x-auto pb-1 pt-1 -mx-2 px-2 sm:mx-0 sm:px-0">
+          <div class="min-w-[540px]">
+            <div class="grid grid-cols-[36px_repeat(24,_1fr)] gap-1 text-[10px] text-stone-400 text-center mb-1 select-none">
+              <span></span>
+              <span>00</span><span></span><span>02</span><span></span><span>04</span><span></span><span>06</span><span></span><span>08</span><span></span><span>10</span><span></span><span>12</span><span></span><span>14</span><span></span><span>16</span><span></span><span>18</span><span></span><span>20</span><span></span><span>22</span><span></span>
+            </div>
+            
+            <div id="heatmap-grid" class="space-y-1">
+              <!-- 7 рядків (Пн-Нд) -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Легенда інтенсивності -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3 pt-3 border-t border-craft/60 text-[11px] text-stone-500">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-stone-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Час за Києвом. Наведіть курсор або торкніться клітинки для точних цифр</span>
+          </span>
+          <div class="flex items-center gap-1 self-end sm:self-auto">
+            <span class="text-[10px] text-stone-400 mr-1">Менше</span>
+            <div class="w-3 h-3 rounded-xs bg-[#F4EFEA] border border-craft/40"></div>
+            <div class="w-3 h-3 rounded-xs bg-[#E8DFD5]"></div>
+            <div class="w-3 h-3 rounded-xs bg-[#D9C3AA]"></div>
+            <div class="w-3 h-3 rounded-xs bg-[#C28E5C]"></div>
+            <div class="w-3 h-3 rounded-xs bg-[#2C2825]"></div>
+            <span class="text-[10px] text-stone-400 ml-1">Пік</span>
           </div>
         </div>
       </div>
@@ -606,29 +732,58 @@
       }
     }
 
-    // Перемикач періоду
+    let currentPeriod = '7d';
+    let currentCustomQuery = '';
+    let previousPeriodBeforeDrill = '7d';
+
+    // Перемикач періоду (24h, 7d, 30d)
     function switchPeriod(p) {
       currentPeriod = p;
+      currentCustomQuery = '';
+      
+      const customBtn = document.getElementById('tab-custom');
+      if (customBtn) {
+        customBtn.classList.remove('active', 'bg-stoneDark', 'text-white');
+        customBtn.classList.add('text-stone-600');
+        const customLbl = document.getElementById('tab-custom-label');
+        if (customLbl) customLbl.innerText = 'Календар';
+      }
+
+      const backBtn = document.getElementById('chart-back-btn');
+      if (backBtn) backBtn.classList.add('hidden');
+      const chartTitle = document.getElementById('chart-card-title');
+      if (chartTitle) chartTitle.innerText = 'Динаміка відвідуваності';
+      const chartSub = document.getElementById('chart-card-subtitle');
+      if (chartSub) chartSub.innerText = 'Перегляди та унікальні візити';
+
       ['24h', '7d', '30d'].forEach(tab => {
         const btn = document.getElementById(`tab-${tab}`);
-        if (tab === p) {
-          btn.classList.add('active', 'bg-stoneDark', 'text-white');
-          btn.classList.remove('text-stone-600');
-        } else {
-          btn.classList.remove('active', 'bg-stoneDark', 'text-white');
-          btn.classList.add('text-stone-600');
+        if (btn) {
+          if (tab === p) {
+            btn.classList.add('active', 'bg-stoneDark', 'text-white');
+            btn.classList.remove('text-stone-600');
+          } else {
+            btn.classList.remove('active', 'bg-stoneDark', 'text-white');
+            btn.classList.add('text-stone-600');
+          }
         }
       });
       loadDashboardData();
     }
 
-    // Завантаження даних
-    async function loadDashboardData() {
+    // Завантаження даних аналітики
+    async function loadDashboardData(customParam = null) {
+      if (customParam !== null) {
+        currentCustomQuery = customParam;
+      }
       const refreshBtn = document.getElementById('refresh-btn');
       if (refreshBtn) refreshBtn.classList.add('animate-spin');
 
       try {
-        const res = await fetch(`/api/analytics/data?period=${currentPeriod}`);
+        const url = currentCustomQuery 
+          ? `/api/analytics/data?${currentCustomQuery}` 
+          : `/api/analytics/data?period=${currentPeriod}`;
+        const res = await fetch(url);
         if (res.status === 401) {
           showLogin();
           return;
@@ -644,6 +799,134 @@
         }
       }
     }
+
+    // Drill-down: перегляд одного конкретного дня погодинно
+    function drillDownToDate(dateStr) {
+      if (!currentCustomQuery) {
+        previousPeriodBeforeDrill = currentPeriod;
+      }
+      const d = new Date(dateStr);
+      const titleStr = d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+      
+      const titleEl = document.getElementById('chart-card-title');
+      const subEl = document.getElementById('chart-card-subtitle');
+      const backBtn = document.getElementById('chart-back-btn');
+      
+      if (titleEl) titleEl.innerText = `Динаміка за ${titleStr}`;
+      if (subEl) subEl.innerText = 'Погодинний розподіл доби (24 години)';
+      if (backBtn) backBtn.classList.remove('hidden');
+
+      loadDashboardData(`date=${dateStr}`);
+    }
+
+    // Вихід з drill-down
+    function exitDrillDown() {
+      const titleEl = document.getElementById('chart-card-title');
+      const subEl = document.getElementById('chart-card-subtitle');
+      const backBtn = document.getElementById('chart-back-btn');
+
+      if (titleEl) titleEl.innerText = 'Динаміка відвідуваності';
+      if (subEl) subEl.innerText = 'Перегляди та унікальні візити';
+      if (backBtn) backBtn.classList.add('hidden');
+
+      currentCustomQuery = '';
+      switchPeriod(previousPeriodBeforeDrill || '7d');
+    }
+
+    // Керування календарем (Date Picker Popover)
+    function toggleDatePicker(e) {
+      if (e) e.stopPropagation();
+      const popover = document.getElementById('date-picker-popover');
+      if (popover) {
+        popover.classList.toggle('hidden');
+        if (!popover.classList.contains('hidden')) {
+          const today = new Date().toISOString().slice(0, 10);
+          const singleInp = document.getElementById('date-picker-single');
+          if (singleInp && !singleInp.value) singleInp.value = today;
+          const toInp = document.getElementById('date-picker-to');
+          if (toInp && !toInp.value) toInp.value = today;
+        }
+      }
+    }
+
+    function closeDatePicker() {
+      const popover = document.getElementById('date-picker-popover');
+      if (popover) popover.classList.add('hidden');
+    }
+
+    function activateCustomTab(labelText) {
+      ['24h', '7d', '30d'].forEach(tab => {
+        const btn = document.getElementById(`tab-${tab}`);
+        if (btn) {
+          btn.classList.remove('active', 'bg-stoneDark', 'text-white');
+          btn.classList.add('text-stone-600');
+        }
+      });
+      const customBtn = document.getElementById('tab-custom');
+      if (customBtn) {
+        customBtn.classList.add('active', 'bg-stoneDark', 'text-white');
+        customBtn.classList.remove('text-stone-600');
+        const customLbl = document.getElementById('tab-custom-label');
+        if (customLbl && labelText) customLbl.innerText = labelText;
+      }
+    }
+
+    function applyPreset(preset) {
+      closeDatePicker();
+      const now = new Date();
+      if (preset === 'yesterday') {
+        const y = new Date(now.getTime() - 24 * 3600 * 1000);
+        const yStr = y.toISOString().slice(0, 10);
+        activateCustomTab('Вчора');
+        drillDownToDate(yStr);
+      } else if (preset === '14d') {
+        const since = new Date(now.getTime() - 14 * 24 * 3600 * 1000).toISOString();
+        const until = now.toISOString();
+        activateCustomTab('14 днів');
+        const backBtn = document.getElementById('chart-back-btn');
+        if (backBtn) backBtn.classList.add('hidden');
+        const chartTitle = document.getElementById('chart-card-title');
+        if (chartTitle) chartTitle.innerText = 'Динаміка за 14 днів';
+        loadDashboardData(`since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`);
+      }
+    }
+
+    function applySingleDate() {
+      const inp = document.getElementById('date-picker-single');
+      if (!inp || !inp.value) return;
+      closeDatePicker();
+      const d = new Date(inp.value);
+      const shortStr = `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+      activateCustomTab(shortStr);
+      drillDownToDate(inp.value);
+    }
+
+    function applyDateRange() {
+      const fromInp = document.getElementById('date-picker-from');
+      const toInp = document.getElementById('date-picker-to');
+      if (!fromInp || !toInp || !fromInp.value || !toInp.value) return;
+      closeDatePicker();
+      const since = new Date(`${fromInp.value}T00:00:00.000Z`).toISOString();
+      const until = new Date(`${toInp.value}T23:59:59.999Z`).toISOString();
+      const label = `${fromInp.value.slice(5)}–${toInp.value.slice(5)}`;
+      activateCustomTab(label);
+      const backBtn = document.getElementById('chart-back-btn');
+      if (backBtn) backBtn.classList.add('hidden');
+      const chartTitle = document.getElementById('chart-card-title');
+      if (chartTitle) chartTitle.innerText = `Динаміка (${label})`;
+      loadDashboardData(`since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`);
+    }
+
+    // Закриття попапу календаря при кліку поза ним
+    document.addEventListener('click', (e) => {
+      const popover = document.getElementById('date-picker-popover');
+      const customBtn = document.getElementById('tab-custom');
+      if (popover && !popover.classList.contains('hidden')) {
+        if (!popover.contains(e.target) && (!customBtn || !customBtn.contains(e.target))) {
+          popover.classList.add('hidden');
+        }
+      }
+    });
 
     // Відмалювання інтерфейсу
     function renderDashboard(data) {
@@ -726,6 +1009,9 @@
 
       // 4. Графік динаміки (Chart.js)
       renderChart(data.timeline || []);
+
+      // 4.1 Теплова карта активності (Heatmap)
+      renderHeatmap(data.heatmap);
 
       // 5. Топ найбажаніших прикрас
       const favsTopList = document.getElementById('favorites-top-list');
@@ -814,6 +1100,112 @@
         chip.innerHTML = `<span>${c.name}</span> <span class="font-bold text-amberCraft">${c.count}</span>`;
         catChips.appendChild(chip);
       });
+    }
+
+    // 4.1 Теплова карта активності (Heatmap)
+    function renderHeatmap(heatmap) {
+      const recText = document.getElementById('heatmap-recommendation-text');
+      const timeSlotsContainer = document.getElementById('heatmap-time-slots');
+      const gridContainer = document.getElementById('heatmap-grid');
+      
+      if (!heatmap) return;
+
+      // Текстова порада для публікацій
+      if (recText) {
+        recText.innerText = heatmap.recommendation || 'Аналізуємо активність аудиторії...';
+      }
+
+      // 4 часові інтервали доби
+      if (timeSlotsContainer && heatmap.time_slots) {
+        timeSlotsContainer.innerHTML = '';
+        const slotIcons = {
+          night: '🌙',
+          morning: '🌅',
+          day: '☀️',
+          evening: '🌆'
+        };
+
+        const maxSlotPercent = Math.max(...heatmap.time_slots.map(s => s.percent || 0));
+
+        heatmap.time_slots.forEach(slot => {
+          const isTopSlot = slot.percent === maxSlotPercent && slot.percent > 0;
+          const icon = slotIcons[slot.id] || '🕒';
+          const card = document.createElement('div');
+          card.className = `p-2.5 sm:p-3 rounded-xl border transition-all ${
+            isTopSlot 
+              ? 'bg-amber-50/70 border-amber-300/80 shadow-xs' 
+              : 'bg-linen/50 border-craft/80 hover:bg-linen'
+          }`;
+          card.innerHTML = `
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="font-medium text-stoneDark flex items-center gap-1.5">
+                <span>${icon}</span>
+                <span>${slot.name}</span>
+                ${isTopSlot ? '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-200/60 text-amber-900 font-semibold">ТОП</span>' : ''}
+              </span>
+              <span class="text-[10px] font-mono text-stone-400">${slot.hours}</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+              <span class="text-base sm:text-lg font-bold font-serif ${isTopSlot ? 'text-amber-950' : 'text-stoneDark'}">${slot.percent}%</span>
+              <span class="text-[11px] text-stone-500">${slot.visits} ${slot.visits === 1 ? 'візит' : 'візитів'}</span>
+            </div>
+            <div class="w-full bg-stone-200/60 h-1.5 rounded-full overflow-hidden mt-2">
+              <div class="h-full rounded-full transition-all duration-500 ${isTopSlot ? 'bg-amberCraft' : 'bg-stoneDark/70'}" style="width: ${slot.percent}%"></div>
+            </div>
+          `;
+          timeSlotsContainer.appendChild(card);
+        });
+      }
+
+      // Матриця 7x24
+      if (gridContainer && heatmap.matrix) {
+        gridContainer.innerHTML = '';
+        const days = heatmap.days || ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+        const dayFullNames = heatmap.day_full_names || ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'];
+        const maxV = heatmap.max_visits || 1;
+
+        heatmap.matrix.forEach((row, dayIdx) => {
+          const rowEl = document.createElement('div');
+          rowEl.className = 'grid grid-cols-[36px_repeat(24,_1fr)] gap-1 items-center';
+          
+          let cellsHtml = `<span class="text-[11px] font-medium text-stone-600 text-center py-1 rounded bg-stone-200/40 select-none">${days[dayIdx]}</span>`;
+
+          row.forEach((cell, hour) => {
+            const v = cell.visits || 0;
+            const w = cell.views || 0;
+            const ratio = maxV > 0 ? (v / maxV) : 0;
+
+            let bgClass = 'bg-[#F4EFEA]/80 border border-craft/40 text-transparent';
+            if (v > 0) {
+              if (ratio <= 0.25) {
+                bgClass = 'bg-[#E8DFD5] border border-[#DFD5C8] text-stone-600 hover:ring-2 hover:ring-amberCraft/50';
+              } else if (ratio <= 0.5) {
+                bgClass = 'bg-[#D9C3AA] text-stone-800 font-medium hover:ring-2 hover:ring-amberCraft/50';
+              } else if (ratio <= 0.75) {
+                bgClass = 'bg-[#C28E5C] text-white font-semibold hover:ring-2 hover:ring-stoneDark';
+              } else {
+                bgClass = 'bg-[#2C2825] text-white font-bold ring-1 ring-amber-400/50 hover:ring-2 hover:ring-amberCraft';
+              }
+            }
+
+            const nextH = (hour + 1) % 24;
+            const hourLabel = `${String(hour).padStart(2, '0')}:00–${String(nextH).padStart(2, '0')}:00`;
+            const tooltipTitle = `${dayFullNames[dayIdx]}, ${hourLabel}\n${v} ${v === 1 ? 'візит' : 'візитів'}, ${w} ${w === 1 ? 'перегляд' : 'переглядів'}`;
+
+            cellsHtml += `
+              <div 
+                class="h-6 sm:h-7 rounded-sm flex items-center justify-center text-[9px] font-mono transition-transform hover:scale-125 hover:z-20 cursor-pointer shadow-2xs select-none ${bgClass}"
+                title="${tooltipTitle}"
+              >
+                ${v > 0 ? v : ''}
+              </div>
+            `;
+          });
+
+          rowEl.innerHTML = cellsHtml;
+          gridContainer.appendChild(rowEl);
+        });
+      }
     }
 
     let currentTimeline = [];
@@ -956,6 +1348,21 @@
             mode: 'index',
             intersect: false
           },
+          onClick: (event, elements) => {
+            if (elements && elements.length > 0 && !isHourly) {
+              const el = elements[0];
+              const item = timeline[el.index];
+              if (item && item.date) {
+                const dateStr = item.date.slice(0, 10);
+                drillDownToDate(dateStr);
+              }
+            }
+          },
+          onHover: (event, elements) => {
+            if (event && event.native && event.native.target) {
+              event.native.target.style.cursor = (!isHourly && elements && elements.length > 0) ? 'pointer' : 'default';
+            }
+          },
           plugins: {
             legend: {
               position: 'top',
@@ -987,6 +1394,12 @@
                     return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' }) + `, ${String(d.getHours()).padStart(2, '0')}:00`;
                   }
                   return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+                },
+                footer: function(tooltipItems) {
+                  if (!isHourly && tooltipItems && tooltipItems.length > 0) {
+                    return '\n👆 Клікніть для погодинного розрізу';
+                  }
+                  return '';
                 }
               }
             }
