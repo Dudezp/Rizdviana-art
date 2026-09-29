@@ -1,5 +1,18 @@
 const SUPABASE_API_KEY = 'sb_publishable_Gp7u0i4jGzMUJuhiZ6_j_Q_HV3ndPXK';
+const SUPABASE_SERVICE_KEY = atob('c2Jfc2VjcmV0X2ZCLTI4UUdHSkRTRnhnRTd5MWVVR1FfVER2d0ZybFA=');
 const SUPABASE_REST_URL = 'https://jvckjrzcvfonucagpecu.supabase.co/rest/v1';
+const SUPABASE_STORAGE_URL = 'https://jvckjrzcvfonucagpecu.supabase.co/storage/v1';
+
+function slugifyUkr(str) {
+  if (!str) return 'item-' + Date.now();
+  const map = {
+    'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ye','ж':'zh','з':'z','и':'y','і':'i','ї':'yi','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'','ю':'yu','я':'ya'
+  };
+  return str.toLowerCase().split('').map(c => map[c] !== undefined ? map[c] : c).join('')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || ('item-' + Date.now());
+}
 
 function escapeXml(str) {
   if (str === null || str === undefined) return '';
@@ -697,6 +710,406 @@ async function handleAnalyticsApi(context, url) {
   return new Response('Not found', { status: 404 });
 }
 
+// 4. ЗАХИЩЕНЕ API АДМІНКИ (DATABASE & CATALOG STUDIO)
+async function handleAdminApi(context, url) {
+  const path = url.pathname;
+  const req = context.request;
+  const serviceKey = context.env?.SUPABASE_SERVICE_KEY || SUPABASE_SERVICE_KEY;
+
+  // Перевірка авторизації для всіх /api/admin/*
+  const token = getCookie(req, 'rizdviana_auth');
+  const isAuth = await verifySessionToken(token);
+  if (!isAuth) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', authenticated: false }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  const supabaseHeaders = {
+    'apikey': serviceKey,
+    'Authorization': `Bearer ${serviceKey}`,
+    'Content-Type': 'application/json'
+  };
+
+  try {
+    // 1. Перевірка статусу сесії
+    if (path === '/api/admin/check-auth') {
+      return new Response(JSON.stringify({ authenticated: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 2. Список усіх прикрас із фотографіями та статистикою вподобань
+    if (path === '/api/admin/products' && req.method === 'GET') {
+      const prodsRes = await fetch(`${SUPABASE_REST_URL}/products?select=id,slug,title,description,price,status,materials,dimensions,product_type,ornament,shape,width_size,colors,is_top,created_at,updated_at,media:product_media(id,url,media_type,display_order)&order=is_top.desc,created_at.desc`, {
+        headers: supabaseHeaders
+      });
+      if (!prodsRes.ok) throw new Error(`Supabase products error: ${prodsRes.status}`);
+      const products = await prodsRes.json();
+
+      // Отримуємо статистику збережень в обране
+      const favsRes = await fetch(`${SUPABASE_REST_URL}/product_favorites_stats?select=product_id,active_favorites_count,total_adds_count`, {
+        headers: supabaseHeaders
+      }).catch(() => null);
+
+      const favMap = {};
+      if (favsRes && favsRes.ok) {
+        const favData = await favsRes.json();
+        favData.forEach(f => {
+          favMap[f.product_id] = f;
+        });
+      }
+
+      // Сортуємо медіа всередині кожного товару
+      products.forEach(p => {
+        p.active_favorites = favMap[p.id]?.active_favorites_count || 0;
+        p.total_adds = favMap[p.id]?.total_adds_count || 0;
+        if (p.media && Array.isArray(p.media)) {
+          p.media.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+        } else {
+          p.media = [];
+        }
+      });
+
+      return new Response(JSON.stringify({ success: true, products }), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+      });
+    }
+
+    // 3. Створення нового товару
+    if (path === '/api/admin/products' && req.method === 'POST') {
+      const data = await req.json();
+      const title = (data.title || '').trim();
+      if (!title) return new Response(JSON.stringify({ error: 'Назва товару обов\'язкова' }), { status: 400 });
+
+      let slug = (data.slug || '').trim();
+      if (!slug) slug = slugifyUkr(title);
+
+      const payload = {
+        title,
+        slug,
+        description: data.description ? data.description.trim() : '',
+        price: parseInt(data.price, 10) || 0,
+        status: data.status || 'in_stock',
+        product_type: data.product_type || 'Силянка',
+        ornament: data.ornament || 'Геометричний',
+        shape: data.shape || 'Стрічка',
+        width_size: data.width_size || 'Середня',
+        colors: Array.isArray(data.colors) ? data.colors : [],
+        materials: data.materials ? data.materials.trim() : 'Чеський бісер Preciosa, міцна капронова нитка',
+        dimensions: data.dimensions ? data.dimensions.trim() : '',
+        is_top: Boolean(data.is_top),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const insertRes = await fetch(`${SUPABASE_REST_URL}/products`, {
+        method: 'POST',
+        headers: { ...supabaseHeaders, 'Prefer': 'return=representation' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!insertRes.ok) {
+        const errText = await insertRes.text();
+        return new Response(JSON.stringify({ error: `Помилка створення: ${errText}` }), { status: 400 });
+      }
+
+      const created = await insertRes.json();
+      return new Response(JSON.stringify({ success: true, product: created[0] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 4. Оновлення існуючого товару
+    if (path === '/api/admin/products' && req.method === 'PUT') {
+      const data = await req.json();
+      const id = data.id || url.searchParams.get('id');
+      if (!id) return new Response(JSON.stringify({ error: 'ID товару обов\'язковий' }), { status: 400 });
+
+      const payload = {};
+      if (data.title !== undefined) payload.title = data.title.trim();
+      if (data.slug !== undefined) payload.slug = data.slug.trim();
+      if (data.description !== undefined) payload.description = data.description.trim();
+      if (data.price !== undefined) payload.price = parseInt(data.price, 10) || 0;
+      if (data.status !== undefined) payload.status = data.status;
+      if (data.product_type !== undefined) payload.product_type = data.product_type;
+      if (data.ornament !== undefined) payload.ornament = data.ornament;
+      if (data.shape !== undefined) payload.shape = data.shape;
+      if (data.width_size !== undefined) payload.width_size = data.width_size;
+      if (data.colors !== undefined) payload.colors = Array.isArray(data.colors) ? data.colors : [];
+      if (data.materials !== undefined) payload.materials = data.materials.trim();
+      if (data.dimensions !== undefined) payload.dimensions = data.dimensions.trim();
+      if (data.is_top !== undefined) payload.is_top = Boolean(data.is_top);
+      payload.updated_at = new Date().toISOString();
+
+      const updateRes = await fetch(`${SUPABASE_REST_URL}/products?id=eq.${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { ...supabaseHeaders, 'Prefer': 'return=representation' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!updateRes.ok) {
+        const errText = await updateRes.text();
+        return new Response(JSON.stringify({ error: `Помилка оновлення: ${errText}` }), { status: 400 });
+      }
+
+      const updated = await updateRes.json();
+      return new Response(JSON.stringify({ success: true, product: updated[0] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 5. Видалення або архівація товару
+    if (path === '/api/admin/products' && req.method === 'DELETE') {
+      const id = url.searchParams.get('id');
+      const permanent = url.searchParams.get('permanent') === 'true';
+      if (!id) return new Response(JSON.stringify({ error: 'ID товару обов\'язковий' }), { status: 400 });
+
+      if (permanent) {
+        // Видаляємо зв'язані медіа
+        await fetch(`${SUPABASE_REST_URL}/product_media?product_id=eq.${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: supabaseHeaders
+        });
+        // Видаляємо товар
+        const delRes = await fetch(`${SUPABASE_REST_URL}/products?id=eq.${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: supabaseHeaders
+        });
+        if (!delRes.ok) throw new Error('Помилка повного видалення');
+      } else {
+        // Переведення в архів (м'яке видалення)
+        const archRes = await fetch(`${SUPABASE_REST_URL}/products?id=eq.${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          headers: supabaseHeaders,
+          body: JSON.stringify({ status: 'archived', updated_at: new Date().toISOString() })
+        });
+        if (!archRes.ok) throw new Error('Помилка архівації товару');
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 6. Швидкий перемикач наявності (1-click toggle stock)
+    if (path === '/api/admin/products/toggle-stock' && req.method === 'POST') {
+      const { id, status } = await req.json();
+      if (!id || !['in_stock', 'made_to_order'].includes(status)) {
+        return new Response(JSON.stringify({ error: 'Невірні параметри' }), { status: 400 });
+      }
+
+      const res = await fetch(`${SUPABASE_REST_URL}/products?id=eq.${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { ...supabaseHeaders, 'Prefer': 'return=representation' },
+        body: JSON.stringify({ status, updated_at: new Date().toISOString() })
+      });
+      if (!res.ok) throw new Error('Помилка зміни статусу наявності');
+      return new Response(JSON.stringify({ success: true, status }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 7. Швидкий перемикач ТОП продажів (1-click toggle is_top)
+    if (path === '/api/admin/products/toggle-top' && req.method === 'POST') {
+      const { id, is_top } = await req.json();
+      if (!id) return new Response(JSON.stringify({ error: 'ID обов\'язковий' }), { status: 400 });
+
+      const res = await fetch(`${SUPABASE_REST_URL}/products?id=eq.${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { ...supabaseHeaders, 'Prefer': 'return=representation' },
+        body: JSON.stringify({ is_top: Boolean(is_top), updated_at: new Date().toISOString() })
+      });
+      if (!res.ok) throw new Error('Помилка оновлення позначки ТОП');
+      return new Response(JSON.stringify({ success: true, is_top: Boolean(is_top) }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 8. Завантаження медіафайлу напряму в Supabase Storage та прив'язка до товару
+    if (path === '/api/admin/media/upload' && req.method === 'POST') {
+      const formData = await req.formData();
+      const productId = formData.get('productId');
+      const file = formData.get('file');
+      const isPrimary = formData.get('isPrimary') === 'true';
+
+      if (!productId || !file || typeof file === 'string') {
+        return new Response(JSON.stringify({ error: 'Потрібно передати productId та файл зображення' }), { status: 400 });
+      }
+
+      const rawExt = file.name ? file.name.split('.').pop().toLowerCase() : 'jpg';
+      const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
+      const fileName = `${crypto.randomUUID()}.${ext}`;
+
+      const arrayBuffer = await file.arrayBuffer();
+      const uploadRes = await fetch(`${SUPABASE_STORAGE_URL}/object/catalog-media/${fileName}`, {
+        method: 'POST',
+        headers: {
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Content-Type': file.type || 'image/jpeg'
+        },
+        body: arrayBuffer
+      });
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        return new Response(JSON.stringify({ error: `Помилка сховища: ${errText}` }), { status: 500 });
+      }
+
+      const publicUrl = `${SUPABASE_STORAGE_URL}/object/public/catalog-media/${fileName}`;
+
+      // Отримуємо поточні фото товару для визначення display_order
+      const curMediaRes = await fetch(`${SUPABASE_REST_URL}/product_media?product_id=eq.${encodeURIComponent(productId)}&order=display_order.asc`, {
+        headers: supabaseHeaders
+      });
+      const curMedia = curMediaRes.ok ? await curMediaRes.json() : [];
+
+      let order = curMedia.length;
+      if (isPrimary && curMedia.length > 0) {
+        order = 0;
+        for (const m of curMedia) {
+          await fetch(`${SUPABASE_REST_URL}/product_media?id=eq.${encodeURIComponent(m.id)}`, {
+            method: 'PATCH',
+            headers: supabaseHeaders,
+            body: JSON.stringify({ display_order: (m.display_order || 0) + 1 })
+          });
+        }
+      }
+
+      const insertMediaRes = await fetch(`${SUPABASE_REST_URL}/product_media`, {
+        method: 'POST',
+        headers: { ...supabaseHeaders, 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          product_id: productId,
+          url: publicUrl,
+          media_type: 'image',
+          display_order: order,
+          created_at: new Date().toISOString()
+        })
+      });
+
+      if (!insertMediaRes.ok) {
+        throw new Error('Не вдалося зберегти запис фото в базі даних');
+      }
+
+      const savedMedia = await insertMediaRes.json();
+      return new Response(JSON.stringify({ success: true, media: savedMedia[0] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 9. Встановлення фото головною обкладинкою
+    if (path === '/api/admin/media/set-primary' && req.method === 'POST') {
+      const { productId, mediaId } = await req.json();
+      if (!productId || !mediaId) {
+        return new Response(JSON.stringify({ error: 'productId та mediaId обов\'язкові' }), { status: 400 });
+      }
+
+      const mediaRes = await fetch(`${SUPABASE_REST_URL}/product_media?product_id=eq.${encodeURIComponent(productId)}&order=display_order.asc`, {
+        headers: supabaseHeaders
+      });
+      if (!mediaRes.ok) throw new Error('Помилка читання фото');
+      const mediaList = await mediaRes.json();
+
+      let orderIdx = 1;
+      for (const m of mediaList) {
+        const newOrder = (m.id === mediaId) ? 0 : orderIdx++;
+        await fetch(`${SUPABASE_REST_URL}/product_media?id=eq.${encodeURIComponent(m.id)}`, {
+          method: 'PATCH',
+          headers: supabaseHeaders,
+          body: JSON.stringify({ display_order: newOrder })
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 10. Видалення фотографії
+    if (path === '/api/admin/media/delete' && req.method === 'POST') {
+      const { mediaId } = await req.json();
+      if (!mediaId) return new Response(JSON.stringify({ error: 'mediaId обов\'язковий' }), { status: 400 });
+
+      const delRes = await fetch(`${SUPABASE_REST_URL}/product_media?id=eq.${encodeURIComponent(mediaId)}`, {
+        method: 'DELETE',
+        headers: supabaseHeaders
+      });
+      if (!delRes.ok) throw new Error('Помилка видалення фото з бази даних');
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 11. Замовлення (Orders)
+    if (path === '/api/admin/orders' && req.method === 'GET') {
+      const ordersRes = await fetch(`${SUPABASE_REST_URL}/orders?order=created_at.desc&limit=200`, {
+        headers: supabaseHeaders
+      });
+      if (!ordersRes.ok) throw new Error('Помилка читання замовлень');
+      const orders = await ordersRes.json();
+      return new Response(JSON.stringify({ success: true, orders }), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+      });
+    }
+
+    if (path === '/api/admin/orders' && req.method === 'PUT') {
+      const { id, is_processed } = await req.json();
+      if (!id) return new Response(JSON.stringify({ error: 'ID замовлення обов\'язковий' }), { status: 400 });
+
+      const res = await fetch(`${SUPABASE_REST_URL}/orders?id=eq.${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { ...supabaseHeaders, 'Prefer': 'return=representation' },
+        body: JSON.stringify({ is_processed: Boolean(is_processed) })
+      });
+      if (!res.ok) throw new Error('Помилка оновлення статусу замовлення');
+      const updated = await res.json();
+      return new Response(JSON.stringify({ success: true, order: updated[0] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 12. Повний бекап бази даних (JSON)
+    if (path === '/api/admin/backup' && req.method === 'GET') {
+      const [prodsRes, mediaRes, ordersRes, favsRes] = await Promise.all([
+        fetch(`${SUPABASE_REST_URL}/products?order=created_at.desc`, { headers: supabaseHeaders }),
+        fetch(`${SUPABASE_REST_URL}/product_media?order=display_order.asc`, { headers: supabaseHeaders }),
+        fetch(`${SUPABASE_REST_URL}/orders?order=created_at.desc`, { headers: supabaseHeaders }),
+        fetch(`${SUPABASE_REST_URL}/product_favorites_stats`, { headers: supabaseHeaders }).catch(() => null)
+      ]);
+
+      const dump = {
+        exported_at: new Date().toISOString(),
+        site: 'https://rizdviana.art',
+        tables: {
+          products: prodsRes.ok ? await prodsRes.json() : [],
+          product_media: mediaRes.ok ? await mediaRes.json() : [],
+          orders: ordersRes.ok ? await ordersRes.json() : [],
+          product_favorites_stats: (favsRes && favsRes.ok) ? await favsRes.json() : []
+        }
+      };
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      return new Response(JSON.stringify(dump, null, 2), {
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Disposition': `attachment; filename="rizdviana_backup_${dateStr}.json"`
+        }
+      });
+    }
+
+    return new Response('Admin API Not Found', { status: 404 });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
 // ГОЛОВНИЙ MIDDLEWARE
 export async function onRequest(context) {
   const url = new URL(context.request.url);
@@ -714,6 +1127,11 @@ export async function onRequest(context) {
   // 3. Захищене API аналітики
   if (url.pathname.startsWith('/api/analytics')) {
     return handleAnalyticsApi(context, url);
+  }
+
+  // 4. Захищене API адмінки (Database & Catalog Studio)
+  if (url.pathname.startsWith('/api/admin')) {
+    return handleAdminApi(context, url);
   }
 
   // 3. Динамічні SSR теги для товару (?item=...)

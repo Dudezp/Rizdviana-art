@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="uk" class="bg-[#F9F6F0]">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Адмінка майстерні — RIZDVIANA.ART</title>
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            linen: '#F9F6F0',
+            craft: '#F0EAE1',
+            craftBorder: '#E6DDD2',
+            stoneDark: '#2C2825',
+            stoneMuted: '#78716C',
+            amberCraft: '#C28E5C',
+            amberDeep: '#B45309',
+          },
+          fontFamily: {
+            serif: ['Cinzel', 'serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F9F6F0;
+      color: #2C2825;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .craft-card {
+      background: #FFFFFF;
+      border: 1px solid #E6DDD2;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px -2px rgba(44, 40, 37, 0.04);
+      transition: all 250ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .craft-card:hover {
+      border-color: #DFD5C8;
+      box-shadow: 0 8px 30px -4px rgba(44, 40, 37, 0.08);
+    }
+
+    .prod-row {
+      transition: background-color 200ms ease, transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    /* Пружні тактильні кнопки */
+    .tactile-btn {
+      transition: transform 150ms cubic-bezier(0.2, 0.8, 0.4, 1), background-color 150ms ease, box-shadow 150ms ease;
+    }
+    .tactile-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Кастомний скролбар */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F4EFEA;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D9C3AA;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C28E5C;
+    }
+
+    /* Модальні вікна */
+    .modal-backdrop {
+      background: rgba(44, 40, 37, 0.65);
+      backdrop-filter: blur(6px);
+      transition: opacity 250ms ease;
+    }
+    .modal-content {
+      transition: transform 250ms cubic-bezier(0.23, 1, 0.32, 1), opacity 250ms ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#C28E5C]/20 selection:text-[#2C2825]">
+
+  <!-- Екран авторизації (якщо сесія відсутня) -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2C2825] p-4 hidden">
+    <div class="w-full max-w-sm bg-[#38332F] border border-stone-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl text-white">
+      <div class="text-center mb-6">
+        <span class="inline-block px-3 py-1 rounded-full bg-[#C28E5C]/20 border border-[#C28E5C]/40 text-[#C28E5C] text-xs font-semibold tracking-wider uppercase mb-2">
+          RIZDVIANA.ART
+        </span>
+        <h1 class="text-xl font-bold font-serif tracking-wide text-white">Керування майстернею</h1>
+        <p class="text-xs text-stone-400 mt-1">Введіть пароль адміністратора для доступу</p>
+      </div>
+
+      <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
+        <div>
+          <label class="block text-xs font-medium text-stone-300 mb-1">Користувач</label>
+          <input 
+            type="text" 
+            id="login-username" 
+            required 
+            autocomplete="username"
+            value="admin"
+            class="w-full px-3.5 py-2.5 bg-[#2C2825] border border-stone-600 rounded-xl text-sm text-white placeholder-stone-500 focus:outline-none focus:border-[#C28E5C] transition"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-stone-300 mb-1">Пароль</label>
+          <input 
+            type="password" 
+            id="login-password" 
+            required 
+            autocomplete="current-password"
+            placeholder="••••••••••••"
+            class="w-full px-3.5 py-2.5 bg-[#2C2825] border border-stone-600 rounded-xl text-sm text-white placeholder-stone-500 focus:outline-none focus:border-[#C28E5C] transition"
+          />
+        </div>
+
+        <div id="login-error" class="text-xs text-rose-400 text-center hidden font-medium"></div>
+
+        <button 
+          type="submit" 
+          id="login-submit-btn"
+          class="w-full py-2.5 px-4 bg-[#C28E5C] hover:bg-[#B45309] text-white font-medium text-sm rounded-xl transition shadow-lg tactile-btn flex items-center justify-center gap-2"
+        >
+          <span>Увійти в кабінет</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Головний інтерфейс адмінки -->
+  <div id="app-container" class="flex-1 flex flex-col">
+
+    <!-- Закріплений темний хідер / Dock -->
+    <header class="sticky top-0 z-30 bg-[#2C2825] text-white border-b border-stone-800 shadow-md">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
+        
+        <div class="flex items-center gap-3">
+          <a href="/" class="flex items-center gap-2 text-white hover:text-amberCraft transition">
+            <span class="w-7 h-7 rounded-lg bg-[#C28E5C] text-stoneDark flex items-center justify-center font-serif font-bold text-sm shadow-xs">R</span>
+            <div class="min-w-0">
+              <span class="text-xs font-serif font-bold tracking-wider uppercase block">RIZDVIANA.ART</span>
+              <span class="text-[10px] text-stone-400 block -mt-0.5">Керування базою & Каталог</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Навігація між панелями -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <button 
+            onclick="switchTab('catalog')" 
+            id="tab-btn-catalog"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition bg-[#C28E5C] text-white shadow-xs"
+          >
+            📦 Каталог
+          </button>
+
+          <button 
+            onclick="switchTab('orders')" 
+            id="tab-btn-orders"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition bg-stone-800 text-stone-300 hover:text-white hover:bg-stone-700 flex items-center gap-1.5"
+          >
+            🛒 Замовлення
+            <span id="orders-badge-count" class="px-1.5 py-0.2 rounded-full bg-amberCraft text-[10px] font-bold text-stoneDark hidden">0</span>
+          </button>
+
+          <a 
+            href="/analytics" 
+            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-800 text-stone-300 hover:text-white hover:bg-stone-700 transition flex items-center gap-1"
+          >
+            📊 <span class="hidden sm:inline">Аналітика</span>
+          </a>
+
+          <a 
+            href="/" 
+            target="_blank" 
+            class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-stone-800 text-stone-300 hover:text-white hover:bg-stone-700 transition"
+            title="Відкрити магазин"
+          >
+            🌐 <span class="hidden md:inline">Сайт ↗</span>
+          </a>
+
+          <button 
+            onclick="handleLogout()" 
+            class="p-1.5 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-stone-800 transition"
+            title="Вийти"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Основний контент -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6">
+
+      <!-- ВКЛАДКА 1: КАТАЛОГ ПРИКРАС -->
+      <div id="view-catalog" class="space-y-6">
+
+        <!-- KPI Стрічка метрик каталогу -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div class="craft-card p-3.5 sm:p-4">
+            <span class="text-[11px] text-stoneMuted font-medium block">Всього прикрас</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="kpi-total-prods" class="text-xl sm:text-2xl font-bold font-serif text-stoneDark">—</span>
+              <span class="text-xs text-stone-400">у базі</span>
+            </div>
+          </div>
+
+          <div class="craft-card p-3.5 sm:p-4 border-l-4 border-l-emerald-500">
+            <span class="text-[11px] text-stoneMuted font-medium block">В наявності</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="kpi-in-stock" class="text-xl sm:text-2xl font-bold font-serif text-emerald-800">—</span>
+              <span class="text-xs text-emerald-600 font-medium">готові</span>
+            </div>
+          </div>
+
+          <div class="craft-card p-3.5 sm:p-4 border-l-4 border-l-amber-500">
+            <span class="text-[11px] text-stoneMuted font-medium block">Під замовлення</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="kpi-made-to-order" class="text-xl sm:text-2xl font-bold font-serif text-amber-900">—</span>
+              <span class="text-xs text-amber-700 font-medium">виготовлення</span>
+            </div>
+          </div>
+
+          <div class="craft-card p-3.5 sm:p-4 border-l-4 border-l-amberDeep">
+            <span class="text-[11px] text-stoneMuted font-medium block">⭐ ТОП продажів</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="kpi-top-prods" class="text-xl sm:text-2xl font-bold font-serif text-stoneDark">—</span>
+              <span class="text-xs text-amberDeep font-semibold">пріоритетні</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Панель керування: Пошук, Фільтри, Кнопка додавання -->
+        <div class="craft-card p-4 sm:p-5 space-y-3.5">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            
+            <!-- Поле живого пошуку -->
+            <div class="relative flex-1">
+              <svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input 
+                type="text" 
+                id="search-input" 
+                placeholder="Пошук за назвою, матеріалами або slug..."
+                oninput="applyFilters()"
+                class="w-full pl-9 pr-8 py-2 bg-linen/50 border border-craft rounded-xl text-xs sm:text-sm text-stoneDark placeholder-stone-400 focus:outline-none focus:border-amberCraft focus:bg-white transition"
+              />
+              <button 
+                id="search-clear-btn" 
+                onclick="clearSearch()" 
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 hidden"
+              >✕</button>
+            </div>
+
+            <!-- Головні дії: Створити прикрасу та Бекап -->
+            <div class="flex items-center gap-2">
+              <button 
+                onclick="openCreateProductModal()"
+                class="flex-1 sm:flex-initial px-4 py-2 bg-[#C28E5C] hover:bg-[#B45309] text-white rounded-xl text-xs font-semibold shadow-sm tactile-btn flex items-center justify-center gap-1.5 transition"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>➕ Нова прикраса</span>
+              </button>
+
+              <button 
+                onclick="downloadBackup()"
+                class="px-3 py-2 bg-white hover:bg-linen border border-craft rounded-xl text-xs font-medium text-stoneDark shadow-2xs tactile-btn transition flex items-center gap-1.5"
+                title="Завантажити повний бекап бази даних у JSON"
+              >
+                <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span class="hidden md:inline">Бекап JSON</span>
+              </button>
+
+              <button 
+                onclick="loadProducts()"
+                class="p-2 bg-white hover:bg-linen border border-craft rounded-xl text-stone-500 hover:text-stoneDark shadow-2xs tactile-btn transition"
+                title="Оновити дані з бази"
+              >
+                <svg id="refresh-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Швидкі фільтри (Pills) -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-craft/60 text-xs">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-stone-400 text-[11px] mr-1">Статус:</span>
+              <button onclick="setFilterStatus('all')" class="filter-status-btn px-2.5 py-1 rounded-lg font-medium transition bg-stoneDark text-white" data-status="all">Всі (<span id="count-all">0</span>)</button>
+              <button onclick="setFilterStatus('in_stock')" class="filter-status-btn px-2.5 py-1 rounded-lg font-medium transition bg-linen text-stone-600 hover:bg-stone-200" data-status="in_stock">В наявності (<span id="count-stock">0</span>)</button>
+              <button onclick="setFilterStatus('made_to_order')" class="filter-status-btn px-2.5 py-1 rounded-lg font-medium transition bg-linen text-stone-600 hover:bg-stone-200" data-status="made_to_order">Під замовлення (<span id="count-order">0</span>)</button>
+              <button onclick="setFilterStatus('top')" class="filter-status-btn px-2.5 py-1 rounded-lg font-medium transition bg-linen text-stone-600 hover:bg-stone-200" data-status="top">⭐ ТОП (<span id="count-top">0</span>)</button>
+              <button onclick="setFilterStatus('archived')" class="filter-status-btn px-2.5 py-1 rounded-lg font-medium transition bg-linen text-stone-400 hover:bg-stone-200" data-status="archived">📦 Архів (<span id="count-arch">0</span>)</button>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-stone-400 text-[11px]">Категорія:</span>
+              <select 
+                id="filter-category-select" 
+                onchange="applyFilters()" 
+                class="px-2.5 py-1 bg-white border border-craft rounded-lg text-xs font-medium text-stoneDark focus:outline-none focus:border-amberCraft"
+              >
+                <option value="all">Всі типи</option>
+                <option value="Силянка">Силянка</option>
+                <option value="Гердан">Гердан</option>
+                <option value="Чокер">Чокер</option>
+                <option value="Браслет">Браслет</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Список прикрас -->
+        <div class="craft-card overflow-hidden">
+          <div class="p-4 sm:p-5 border-b border-craft flex items-center justify-between">
+            <h2 class="text-sm font-bold font-serif text-stoneDark flex items-center gap-2">
+              <span>Каталог майстерні</span>
+              <span id="filtered-count-badge" class="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amberCraft text-[11px] font-mono font-bold">0</span>
+            </h2>
+            <div class="text-xs text-stone-400">
+              Сортування: <span class="font-medium text-stone-600">⭐ ТОП та нові</span>
+            </div>
+          </div>
+
+          <div id="products-list-container" class="divide-y divide-craft/60">
+            <!-- Динамічно заповнюється -->
+            <div class="p-8 text-center text-xs text-stone-400">
+              <div class="w-6 h-6 border-2 border-[#C28E5C] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              Завантажуємо прикраси з бази даних...
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ВКЛАДКА 2: ЗАМОВЛЕННЯ З САЙТУ -->
+      <div id="view-orders" class="space-y-6 hidden">
+        <div class="craft-card p-4 sm:p-6">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-craft">
+            <div>
+              <h2 class="text-base font-bold font-serif text-stoneDark">🛒 Журнал замовлень з сайту</h2>
+              <p class="text-xs text-stoneMuted">Замовлення, оформлені відвідувачами через форму на сайті</p>
+            </div>
+            <button 
+              onclick="loadOrders()" 
+              class="px-3 py-1.5 bg-white hover:bg-linen border border-craft rounded-xl text-xs font-medium text-stoneDark shadow-2xs tactile-btn transition flex items-center gap-1.5"
+            >
+              🔄 Оновити
+            </button>
+          </div>
+
+          <div id="orders-list-container" class="space-y-3">
+            <div class="p-8 text-center text-xs text-stone-400">Завантаження замовлень...</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- МОДАЛЬНЕ ВІКНО: СТВОРЕННЯ / РЕДАГУВАННЯ ТОВАРУ -->
+  <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="modal-backdrop fixed inset-0" onclick="closeProductModal()"></div>
+    
+    <div class="modal-content relative w-full max-w-2xl bg-white border border-craft rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10">
+      
+      <!-- Хідер модалки -->
+      <div class="p-4 sm:p-5 border-b border-craft flex items-center justify-between bg-linen/50">
+        <div>
+          <h3 id="modal-title" class="text-base font-bold font-serif text-stoneDark">Нова прикраса</h3>
+          <p class="text-[11px] text-stoneMuted">Заповніть характеристики виробу для каталогу</p>
+        </div>
+        <button onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-white border border-craft text-stone-400 hover:text-stoneDark flex items-center justify-center transition">✕</button>
+      </div>
+
+      <!-- Тіло форми зі скролом -->
+      <form id="product-form" onsubmit="handleSaveProduct(event)" class="overflow-y-auto p-4 sm:p-6 space-y-4 flex-1">
+        <input type="hidden" id="prod-form-id" value="" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Назва прикраси *</label>
+            <input 
+              type="text" 
+              id="prod-form-title" 
+              required
+              placeholder="напр. Силянка «Карпатська Ружа»" 
+              oninput="handleTitleInput(this.value)"
+              class="w-full px-3.5 py-2 bg-linen/30 border border-craft rounded-xl text-xs sm:text-sm text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Ціна (₴) *</label>
+            <input 
+              type="number" 
+              id="prod-form-price" 
+              required
+              min="0"
+              step="10"
+              placeholder="850" 
+              class="w-full px-3.5 py-2 bg-linen/30 border border-craft rounded-xl text-xs sm:text-sm font-bold text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Slug (URL посилання) *</label>
+            <input 
+              type="text" 
+              id="prod-form-slug" 
+              required
+              placeholder="sylyanka-karpatska-ruzha" 
+              class="w-full px-3.5 py-2 font-mono bg-linen/30 border border-craft rounded-xl text-xs text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Тип виробу *</label>
+            <select 
+              id="prod-form-type" 
+              required
+              class="w-full px-3.5 py-2 bg-linen/30 border border-craft rounded-xl text-xs sm:text-sm text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition"
+            >
+              <option value="Силянка">Силянка</option>
+              <option value="Гердан">Гердан</option>
+              <option value="Чокер">Чокер</option>
+              <option value="Браслет">Браслет</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Статус наявності *</label>
+            <select 
+              id="prod-form-status" 
+              required
+              class="w-full px-3.5 py-2 bg-linen/30 border border-craft rounded-xl text-xs sm:text-sm text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition"
+            >
+              <option value="in_stock">🟢 В наявності</option>
+              <option value="made_to_order">🟠 Під замовлення</option>
+              <option value="archived">📦 В архіві (не показувати на сайті)</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-3 pt-6">
+            <label class="relative flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="prod-form-top" class="w-4 h-4 rounded text-amberDeep focus:ring-amberCraft" />
+              <span class="text-xs font-bold text-stoneDark flex items-center gap-1">
+                ⭐ Позначити як «ТОП продажів»
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Детальні характеристики для фільтрів -->
+        <div class="p-3.5 rounded-xl bg-linen/60 border border-craft space-y-3">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">Параметри фільтрації каталогу</span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-stone-600 mb-1">Орнамент</label>
+              <select id="prod-form-ornament" class="w-full px-2.5 py-1.5 bg-white border border-craft rounded-lg text-xs">
+                <option value="Геометричний">Геометричний</option>
+                <option value="Рослинний">Рослинний</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-stone-600 mb-1">Форма</label>
+              <select id="prod-form-shape" class="w-full px-2.5 py-1.5 bg-white border border-craft rounded-lg text-xs">
+                <option value="Стрічка">Стрічка</option>
+                <option value="Заокруглена">Заокруглена</option>
+                <option value="Зубчаста">Зубчаста</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-stone-600 mb-1">Ширина</label>
+              <select id="prod-form-width" class="w-full px-2.5 py-1.5 bg-white border border-craft rounded-lg text-xs">
+                <option value="Вузька">Вузька</option>
+                <option value="Середня">Середня</option>
+                <option value="Широка">Широка</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Кольори -->
+          <div>
+            <label class="block text-[11px] font-medium text-stone-600 mb-1.5">Кольори прикраси (оберіть відповідні):</label>
+            <div id="colors-selector" class="flex flex-wrap gap-1.5">
+              <!-- Чіпси кольорів генеруються динамічно -->
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Матеріали</label>
+            <input 
+              type="text" 
+              id="prod-form-materials" 
+              value="Чеський бісер Preciosa, міцна капронова нитка" 
+              class="w-full px-3.5 py-2 bg-linen/30 border border-craft rounded-xl text-xs text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Розміри</label>
+            <input 
+              type="text" 
+              id="prod-form-dimensions" 
+              placeholder="напр. Довжина 36 см + ланцюжок 5 см, ширина 4.5 см" 
+              class="w-full px-3.5 py-2 bg-linen/30 border border-craft rounded-xl text-xs text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1">Опис виробу</label>
+          <textarea 
+            id="prod-form-desc" 
+            rows="3" 
+            placeholder="Опишіть історію прикраси, значення візерунка, особливості..."
+            class="w-full px-3.5 py-2 bg-linen/30 border border-craft rounded-xl text-xs text-stoneDark focus:outline-none focus:border-amberCraft focus:bg-white transition resize-y"
+          ></textarea>
+        </div>
+
+        <!-- Завантаження першого фото при створенні нового товару -->
+        <div id="new-prod-photo-upload" class="p-3.5 rounded-xl border border-dashed border-stone-300 bg-linen/30 text-center">
+          <label class="cursor-pointer block">
+            <span class="text-xs font-medium text-stoneDark block mb-1">📷 Завантажити головне фото виробу</span>
+            <span class="text-[11px] text-stone-500 block mb-2">Підтримуються формати JPG, PNG, WEBP</span>
+            <input type="file" id="prod-form-initial-photo" accept="image/*" class="text-xs text-stone-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200" />
+          </label>
+        </div>
+
+        <!-- Футер форми -->
+        <div class="pt-3 border-t border-craft flex items-center justify-end gap-2">
+          <button 
+            type="button" 
+            onclick="closeProductModal()" 
+            class="px-4 py-2 bg-white hover:bg-linen border border-craft text-stone-600 rounded-xl text-xs font-medium transition"
+          >
+            Скасувати
+          </button>
+          <button 
+            type="submit" 
+            id="prod-form-submit-btn"
+            class="px-5 py-2 bg-[#C28E5C] hover:bg-[#B45309] text-white rounded-xl text-xs font-bold shadow-sm tactile-btn flex items-center gap-1.5 transition"
+          >
+            <span>Зберегти прикрасу</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНЕ ВІКНО: КЕРУВАННЯ МЕДІА (ГАЛЕРЕЯ ТА ЗАВАНТАЖЕННЯ ФОТО) -->
+  <div id="media-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="modal-backdrop fixed inset-0" onclick="closeMediaModal()"></div>
+    
+    <div class="modal-content relative w-full max-w-xl bg-white border border-craft rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col z-10">
+      
+      <div class="p-4 sm:p-5 border-b border-craft flex items-center justify-between bg-linen/50">
+        <div>
+          <h3 class="text-base font-bold font-serif text-stoneDark">📷 Фотогалерея виробу</h3>
+          <p id="media-modal-prod-title" class="text-[11px] text-stoneMuted truncate max-w-[280px] sm:max-w-md">—</p>
+        </div>
+        <button onclick="closeMediaModal()" class="w-8 h-8 rounded-full bg-white border border-craft text-stone-400 hover:text-stoneDark flex items-center justify-center transition">✕</button>
+      </div>
+
+      <div class="overflow-y-auto p-4 sm:p-6 space-y-4 flex-1">
+        
+        <!-- Дропзона завантаження нових фото -->
+        <div class="p-4 border-2 border-dashed border-amberCraft/50 hover:border-amberCraft rounded-xl bg-amber-50/40 text-center transition">
+          <input 
+            type="file" 
+            id="media-file-input" 
+            accept="image/*" 
+            multiple 
+            onchange="handleFilesSelected(this.files)" 
+            class="hidden" 
+          />
+          <label for="media-file-input" class="cursor-pointer block">
+            <svg class="w-8 h-8 mx-auto text-amberCraft mb-2 stroke-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span class="text-xs font-bold text-stoneDark block">Натисніть або перетягніть нові фото сюди</span>
+            <span class="text-[11px] text-stoneMuted block mt-0.5">Підтримує вибір кількох фото або фото з камери смартфона</span>
+          </label>
+        </div>
+
+        <div id="media-upload-progress" class="hidden p-3 rounded-xl bg-amber-100/70 border border-amber-300 text-xs font-medium text-amber-900 flex items-center gap-2">
+          <div class="w-4 h-4 border-2 border-amber-800 border-t-transparent rounded-full animate-spin"></div>
+          <span id="media-upload-status-text">Завантажуємо фото в сховище...</span>
+        </div>
+
+        <!-- Список існуючих фото -->
+        <div>
+          <span class="text-xs font-semibold text-stoneDark block mb-2">Наявні фотографії (<span id="media-count-label">0</span>):</span>
+          <div id="media-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <!-- Динамічно -->
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-3 border-t border-craft bg-linen/30 flex items-center justify-between text-xs text-stone-500">
+        <span>⭐ Перше фото є обкладинкою для сайту та Pinterest</span>
+        <button onclick="closeMediaModal()" class="px-3.5 py-1.5 bg-white border border-craft rounded-lg text-xs font-medium text-stoneDark hover:bg-linen">Закрити</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Плаваючий тост сповіщень (Emil Kowalski Toast) -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    // Глобальний стан
+    let allProducts = [];
+    let currentFilterStatus = 'all';
+    let activeMediaProductId = null;
+    let selectedColors = new Set();
+
+    const AVAILABLE_COLORS = [
+      'Червоний', 'Чорний', 'Білий', 'Синій', 'Зелений',
+      'Жовтий', 'Помаранчевий', 'Рожевий', 'Фіолетовий', 'Коричневий', 'Золотий', 'Сріблястий'
+    ];
+
+    // Ініціалізація селектора кольорів
+    function initColorsSelector() {
+      const container = document.getElementById('colors-selector');
+      if (!container) return;
+      container.innerHTML = '';
+      AVAILABLE_COLORS.forEach(c => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `color-chip px-2.5 py-1 rounded-lg text-xs font-medium border transition ${
+          selectedColors.has(c) 
+            ? 'bg-[#C28E5C] text-white border-[#C28E5C] shadow-2xs' 
+            : 'bg-white text-stone-600 border-craft hover:bg-linen'
+        }`;
+        chip.innerText = c;
+        chip.onclick = () => {
+          if (selectedColors.has(c)) selectedColors.delete(c);
+          else selectedColors.add(c);
+          initColorsSelector();
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    // Тост повідомлень
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const isSuccess = type === 'success';
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl shadow-xl text-xs font-medium text-white flex items-center gap-2 transform translate-y-2 opacity-0 transition-all duration-300 ${
+        isSuccess ? 'bg-[#2C2825] border border-amberCraft/40' : 'bg-rose-900 border border-rose-700'
+      }`;
+      toast.innerHTML = `
+        <span>${isSuccess ? '✨' : '⚠️'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Перевірка авторизації при старті
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/admin/check-auth');
+        const data = await res.json();
+        if (data.authenticated) {
+          document.getElementById('login-screen').classList.add('hidden');
+          loadProducts();
+          loadOrdersCount();
+        } else {
+          document.getElementById('login-screen').classList.remove('hidden');
+        }
+      } catch (err) {
+        document.getElementById('login-screen').classList.remove('hidden');
+      }
+    }
+
+    // Авторизація
+    async function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-username').value;
+      const pass = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-submit-btn');
+      const errEl = document.getElementById('login-error');
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Вхід...`;
+      errEl.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/analytics/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, password: pass })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('login-screen').classList.add('hidden');
+          loadProducts();
+          loadOrdersCount();
+          showToast('Успішний вхід у кабінет майстерні');
+        } else {
+          errEl.innerText = data.error || 'Невірні дані доступу';
+          errEl.classList.remove('hidden');
+        }
+      } catch {
+        errEl.innerText = 'Помилка підключення до сервера';
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Увійти в кабінет</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+      }
+    }
+
+    // Вихід
+    async function handleLogout() {
+      if (!confirm('Ви дійсно бажаєте вийти з адмін-панелі?')) return;
+      await fetch('/api/analytics/logout', { method: 'POST' });
+      window.location.reload();
+    }
+
+    // Перемикання вкладок (Каталог / Замовлення)
+    function switchTab(tab) {
+      const catalogView = document.getElementById('view-catalog');
+      const ordersView = document.getElementById('view-orders');
+      const tabCatalog = document.getElementById('tab-btn-catalog');
+      const tabOrders = document.getElementById('tab-btn-orders');
+
+      if (tab === 'catalog') {
+        catalogView.classList.remove('hidden');
+        ordersView.classList.add('hidden');
+        tabCatalog.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-[#C28E5C] text-white shadow-xs';
+        tabOrders.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-stone-800 text-stone-300 hover:text-white hover:bg-stone-700 flex items-center gap-1.5';
+      } else {
+        catalogView.classList.add('hidden');
+        ordersView.classList.remove('hidden');
+        tabOrders.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-[#C28E5C] text-white shadow-xs flex items-center gap-1.5';
+        tabCatalog.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition bg-stone-800 text-stone-300 hover:text-white hover:bg-stone-700';
+        loadOrders();
+      }
+    }
+
+    // Завантаження прикрас із бекенду
+    async function loadProducts() {
+      const container = document.getElementById('products-list-container');
+      const refreshIcon = document.getElementById('refresh-icon');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      try {
+        const res = await fetch('/api/admin/products');
+        if (!res.ok) throw new Error('Помилка завантаження каталогу');
+        const data = await res.json();
+        allProducts = data.products || [];
+        updateKpis();
+        applyFilters();
+      } catch (err) {
+        container.innerHTML = `<div class="p-8 text-center text-xs text-rose-500 font-medium">Помилка: ${err.message}</div>`;
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+      }
+    }
+
+    // Оновлення KPI метрик
+    function updateKpis() {
+      const total = allProducts.length;
+      const inStock = allProducts.filter(p => p.status === 'in_stock').length;
+      const madeToOrder = allProducts.filter(p => p.status === 'made_to_order').length;
+      const topCount = allProducts.filter(p => p.is_top).length;
+      const archived = allProducts.filter(p => p.status === 'archived').length;
+
+      document.getElementById('kpi-total-prods').innerText = total;
+      document.getElementById('kpi-in-stock').innerText = inStock;
+      document.getElementById('kpi-made-to-order').innerText = madeToOrder;
+      document.getElementById('kpi-top-prods').innerText = topCount;
+
+      document.getElementById('count-all').innerText = total;
+      document.getElementById('count-stock').innerText = inStock;
+      document.getElementById('count-order').innerText = madeToOrder;
+      document.getElementById('count-top').innerText = topCount;
+      document.getElementById('count-arch').innerText = archived;
+    }
+
+    // Фільтрація та рендеринг списку
+    function setFilterStatus(status) {
+      currentFilterStatus = status;
+      document.querySelectorAll('.filter-status-btn').forEach(btn => {
+        if (btn.dataset.status === status) {
+          btn.className = 'filter-status-btn px-2.5 py-1 rounded-lg font-medium transition bg-stoneDark text-white shadow-xs';
+        } else {
+          btn.className = 'filter-status-btn px-2.5 py-1 rounded-lg font-medium transition bg-linen text-stone-600 hover:bg-stone-200';
+        }
+      });
+      applyFilters();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('search-input');
+      input.value = '';
+      document.getElementById('search-clear-btn').classList.add('hidden');
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      const cat = document.getElementById('filter-category-select').value;
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (clearBtn) {
+        if (query) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      let filtered = allProducts.filter(p => {
+        // Статус фільтр
+        if (currentFilterStatus === 'in_stock' && p.status !== 'in_stock') return false;
+        if (currentFilterStatus === 'made_to_order' && p.status !== 'made_to_order') return false;
+        if (currentFilterStatus === 'top' && !p.is_top) return false;
+        if (currentFilterStatus === 'archived' && p.status !== 'archived') return false;
+        if (currentFilterStatus !== 'archived' && p.status === 'archived' && currentFilterStatus !== 'all') return false;
+
+        // Категорія фільтр
+        if (cat !== 'all' && p.product_type !== cat) return false;
+
+        // Пошук
+        if (query) {
+          const matchTitle = (p.title || '').toLowerCase().includes(query);
+          const matchSlug = (p.slug || '').toLowerCase().includes(query);
+          const matchMat = (p.materials || '').toLowerCase().includes(query);
+          const matchDesc = (p.description || '').toLowerCase().includes(query);
+          if (!matchTitle && !matchSlug && !matchMat && !matchDesc) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById('filtered-count-badge').innerText = filtered.length;
+      renderProductsList(filtered);
+    }
+
+    // Рендеринг списку прикрас
+    function renderProductsList(products) {
+      const container = document.getElementById('products-list-container');
+      if (!container) return;
+
+      if (products.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center text-stoneMuted text-xs">
+            <span class="text-3xl block mb-2">🔍</span>
+            <p class="font-medium text-stoneDark">Не знайдено жодної прикраси</p>
+            <p class="text-[11px] text-stone-400 mt-1">Спробуйте змінити фільтри або очистити пошуковий запит.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      products.forEach((p, idx) => {
+        const row = document.createElement('div');
+        row.className = `prod-row p-3.5 sm:p-4 hover:bg-linen/50 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 transition ${p.status === 'archived' ? 'opacity-60 bg-stone-100/40' : ''}`;
+        row.id = `prod-row-${p.id}`;
+
+        const primaryMedia = (p.media && p.media.length > 0) ? p.media[0] : null;
+        const imgHtml = primaryMedia
+          ? `<img src="${primaryMedia.url}" alt="${p.title}" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-craft flex-shrink-0 shadow-2xs" />`
+          : `<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-craft border border-stone-200 text-stone-400 flex items-center justify-center text-lg flex-shrink-0">📿</div>`;
+
+        const isInStock = p.status === 'in_stock';
+        const isTop = Boolean(p.is_top);
+        const favsCount = p.active_favorites || 0;
+
+        row.innerHTML = `
+          <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            <span class="text-xs font-mono text-stone-400 w-5 hidden sm:block">${idx + 1}</span>
+            ${imgHtml}
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-100 text-stone-700 border border-stone-200">
+                  ${p.product_type || 'Прикраса'}
+                </span>
+                ${isTop ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">⭐ ТОП</span>' : ''}
+                ${p.status === 'archived' ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-stone-200 text-stone-600">В архіві</span>' : ''}
+              </div>
+
+              <h4 class="text-xs sm:text-sm font-bold text-stoneDark truncate block">
+                ${p.title}
+              </h4>
+
+              <div class="text-[11px] text-stoneMuted flex flex-wrap items-center gap-2 mt-0.5">
+                <span class="font-mono font-bold text-amberDeep text-xs">${p.price} ₴</span>
+                <span>•</span>
+                <span class="truncate">${p.ornament || 'Геометричний'}, ${p.shape || 'Стрічка'}</span>
+                <span>•</span>
+                <span class="text-rose-600 font-medium">❤️ ${favsCount}</span>
+                <span>•</span>
+                <span class="text-stone-400">📷 ${p.media ? p.media.length : 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Інтерактивні швидкі перемикачі (1-Click Toggles) -->
+          <div class="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-craft/60">
+            
+            <!-- Перемикач наявності (В наявності / Під замовлення) -->
+            <button 
+              onclick="toggleStock('${p.id}', '${isInStock ? 'made_to_order' : 'in_stock'}')"
+              class="px-2.5 py-1.5 rounded-xl text-xs font-semibold tactile-btn transition flex items-center gap-1.5 ${
+                isInStock 
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100' 
+                  : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
+              }"
+              title="Натисніть для зміни статусу наявності"
+            >
+              <span class="w-2 h-2 rounded-full ${isInStock ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+              <span>${isInStock ? 'В наявності' : 'Під замовлення'}</span>
+            </button>
+
+            <!-- Перемикач ТОП -->
+            <button 
+              onclick="toggleTop('${p.id}', ${!isTop})"
+              class="p-1.5 rounded-xl border tactile-btn transition ${
+                isTop 
+                  ? 'bg-amber-100 border-amber-300 text-amber-900 shadow-2xs' 
+                  : 'bg-white border-craft text-stone-400 hover:text-amberCraft hover:bg-linen'
+              }"
+              title="${isTop ? 'Прибрати з ТОП' : 'Додати в ТОП продажів'}"
+            >
+              ⭐
+            </button>
+
+            <!-- Кнопка фотогалереї -->
+            <button 
+              onclick="openMediaModal('${p.id}')"
+              class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-700 text-xs font-medium tactile-btn transition flex items-center gap-1"
+              title="Керувати фотографіями"
+            >
+              📷 <span class="hidden md:inline">Фото</span> (${p.media ? p.media.length : 0})
+            </button>
+
+            <!-- Редагувати -->
+            <button 
+              onclick="openEditProductModal('${p.id}')"
+              class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-700 hover:text-amberDeep tactile-btn transition"
+              title="Редагувати характеристики"
+            >
+              ✏️
+            </button>
+
+            <!-- Посилання на сайт -->
+            <a 
+              href="/?item=${p.slug || p.id}" 
+              target="_blank" 
+              class="p-1.5 rounded-xl bg-white hover:bg-linen border border-craft text-stone-400 hover:text-stoneDark transition"
+              title="Відкрити на сайті"
+            >
+              ↗
+            </a>
+
+            <!-- Видалити / Архів -->
+            <button 
+              onclick="confirmDeleteProduct('${p.id}', '${p.title.replace(/'/g, "\\'")}')"
+              class="p-1.5 rounded-xl bg-white hover:bg-rose-50 border border-craft hover:border-rose-300 text-stone-400 hover:text-rose-600 tactile-btn transition"
+              title="Видалити або перенести в архів"
+            >
+              🗑️
+            </button>
+
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // 1-Click перемикач наявності
+    async function toggleStock(id, newStatus) {
+      const prod = allProducts.find(p => p.id === id);
+      if (!prod) return;
+
+      const oldStatus = prod.status;
+      prod.status = newStatus; // оптимістичне оновлення
+      updateKpis();
+      applyFilters();
+
+      try {
+        const res = await fetch('/api/admin/products/toggle-stock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, status: newStatus })
+        });
+        if (!res.ok) throw new Error();
+        showToast(`Статус «${prod.title}» змінено на ${newStatus === 'in_stock' ? 'В наявності' : 'Під замовлення'}`);
+      } catch {
+        prod.status = oldStatus;
+        updateKpis();
+        applyFilters();
+        showToast('Помилка оновлення статусу наявності', 'error');
+      }
+    }
+
+    // 1-Click перемикач ТОП
+    async function toggleTop(id, newTop) {
+      const prod = allProducts.find(p => p.id === id);
+      if (!prod) return;
+
+      const oldTop = prod.is_top;
+      prod.is_top = newTop;
+      updateKpis();
+      applyFilters();
+
+      try {
+        const res = await fetch('/api/admin/products/toggle-top', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, is_top: newTop })
+        });
+        if (!res.ok) throw new Error();
+        showToast(`«${prod.title}» ${newTop ? 'додано до ТОП' : 'прибрано з ТОП'}`);
+      } catch {
+        prod.is_top = oldTop;
+        updateKpis();
+        applyFilters();
+        showToast('Помилка оновлення ТОП', 'error');
+      }
+    }
+
+    // Авто-генерація slug з назви при створенні
+    function handleTitleInput(title) {
+      const idField = document.getElementById('prod-form-id').value;
+      if (!idField) { // тільки для нових товарів
+        const map = {
+          'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ye','ж':'zh','з':'z','и':'y','і':'i','ї':'yi','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'','ю':'yu','я':'ya'
+        };
+        const slug = title.toLowerCase().split('').map(c => map[c] !== undefined ? map[c] : c).join('')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 60);
+        document.getElementById('prod-form-slug').value = slug;
+      }
+    }
+
+    // Відкриття модалки створення товару
+    function openCreateProductModal() {
+      document.getElementById('modal-title').innerText = '➕ Нова прикраса в каталозі';
+      document.getElementById('prod-form-id').value = '';
+      document.getElementById('prod-form-title').value = '';
+      document.getElementById('prod-form-slug').value = '';
+      document.getElementById('prod-form-price').value = '';
+      document.getElementById('prod-form-type').value = 'Силянка';
+      document.getElementById('prod-form-status').value = 'in_stock';
+      document.getElementById('prod-form-top').checked = false;
+      document.getElementById('prod-form-ornament').value = 'Геометричний';
+      document.getElementById('prod-form-shape').value = 'Стрічка';
+      document.getElementById('prod-form-width').value = 'Середня';
+      document.getElementById('prod-form-materials').value = 'Чеський бісер Preciosa, міцна капронова нитка';
+      document.getElementById('prod-form-dimensions').value = '';
+      document.getElementById('prod-form-desc').value = '';
+      document.getElementById('new-prod-photo-upload').classList.remove('hidden');
+      document.getElementById('prod-form-initial-photo').value = '';
+
+      selectedColors.clear();
+      initColorsSelector();
+
+      document.getElementById('product-modal').classList.remove('hidden');
+    }
+
+    // Відкриття модалки редагування товару
+    function openEditProductModal(id) {
+      const prod = allProducts.find(p => p.id === id);
+      if (!prod) return;
+
+      document.getElementById('modal-title').innerText = `✏️ Редагування: ${prod.title}`;
+      document.getElementById('prod-form-id').value = prod.id;
+      document.getElementById('prod-form-title').value = prod.title || '';
+      document.getElementById('prod-form-slug').value = prod.slug || '';
+      document.getElementById('prod-form-price').value = prod.price || '';
+      document.getElementById('prod-form-type').value = prod.product_type || 'Силянка';
+      document.getElementById('prod-form-status').value = prod.status || 'in_stock';
+      document.getElementById('prod-form-top').checked = Boolean(prod.is_top);
+      document.getElementById('prod-form-ornament').value = prod.ornament || 'Геометричний';
+      document.getElementById('prod-form-shape').value = prod.shape || 'Стрічка';
+      document.getElementById('prod-form-width').value = prod.width_size || 'Середня';
+      document.getElementById('prod-form-materials').value = prod.materials || '';
+      document.getElementById('prod-form-dimensions').value = prod.dimensions || '';
+      document.getElementById('prod-form-desc').value = prod.description || '';
+      document.getElementById('new-prod-photo-upload').classList.add('hidden');
+
+      selectedColors = new Set(Array.isArray(prod.colors) ? prod.colors : []);
+      initColorsSelector();
+
+      document.getElementById('product-modal').classList.remove('hidden');
+    }
+
+    function closeProductModal() {
+      document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    // Збереження форми товару
+    async function handleSaveProduct(e) {
+      e.preventDefault();
+      const id = document.getElementById('prod-form-id').value;
+      const isNew = !id;
+      const btn = document.getElementById('prod-form-submit-btn');
+
+      const payload = {
+        title: document.getElementById('prod-form-title').value,
+        slug: document.getElementById('prod-form-slug').value,
+        price: parseInt(document.getElementById('prod-form-price').value, 10),
+        product_type: document.getElementById('prod-form-type').value,
+        status: document.getElementById('prod-form-status').value,
+        is_top: document.getElementById('prod-form-top').checked,
+        ornament: document.getElementById('prod-form-ornament').value,
+        shape: document.getElementById('prod-form-shape').value,
+        width_size: document.getElementById('prod-form-width').value,
+        colors: Array.from(selectedColors),
+        materials: document.getElementById('prod-form-materials').value,
+        dimensions: document.getElementById('prod-form-dimensions').value,
+        description: document.getElementById('prod-form-desc').value
+      };
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Зберігаємо...`;
+
+      try {
+        const method = isNew ? 'POST' : 'PUT';
+        const url = isNew ? '/api/admin/products' : `/api/admin/products?id=${encodeURIComponent(id)}`;
+        if (!isNew) payload.id = id;
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Помилка збереження');
+        }
+
+        const resData = await res.json();
+        const savedProd = resData.product;
+
+        // Якщо це новий товар і прикріплено фото, завантажуємо його
+        const photoInput = document.getElementById('prod-form-initial-photo');
+        if (isNew && photoInput && photoInput.files && photoInput.files.length > 0) {
+          const file = photoInput.files[0];
+          const formData = new FormData();
+          formData.append('productId', savedProd.id);
+          formData.append('file', file);
+          formData.append('isPrimary', 'true');
+          await fetch('/api/admin/media/upload', { method: 'POST', body: formData });
+        }
+
+        closeProductModal();
+        showToast(isNew ? '🎉 Новий виріб успішно створено!' : '✨ Зміни збережено');
+        loadProducts();
+      } catch (err) {
+        showToast(`Помилка: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Зберегти прикрасу</span>`;
+      }
+    }
+
+    // Підтвердження видалення / архівації
+    function confirmDeleteProduct(id, title) {
+      const choice = confirm(`Бажаєте видалити прикрасу «${title}»?\n\n• Натисніть «OK» для переведення в архів (безпечно, товар сховається з сайту)\n• Або скасуйте.`);
+      if (!choice) return;
+
+      archiveProduct(id);
+    }
+
+    async function archiveProduct(id) {
+      try {
+        const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        showToast('Товар перенесено в архів');
+        loadProducts();
+      } catch {
+        showToast('Помилка архівації товару', 'error');
+      }
+    }
+
+    // ВІДКРИТТЯ МОДАЛКИ МЕДІА
+    function openMediaModal(productId) {
+      activeMediaProductId = productId;
+      const prod = allProducts.find(p => p.id === productId);
+      if (!prod) return;
+
+      document.getElementById('media-modal-prod-title').innerText = `${prod.title} (${prod.product_type})`;
+      renderMediaGrid(prod.media || []);
+      document.getElementById('media-modal').classList.remove('hidden');
+    }
+
+    function closeMediaModal() {
+      document.getElementById('media-modal').classList.add('hidden');
+      activeMediaProductId = null;
+    }
+
+    function renderMediaGrid(mediaList) {
+      const grid = document.getElementById('media-grid');
+      const countLabel = document.getElementById('media-count-label');
+      countLabel.innerText = mediaList.length;
+
+      if (mediaList.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-stone-400">Немає завантажених фотографій</div>`;
+        return;
+      }
+
+      grid.innerHTML = '';
+      mediaList.forEach((m, idx) => {
+        const isPrimary = (m.display_order === 0) || (idx === 0);
+        const card = document.createElement('div');
+        card.className = `relative rounded-xl overflow-hidden border p-1 group bg-white shadow-2xs ${isPrimary ? 'border-amberCraft ring-2 ring-amberCraft/30' : 'border-craft'}`;
+        card.innerHTML = `
+          <div class="aspect-square rounded-lg overflow-hidden relative bg-stone-100">
+            <img src="${m.url}" alt="Фото" class="w-full h-full object-cover" />
+            ${isPrimary ? '<span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-amberDeep text-white text-[9px] font-bold shadow-xs">Головне</span>' : ''}
+          </div>
+          <div class="mt-1.5 flex items-center justify-between gap-1">
+            ${!isPrimary ? `
+              <button 
+                onclick="setPrimaryMedia('${m.id}')" 
+                class="text-[10px] font-medium text-amberDeep hover:underline"
+              >
+                Зробити головним
+              </button>
+            ` : '<span class="text-[10px] font-bold text-stone-400">Обкладинка</span>'}
+            <button 
+              onclick="deleteMedia('${m.id}')" 
+              class="text-[10px] text-stone-400 hover:text-rose-600 transition"
+              title="Видалити фото"
+            >
+              🗑️
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Завантаження нових фото у медіа модалці
+    async function handleFilesSelected(files) {
+      if (!files || files.length === 0 || !activeMediaProductId) return;
+
+      const progressEl = document.getElementById('media-upload-progress');
+      const statusText = document.getElementById('media-upload-status-text');
+      progressEl.classList.remove('hidden');
+
+      let uploaded = 0;
+      for (const file of Array.from(files)) {
+        statusText.innerText = `Завантаження ${uploaded + 1} з ${files.length}: ${file.name}...`;
+        const formData = new FormData();
+        formData.append('productId', activeMediaProductId);
+        formData.append('file', file);
+        formData.append('isPrimary', uploaded === 0 && document.getElementById('media-count-label').innerText === '0');
+
+        try {
+          const res = await fetch('/api/admin/media/upload', {
+            method: 'POST',
+            body: formData
+          });
+          if (!res.ok) throw new Error();
+          uploaded++;
+        } catch {
+          showToast(`Помилка завантаження ${file.name}`, 'error');
+        }
+      }
+
+      progressEl.classList.add('hidden');
+      document.getElementById('media-file-input').value = '';
+      showToast(`Успішно завантажено ${uploaded} фото!`);
+      
+      // Перезавантажуємо прикраси і оновлюємо модалку
+      await loadProducts();
+      const updatedProd = allProducts.find(p => p.id === activeMediaProductId);
+      if (updatedProd) renderMediaGrid(updatedProd.media || []);
+    }
+
+    async function setPrimaryMedia(mediaId) {
+      if (!activeMediaProductId) return;
+      try {
+        const res = await fetch('/api/admin/media/set-primary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: activeMediaProductId, mediaId })
+        });
+        if (!res.ok) throw new Error();
+        showToast('Головне фото оновлено!');
+        await loadProducts();
+        const updatedProd = allProducts.find(p => p.id === activeMediaProductId);
+        if (updatedProd) renderMediaGrid(updatedProd.media || []);
+      } catch {
+        showToast('Помилка встановлення головного фото', 'error');
+      }
+    }
+
+    async function deleteMedia(mediaId) {
+      if (!confirm('Видалити це фото?')) return;
+      try {
+        const res = await fetch('/api/admin/media/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mediaId })
+        });
+        if (!res.ok) throw new Error();
+        showToast('Фото видалено');
+        await loadProducts();
+        const updatedProd = allProducts.find(p => p.id === activeMediaProductId);
+        if (updatedProd) renderMediaGrid(updatedProd.media || []);
+      } catch {
+        showToast('Помилка видалення фото', 'error');
+      }
+    }
+
+    // ЗАВАНТАЖЕННЯ ЗАМОВЛЕНЬ
+    async function loadOrdersCount() {
+      try {
+        const res = await fetch('/api/admin/orders');
+        if (!res.ok) return;
+        const data = await res.json();
+        const orders = data.orders || [];
+        const unprocessed = orders.filter(o => !o.is_processed).length;
+        const badge = document.getElementById('orders-badge-count');
+        if (badge) {
+          badge.innerText = unprocessed;
+          if (unprocessed > 0) badge.classList.remove('hidden');
+          else badge.classList.add('hidden');
+        }
+      } catch {}
+    }
+
+    async function loadOrders() {
+      const container = document.getElementById('orders-list-container');
+      container.innerHTML = `<div class="p-8 text-center text-xs text-stone-400"><div class="w-5 h-5 border-2 border-amberCraft border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>Завантажуємо замовлення...</div>`;
+
+      try {
+        const res = await fetch('/api/admin/orders');
+        if (!res.ok) throw new Error('Помилка завантаження замовлень');
+        const data = await res.json();
+        const orders = data.orders || [];
+        renderOrdersList(orders);
+        loadOrdersCount();
+      } catch (err) {
+        container.innerHTML = `<div class="p-8 text-center text-xs text-rose-500 font-medium">Помилка: ${err.message}</div>`;
+      }
+    }
+
+    function renderOrdersList(orders) {
+      const container = document.getElementById('orders-list-container');
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center text-stoneMuted text-xs">
+            <span class="text-3xl block mb-2">📦</span>
+            <p class="font-medium text-stoneDark">Поки що немає замовлень</p>
+            <p class="text-[11px] text-stone-400 mt-1">Щойно клієнти почнуть оформлювати заявки на сайті, вони з'являться тут.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      orders.forEach(o => {
+        const item = document.createElement('div');
+        const isProcessed = Boolean(o.is_processed);
+        item.className = `p-3.5 sm:p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition ${
+          isProcessed ? 'bg-linen/40 border-craft opacity-75' : 'bg-white border-amber-300/80 shadow-xs'
+        }`;
+
+        const createdDate = o.created_at ? new Date(o.created_at).toLocaleString('uk-UA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+
+        item.innerHTML = `
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isProcessed ? 'bg-stone-200 text-stone-600' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
+                ${isProcessed ? 'Оброблено' : '🔥 Нове замовлення'}
+              </span>
+              <span class="text-[11px] text-stone-400 font-mono">${createdDate}</span>
+            </div>
+            <h4 class="text-sm font-bold text-stoneDark">
+              ${o.customer_name || 'Клієнт'} — <a href="tel:${o.customer_phone}" class="text-amberDeep underline font-mono">${o.customer_phone || ''}</a>
+            </h4>
+            <div class="text-xs text-stone-600 mt-0.5">
+              Товар: <span class="font-semibold text-stoneDark">${o.product_title || 'Прикраса'}</span> ${o.product_price ? `• <span class="font-mono font-bold text-amberDeep">${o.product_price} ₴</span>` : ''}
+            </div>
+            ${o.customer_comment ? `<p class="text-[11px] text-stone-500 italic mt-1 bg-linen/60 p-2 rounded-lg border border-craft/60">«${o.customer_comment}»</p>` : ''}
+          </div>
+
+          <div class="flex items-center gap-2 self-end sm:self-center">
+            <button 
+              onclick="toggleOrderProcessed('${o.id}', ${!isProcessed})"
+              class="px-3 py-1.5 rounded-xl text-xs font-semibold tactile-btn transition ${
+                isProcessed 
+                  ? 'bg-stone-100 text-stone-600 hover:bg-stone-200 border border-craft' 
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+              }"
+            >
+              ${isProcessed ? 'Повернути в нові' : '✓ Позначити обробленим'}
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    async function toggleOrderProcessed(id, newStatus) {
+      try {
+        const res = await fetch('/api/admin/orders', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, is_processed: newStatus })
+        });
+        if (!res.ok) throw new Error();
+        showToast(newStatus ? 'Замовлення позначено як оброблене' : 'Замовлення повернуто в нові');
+        loadOrders();
+      } catch {
+        showToast('Помилка оновлення статусу замовлення', 'error');
+      }
+    }
+
+    // ЗАВАНТАЖЕННЯ БЕКАПУ JSON
+    function downloadBackup() {
+      showToast('Формуємо повний бекап бази даних...');
+      window.location.href = '/api/admin/backup';
+    }
+
+    // Старт
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+    });
+  </script>
+</body>
+</html>
