@@ -228,12 +228,15 @@
           </p>
         </div>
 
-        <div class="inline-flex p-1 bg-linen rounded-xl border border-craft gap-1 self-start sm:self-auto relative">
+        <div class="inline-flex p-1 bg-linen rounded-xl border border-craft gap-1 self-start sm:self-auto relative select-none" id="period-tabs-container">
+          <!-- Emil Sliding Pill Indicator -->
+          <div id="period-pill-indicator" class="absolute rounded-lg bg-stoneDark shadow-xs pointer-events-none transition-all duration-300" style="top: 4px; bottom: 4px; left: 0px; width: 0px; transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); opacity: 0; z-index: 1;"></div>
+          
           <button 
             type="button" 
             onclick="switchPeriod('24h')" 
             id="tab-24h"
-            class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer"
+            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition-colors duration-200 active:scale-[0.96] cursor-pointer"
           >
             24 години
           </button>
@@ -241,7 +244,7 @@
             type="button" 
             onclick="switchPeriod('7d')" 
             id="tab-7d"
-            class="tab-btn active px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-stoneDark text-white transition cursor-pointer"
+            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors duration-200 active:scale-[0.96] cursor-pointer"
           >
             7 днів
           </button>
@@ -249,7 +252,7 @@
             type="button" 
             onclick="switchPeriod('30d')" 
             id="tab-30d"
-            class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer"
+            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition-colors duration-200 active:scale-[0.96] cursor-pointer"
           >
             30 днів
           </button>
@@ -257,10 +260,10 @@
             type="button" 
             onclick="toggleDatePicker(event)" 
             id="tab-custom"
-            class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition cursor-pointer flex items-center gap-1.5"
+            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition-colors duration-200 active:scale-[0.96] cursor-pointer flex items-center gap-1.5"
             title="Обрати конкретний день або власний період"
           >
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-3.5 h-3.5 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
               <line x1="16" y1="2" x2="16" y2="6"/>
               <line x1="8" y1="2" x2="8" y2="6"/>
@@ -269,17 +272,20 @@
             <span id="tab-custom-label">Календар</span>
           </button>
 
-          <!-- Спливаюче вікно календаря (Date Picker Popover) -->
-          <div id="date-picker-popover" class="hidden absolute right-0 top-full mt-2 w-72 max-w-[92vw] z-50 craft-card p-3.5 sm:p-4 shadow-xl border border-craft bg-[#FAF7F2]/98 backdrop-blur-md">
+          <!-- Спливаюче вікно календаря (Date Picker Popover) з анімацією масштабування від кнопки -->
+          <div 
+            id="date-picker-popover" 
+            class="absolute right-0 top-full mt-2 w-72 max-w-[92vw] z-50 craft-card p-3.5 sm:p-4 shadow-xl border border-craft bg-[#FAF7F2]/98 backdrop-blur-md opacity-0 scale-95 pointer-events-none -translate-y-1 transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] origin-top-right"
+          >
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-craft">
               <span class="text-xs font-serif font-bold text-stoneDark">Вибір дати або періоду</span>
-              <button type="button" onclick="closeDatePicker()" class="text-stone-400 hover:text-stoneDark text-base leading-none p-1 cursor-pointer">&times;</button>
+              <button type="button" onclick="closeDatePicker()" class="text-stone-400 hover:text-stoneDark text-base leading-none p-1 cursor-pointer active:scale-90 transition-transform">&times;</button>
             </div>
             
             <!-- Швидкі вибори -->
             <div class="grid grid-cols-2 gap-1.5 mb-3 text-[11px]">
-              <button type="button" onclick="applyPreset('yesterday')" class="p-1.5 rounded-lg bg-white border border-craft text-stoneDark hover:bg-stoneDark hover:text-white transition text-center font-medium cursor-pointer shadow-2xs">Вчора</button>
-              <button type="button" onclick="applyPreset('14d')" class="p-1.5 rounded-lg bg-white border border-craft text-stoneDark hover:bg-stoneDark hover:text-white transition text-center font-medium cursor-pointer shadow-2xs">14 днів</button>
+              <button type="button" onclick="applyPreset('yesterday')" class="p-1.5 rounded-lg bg-white border border-craft text-stoneDark hover:bg-stoneDark hover:text-white transition active:scale-[0.96] text-center font-medium cursor-pointer shadow-2xs">Вчора</button>
+              <button type="button" onclick="applyPreset('14d')" class="p-1.5 rounded-lg bg-white border border-craft text-stoneDark hover:bg-stoneDark hover:text-white transition active:scale-[0.96] text-center font-medium cursor-pointer shadow-2xs">14 днів</button>
             </div>
 
             <!-- День погодинно -->
@@ -287,7 +293,7 @@
               <label class="block text-[11px] font-medium text-stone-500 mb-1">День погодинно:</label>
               <div class="flex gap-1.5">
                 <input type="date" id="date-picker-single" class="flex-1 px-2.5 py-1.5 bg-white border border-craft rounded-lg text-xs text-stoneDark focus:outline-none focus:ring-1 focus:ring-stoneDark" />
-                <button type="button" onclick="applySingleDate()" class="px-3 py-1.5 bg-stoneDark text-white text-xs font-medium rounded-lg hover:bg-stone-800 transition cursor-pointer">Перейти</button>
+                <button type="button" onclick="applySingleDate()" class="px-3 py-1.5 bg-stoneDark text-white text-xs font-medium rounded-lg hover:bg-stone-800 active:scale-[0.96] transition cursor-pointer">Перейти</button>
               </div>
             </div>
 
@@ -304,7 +310,7 @@
                   <input type="date" id="date-picker-to" class="w-full px-2 py-1 bg-white border border-craft rounded-lg text-[11px] text-stoneDark focus:outline-none" />
                 </div>
               </div>
-              <button type="button" onclick="applyDateRange()" class="w-full py-1.5 bg-linen hover:bg-stoneDark hover:text-white text-stoneDark text-xs font-medium rounded-lg border border-craft transition cursor-pointer">Застосувати період</button>
+              <button type="button" onclick="applyDateRange()" class="w-full py-1.5 bg-linen hover:bg-stoneDark hover:text-white active:scale-[0.98] text-stoneDark text-xs font-medium rounded-lg border border-craft transition cursor-pointer">Застосувати період</button>
             </div>
           </div>
         </div>
@@ -711,6 +717,7 @@
     function showDashboard() {
       document.getElementById('login-container').classList.add('hidden');
       document.getElementById('dashboard-container').classList.remove('hidden');
+      setTimeout(() => movePeriodPill(`tab-${currentPeriod}`), 80);
       loadDashboardData();
     }
 
@@ -734,18 +741,50 @@
       }
     }
 
+    let currentActiveTabId = 'tab-7d';
+
+    function movePeriodPill(targetBtnId) {
+      currentActiveTabId = targetBtnId;
+      const container = document.getElementById('period-tabs-container');
+      const btn = document.getElementById(targetBtnId);
+      const pill = document.getElementById('period-pill-indicator');
+      if (!container || !btn || !pill) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      const left = btnRect.left - containerRect.left;
+      const width = btnRect.width;
+
+      pill.style.opacity = '1';
+      pill.style.transform = `translateX(${left}px)`;
+      pill.style.width = `${width}px`;
+
+      ['tab-24h', 'tab-7d', 'tab-30d', 'tab-custom'].forEach(id => {
+        const b = document.getElementById(id);
+        if (!b) return;
+        if (id === targetBtnId) {
+          b.classList.remove('text-stone-600');
+          b.classList.add('text-white');
+        } else {
+          b.classList.remove('text-white');
+          b.classList.add('text-stone-600');
+        }
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      if (currentActiveTabId) {
+        movePeriodPill(currentActiveTabId);
+      }
+    });
+
     // Перемикач періоду (24h, 7d, 30d)
     function switchPeriod(p) {
       currentPeriod = p;
       currentCustomQuery = '';
       
-      const customBtn = document.getElementById('tab-custom');
-      if (customBtn) {
-        customBtn.classList.remove('active', 'bg-stoneDark', 'text-white');
-        customBtn.classList.add('text-stone-600');
-        const customLbl = document.getElementById('tab-custom-label');
-        if (customLbl) customLbl.innerText = 'Календар';
-      }
+      const customLbl = document.getElementById('tab-custom-label');
+      if (customLbl) customLbl.innerText = 'Календар';
 
       const backBtn = document.getElementById('chart-back-btn');
       if (backBtn) backBtn.classList.add('hidden');
@@ -754,18 +793,7 @@
       const chartSub = document.getElementById('chart-card-subtitle');
       if (chartSub) chartSub.innerText = 'Перегляди та унікальні візити';
 
-      ['24h', '7d', '30d'].forEach(tab => {
-        const btn = document.getElementById(`tab-${tab}`);
-        if (btn) {
-          if (tab === p) {
-            btn.classList.add('active', 'bg-stoneDark', 'text-white');
-            btn.classList.remove('text-stone-600');
-          } else {
-            btn.classList.remove('active', 'bg-stoneDark', 'text-white');
-            btn.classList.add('text-stone-600');
-          }
-        }
-      });
+      movePeriodPill(`tab-${p}`);
       loadDashboardData();
     }
 
@@ -835,38 +863,39 @@
     function toggleDatePicker(e) {
       if (e) e.stopPropagation();
       const popover = document.getElementById('date-picker-popover');
-      if (popover) {
-        popover.classList.toggle('hidden');
-        if (!popover.classList.contains('hidden')) {
-          const today = new Date().toISOString().slice(0, 10);
-          const singleInp = document.getElementById('date-picker-single');
-          if (singleInp && !singleInp.value) singleInp.value = today;
-          const toInp = document.getElementById('date-picker-to');
-          if (toInp && !toInp.value) toInp.value = today;
-        }
+      if (!popover) return;
+      const isOpen = popover.classList.contains('opacity-100');
+      if (isOpen) {
+        closeDatePicker();
+      } else {
+        openDatePicker();
       }
+    }
+
+    function openDatePicker() {
+      const popover = document.getElementById('date-picker-popover');
+      if (!popover) return;
+      const today = new Date().toISOString().slice(0, 10);
+      const singleInp = document.getElementById('date-picker-single');
+      if (singleInp && !singleInp.value) singleInp.value = today;
+      const toInp = document.getElementById('date-picker-to');
+      if (toInp && !toInp.value) toInp.value = today;
+
+      popover.classList.remove('opacity-0', 'scale-95', 'pointer-events-none', '-translate-y-1');
+      popover.classList.add('opacity-100', 'scale-100', 'pointer-events-auto', 'translate-y-0');
     }
 
     function closeDatePicker() {
       const popover = document.getElementById('date-picker-popover');
-      if (popover) popover.classList.add('hidden');
+      if (!popover) return;
+      popover.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto', 'translate-y-0');
+      popover.classList.add('opacity-0', 'scale-95', 'pointer-events-none', '-translate-y-1');
     }
 
     function activateCustomTab(labelText) {
-      ['24h', '7d', '30d'].forEach(tab => {
-        const btn = document.getElementById(`tab-${tab}`);
-        if (btn) {
-          btn.classList.remove('active', 'bg-stoneDark', 'text-white');
-          btn.classList.add('text-stone-600');
-        }
-      });
-      const customBtn = document.getElementById('tab-custom');
-      if (customBtn) {
-        customBtn.classList.add('active', 'bg-stoneDark', 'text-white');
-        customBtn.classList.remove('text-stone-600');
-        const customLbl = document.getElementById('tab-custom-label');
-        if (customLbl && labelText) customLbl.innerText = labelText;
-      }
+      const customLbl = document.getElementById('tab-custom-label');
+      if (customLbl && labelText) customLbl.innerText = labelText;
+      movePeriodPill('tab-custom');
     }
 
     function applyPreset(preset) {
@@ -919,20 +948,143 @@
     document.addEventListener('click', (e) => {
       const popover = document.getElementById('date-picker-popover');
       const customBtn = document.getElementById('tab-custom');
-      if (popover && !popover.classList.contains('hidden')) {
+      if (popover && popover.classList.contains('opacity-100')) {
         if (!popover.contains(e.target) && (!customBtn || !customBtn.contains(e.target))) {
-          popover.classList.add('hidden');
+          closeDatePicker();
         }
       }
     });
+
+    // Плавний лічильник чисел (Emil Kowalski / ease-out cubic number counter)
+    function animateCount(element, start, end, duration = 450, prefix = '', suffix = '') {
+      if (!element) return;
+      const s = Number(start) || 0;
+      const e = Number(end) || 0;
+      if (s === e) {
+        element.innerText = `${prefix}${e}${suffix}`;
+        return;
+      }
+      const startTime = performance.now();
+      function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(s + (e - s) * ease);
+        element.innerText = `${prefix}${current}${suffix}`;
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          element.innerText = `${prefix}${e}${suffix}`;
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    let prevKpis = { visits: 0, views: 0 };
+    let prevSourcesMap = new Map();
+
+    // 2. Джерела трафіку з живою FLIP-анімацією, плавними смугами та лічильниками
+    function renderSourcesAnimated(sources, totalVisits) {
+      const container = document.getElementById('sources-list');
+      if (!container) return;
+
+      const total = totalVisits || 1;
+
+      // FLIP Step 1: запам'ятовуємо старі координати Y для кожного джерела
+      const firstTops = new Map();
+      container.querySelectorAll('.source-row-item').forEach(row => {
+        firstTops.set(row.dataset.srcKey, row.getBoundingClientRect().top);
+      });
+
+      // FLIP Step 2: оновлюємо або створюємо DOM-рядки у новому відсортованому порядку
+      sources.forEach(s => {
+        const key = s.name.trim();
+        const pct = Math.round((s.visits / total) * 100);
+        let row = container.querySelector(`[data-src-key="${CSS.escape(key)}"]`);
+
+        if (!row) {
+          row = document.createElement('div');
+          row.className = 'source-row-item space-y-1.5 will-change-transform';
+          row.dataset.srcKey = key;
+          row.innerHTML = `
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-medium text-stoneDark flex items-center gap-1.5 truncate">
+                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${s.color || '#2C2825'}"></span>
+                <span class="truncate">${s.name}</span>
+              </span>
+              <span class="font-semibold text-stoneDark flex-shrink-0 ml-2 font-mono">
+                <span class="src-visits">0</span> <span class="text-stone-500 font-normal">(<span class="src-pct">0</span>%)</span>
+              </span>
+            </div>
+            <div class="w-full bg-linen h-2 rounded-full overflow-hidden border border-craft">
+              <div class="src-bar h-full rounded-full" style="width: 0%; background-color: ${s.color || '#2C2825'}; transition: width 500ms cubic-bezier(0.23, 1, 0.32, 1);"></div>
+            </div>
+          `;
+          container.appendChild(row);
+        }
+
+        // Анімація ширини смуги
+        const bar = row.querySelector('.src-bar');
+        if (bar) {
+          requestAnimationFrame(() => {
+            bar.style.width = `${pct}%`;
+          });
+        }
+
+        // Анімація чисел
+        const visitsEl = row.querySelector('.src-visits');
+        const pctEl = row.querySelector('.src-pct');
+        const prev = prevSourcesMap.get(key) || { visits: 0, pct: 0 };
+
+        if (visitsEl && pctEl) {
+          animateCount(visitsEl, prev.visits, s.visits, 450);
+          animateCount(pctEl, prev.pct, pct, 450);
+        }
+
+        prevSourcesMap.set(key, { visits: s.visits, pct });
+        container.appendChild(row); // гарантує правильний порядок сортування
+      });
+
+      // FLIP Step 3: обчислюємо зміщення (Last - First) та плавно анімуємо рух
+      requestAnimationFrame(() => {
+        container.querySelectorAll('.source-row-item').forEach(row => {
+          const key = row.dataset.srcKey;
+          const firstTop = firstTops.get(key);
+          if (firstTop !== undefined) {
+            const lastTop = row.getBoundingClientRect().top;
+            const deltaY = firstTop - lastTop;
+            if (deltaY !== 0) {
+              row.style.transform = `translateY(${deltaY}px)`;
+              row.style.transition = 'none';
+              requestAnimationFrame(() => {
+                row.style.transition = 'transform 450ms cubic-bezier(0.23, 1, 0.32, 1)';
+                row.style.transform = 'translateY(0)';
+              });
+            }
+          } else {
+            // Новий елемент плавно з'являється
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(8px)';
+            requestAnimationFrame(() => {
+              row.style.transition = 'opacity 350ms ease-out, transform 350ms cubic-bezier(0.23, 1, 0.32, 1)';
+              row.style.opacity = '1';
+              row.style.transform = 'translateY(0)';
+            });
+          }
+        });
+      });
+    }
 
     // Відмалювання інтерфейсу
     function renderDashboard(data) {
       const totals = data.totals || {};
 
-      // 1. KPI Cards
-      document.getElementById('kpi-visits').innerText = totals.visits || 0;
-      document.getElementById('kpi-views').innerText = `${totals.views || 0} переглядів сторінок`;
+      // 1. KPI Cards з плавною анімацією чисел
+      animateCount(document.getElementById('kpi-visits'), prevKpis.visits, totals.visits || 0, 450);
+      prevKpis.visits = totals.visits || 0;
+
+      animateCount(document.getElementById('kpi-views'), prevKpis.views, totals.views || 0, 450, '', ' переглядів сторінок');
+      prevKpis.views = totals.views || 0;
 
       document.getElementById('kpi-favorites').innerText = totals.active_favorites || 0;
       document.getElementById('kpi-fav-clicks').innerText = `${totals.total_favorites_clicks || 0} збережень за весь час`;
@@ -948,30 +1100,8 @@
       const nowTime = new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
       document.getElementById('last-updated-text').innerText = `Синхронізовано о ${nowTime} • Період: ${currentPeriod === '24h' ? 'Останні 24 години' : currentPeriod === '7d' ? 'Останні 7 днів' : 'Останні 30 днів'}`;
 
-      // 2. Джерела трафіку
-      const sourcesList = document.getElementById('sources-list');
-      sourcesList.innerHTML = '';
-      const sources = data.sources || [];
-      const totalVisits = totals.visits || 1;
-
-      sources.forEach(s => {
-        const pct = Math.round((s.visits / totalVisits) * 100);
-        const item = document.createElement('div');
-        item.className = 'space-y-1';
-        item.innerHTML = `
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-medium text-stoneDark flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${s.color || '#2C2825'}"></span>
-              ${s.name}
-            </span>
-            <span class="font-semibold text-stoneDark flex-shrink-0 ml-2">${s.visits} <span class="text-stone-500 font-normal">(${pct}%)</span></span>
-          </div>
-          <div class="w-full bg-linen h-2 rounded-full overflow-hidden border border-craft">
-            <div class="h-full rounded-full transition-all duration-500" style="width: ${pct}%; background-color: ${s.color || '#2C2825'}"></div>
-          </div>
-        `;
-        sourcesList.appendChild(item);
-      });
+      // 2. Джерела трафіку (плавна анімація смуг, зміна порядку FLIP та лічильники)
+      renderSourcesAnimated(data.sources || [], totals.visits);
 
       // 3. Країни
       const countriesList = document.getElementById('countries-list');
@@ -1236,12 +1366,11 @@
         }
       }
 
-      if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-      }
-
       if (!timeline || timeline.length === 0) {
+        if (chartInstance) {
+          chartInstance.destroy();
+          chartInstance = null;
+        }
         return;
       }
 
@@ -1321,6 +1450,19 @@
             maxBarThickness: isMobile ? (timeline.length > 14 ? 8 : 12) : 18
           }
         ];
+      }
+
+      // Якщо графік вже створений у тому ж режимі, плавно оновлюємо дані на льоту
+      if (chartInstance && chartInstance.config.type === (chartType === 'line' ? 'line' : 'bar')) {
+        chartInstance.data.labels = labels;
+        chartInstance.data.datasets = datasetsConfig;
+        chartInstance.update();
+        return;
+      }
+
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
       }
 
       chartInstance = new Chart(canvas, {
