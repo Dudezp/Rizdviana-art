@@ -519,14 +519,14 @@
             </div>
           </div>
         <!-- Інтерактивна плашка точних даних при кліку / тапі на клітинку (Touch & Click Info) -->
-        <div id="heatmap-cell-detail" class="mt-3 p-2.5 sm:p-3 rounded-xl bg-linen border border-craft/80 flex items-center justify-between text-xs transition-all duration-300">
+        <div id="heatmap-cell-detail" class="mt-3 p-2.5 sm:p-3 rounded-xl bg-linen border border-craft/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-xs transition-all duration-300">
           <div class="flex items-center gap-2 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#C28E5C] flex-shrink-0 animate-pulse"></span>
-            <span id="hm-detail-label" class="font-medium text-stoneDark truncate">
+            <span id="hm-detail-label" class="font-medium text-stoneDark">
               Торкніться або наведіть на клітинку для точних даних
             </span>
           </div>
-          <div id="hm-detail-stats" class="text-right flex-shrink-0 ml-2 font-mono font-semibold text-stoneDark">
+          <div id="hm-detail-stats" class="text-left sm:text-right flex-shrink-0 font-mono font-semibold text-stoneDark pl-4.5 sm:pl-0">
             <span class="text-stone-400 font-normal">—</span>
           </div>
         </div>
@@ -977,6 +977,8 @@
       loadDashboardData(`since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`);
     }
 
+    let ignorePopupDismissUntil = 0;
+
     // Закриття попапу календаря та підказки матриці при кліку або скролі
     document.addEventListener('click', (e) => {
       const popover = document.getElementById('date-picker-popover');
@@ -994,6 +996,7 @@
     });
 
     window.addEventListener('scroll', () => {
+      if (Date.now() < ignorePopupDismissUntil) return;
       const popup = document.getElementById('heatmap-floating-popup');
       if (popup && popup.classList.contains('opacity-100')) {
         popup.classList.remove('opacity-100', 'scale-100');
@@ -1378,6 +1381,24 @@
     let selectedHeatmapCoords = null;
     let popupTimeout = null;
 
+    function formatUkrVisits(n) {
+      const abs = Math.abs(n);
+      const mod10 = abs % 10;
+      const mod100 = abs % 100;
+      if (mod10 === 1 && mod100 !== 11) return `${n} візит`;
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} візити`;
+      return `${n} візитів`;
+    }
+
+    function formatUkrViews(n) {
+      const abs = Math.abs(n);
+      const mod10 = abs % 10;
+      const mod100 = abs % 100;
+      if (mod10 === 1 && mod100 !== 11) return `${n} перегляд`;
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} перегляди`;
+      return `${n} переглядів`;
+    }
+
     // Інтерактивний вибір клітинки матриці для мобільних та ПК
     function selectHeatmapCell(dayIdx, hour, visits, views, dayName, hourLabel, showPopup = true) {
       if (selectedHeatmapCell) {
@@ -1395,17 +1416,23 @@
         try { window.navigator.vibrate(10); } catch(e) {}
       }
 
+      // Ігноруємо закриття попапу від скролу/тапу протягом 750мс
+      ignorePopupDismissUntil = Date.now() + 750;
+
       // Оновлення інтерактивної плашки під матрицею
       const detailLabel = document.getElementById('hm-detail-label');
       const detailStats = document.getElementById('hm-detail-stats');
       const detailCard = document.getElementById('heatmap-cell-detail');
       
+      const vText = formatUkrVisits(visits);
+      const wText = formatUkrViews(views);
+
       if (detailLabel && detailStats) {
         detailLabel.innerHTML = `<span class="font-bold text-stoneDark">${dayName}</span>, <span class="font-mono text-stone-600">${hourLabel}</span>`;
         if (visits === 0 && views === 0) {
           detailStats.innerHTML = `<span class="text-stone-400 font-normal">0 візитів (тиша)</span>`;
         } else {
-          detailStats.innerHTML = `<span class="text-[#C28E5C] font-bold text-sm">${visits}</span> ${visits === 1 ? 'візит' : 'візитів'} <span class="text-stone-300 mx-1">•</span> <span class="text-stone-700 font-medium">${views}</span> переглядів`;
+          detailStats.innerHTML = `<span class="text-[#C28E5C] font-bold text-sm">${visits}</span> <span class="text-stone-700">${vText.split(' ')[1]}</span> <span class="text-stone-300 mx-1.5">•</span> <span class="text-stone-800 font-medium">${views}</span> <span class="text-stone-500">${wText.split(' ')[1]}</span>`;
         }
 
         if (detailCard) {
@@ -1414,30 +1441,41 @@
         }
       }
 
-      // Плаваюча підказка (Floating Tooltip) безпосередньо над клітинкою на мобільному
+      // Плаваюча підказка (Floating Tooltip) безпосередньо над/під клітинкою на мобільному
       if (showPopup && cellEl) {
         let popup = document.getElementById('heatmap-floating-popup');
         if (!popup) {
           popup = document.createElement('div');
           popup.id = 'heatmap-floating-popup';
-          popup.className = 'fixed z-50 pointer-events-none transition-all duration-200 bg-[#2C2825] text-white px-3 py-1.5 rounded-xl shadow-2xl border border-stone-700/80 text-xs font-sans -translate-x-1/2 -translate-y-full opacity-0 scale-95';
+          popup.className = 'fixed z-50 pointer-events-none transition-all duration-200 bg-[#2C2825] text-white px-3 py-1.5 rounded-xl shadow-2xl border border-stone-700/80 text-xs font-sans opacity-0 scale-95';
           document.body.appendChild(popup);
         }
 
         popup.innerHTML = `
           <div class="text-[10px] text-[#DFD5C8] font-medium whitespace-nowrap">${dayName}, ${hourLabel}</div>
           <div class="font-mono font-bold text-xs text-white whitespace-nowrap mt-0.5">
-            <span class="text-[#C28E5C]">${visits}</span> ${visits === 1 ? 'візит' : 'візитів'} <span class="text-stone-400 font-normal text-[10px]">(${views} перегл.)</span>
+            <span class="text-[#C28E5C]">${visits}</span> <span class="text-stone-300 font-normal text-[11px]">${vText.split(' ')[1]}</span> <span class="text-stone-400 font-normal text-[10px]">(${views} перегл.)</span>
           </div>
         `;
 
         const rect = cellEl.getBoundingClientRect();
-        const popupWidth = 140;
-        const left = Math.max(popupWidth / 2 + 8, Math.min(window.innerWidth - popupWidth / 2 - 8, rect.left + rect.width / 2));
-        const top = Math.max(10, rect.top - 8);
+        const popupWidth = 145;
+        const left = Math.max(popupWidth / 2 + 10, Math.min(window.innerWidth - popupWidth / 2 - 10, rect.left + rect.width / 2));
+        
+        // Якщо клітинка надто близько до закріпленого верхнього хедера (top < 75), показуємо попап знизу
+        const placeBelow = rect.top < 75;
+        const top = placeBelow ? Math.min(window.innerHeight - 55, rect.bottom + 8) : Math.max(12, rect.top - 8);
 
         popup.style.left = `${left}px`;
         popup.style.top = `${top}px`;
+        if (placeBelow) {
+          popup.classList.remove('-translate-y-full');
+          popup.classList.add('translate-y-0', '-translate-x-1/2');
+        } else {
+          popup.classList.remove('translate-y-0');
+          popup.classList.add('-translate-y-full', '-translate-x-1/2');
+        }
+
         popup.classList.remove('opacity-0', 'scale-95');
         popup.classList.add('opacity-100', 'scale-100');
 
@@ -1445,7 +1483,7 @@
         popupTimeout = setTimeout(() => {
           popup.classList.remove('opacity-100', 'scale-100');
           popup.classList.add('opacity-0', 'scale-95');
-        }, 3000);
+        }, 3500);
       }
     }
 
