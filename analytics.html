@@ -645,6 +645,8 @@
   <!-- ========================================== -->
   <script>
     let currentPeriod = '7d';
+    let currentCustomQuery = '';
+    let previousPeriodBeforeDrill = '7d';
     let chartInstance = null;
 
     // Перевірка видимості пароля
@@ -731,10 +733,6 @@
         showLogin();
       }
     }
-
-    let currentPeriod = '7d';
-    let currentCustomQuery = '';
-    let previousPeriodBeforeDrill = '7d';
 
     // Перемикач періоду (24h, 7d, 30d)
     function switchPeriod(p) {
