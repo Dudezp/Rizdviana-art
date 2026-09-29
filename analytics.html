@@ -62,10 +62,24 @@
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.9); }
     }
-    .tab-btn.active {
-      background-color: #2C2825 !important;
+    .tab-btn {
+      color: #78716C;
+      transition: color 200ms cubic-bezier(0.23, 1, 0.32, 1), transform 150ms ease;
+    }
+    .tab-btn:not(.is-active):hover {
+      color: #2C2825;
+    }
+    .tab-btn.is-active,
+    .tab-btn.is-active:hover,
+    .tab-btn.is-active:focus {
       color: #FFFFFF !important;
-      box-shadow: 0 2px 8px rgba(44, 40, 37, 0.15);
+    }
+    .tab-btn.is-active svg {
+      color: #FFFFFF !important;
+      stroke: #FFFFFF !important;
+    }
+    .hm-cell {
+      transition: background-color 450ms cubic-bezier(0.23, 1, 0.32, 1), color 350ms ease, transform 150ms ease;
     }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -168,7 +182,7 @@
   <div id="dashboard-container" class="hidden flex-1 flex flex-col">
 
     <!-- Верхня панель (Header) -->
-    <header class="sticky top-0 z-40 bg-linen/95 backdrop-blur-md border-b border-craft shadow-xs">
+    <header class="bg-linen/95 backdrop-blur-md border-b border-craft shadow-xs">
       <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
         <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <a href="/" class="flex items-center gap-2 hover:opacity-85 transition">
@@ -217,8 +231,8 @@
     <!-- Основний контент дашборду -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-      <!-- Панель перемикання періоду (Tabs) -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-2.5 sm:p-3 rounded-2xl border border-craft shadow-xs">
+      <!-- Панель перемикання періоду (Tabs) - Закріплена панель (Sticky) -->
+      <div id="sticky-period-bar" class="sticky top-2 sm:top-4 z-40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 bg-[#F9F6F0]/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-craft shadow-xs transition-shadow duration-200">
         <div>
           <h2 class="text-sm sm:text-base font-bold font-serif text-stoneDark tracking-wide">
             Пульс відвідуваності та інтересу
@@ -236,7 +250,7 @@
             type="button" 
             onclick="switchPeriod('24h')" 
             id="tab-24h"
-            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition-colors duration-200 active:scale-[0.96] cursor-pointer"
+            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 active:scale-[0.96] cursor-pointer"
           >
             24 години
           </button>
@@ -244,7 +258,7 @@
             type="button" 
             onclick="switchPeriod('7d')" 
             id="tab-7d"
-            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors duration-200 active:scale-[0.96] cursor-pointer"
+            class="tab-btn is-active relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 active:scale-[0.96] cursor-pointer"
           >
             7 днів
           </button>
@@ -252,7 +266,7 @@
             type="button" 
             onclick="switchPeriod('30d')" 
             id="tab-30d"
-            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition-colors duration-200 active:scale-[0.96] cursor-pointer"
+            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 active:scale-[0.96] cursor-pointer"
           >
             30 днів
           </button>
@@ -260,7 +274,7 @@
             type="button" 
             onclick="toggleDatePicker(event)" 
             id="tab-custom"
-            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stoneDark transition-colors duration-200 active:scale-[0.96] cursor-pointer flex items-center gap-1.5"
+            class="tab-btn relative z-10 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 active:scale-[0.96] cursor-pointer flex items-center gap-1.5"
             title="Обрати конкретний день або власний період"
           >
             <svg class="w-3.5 h-3.5 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -762,12 +776,11 @@
       ['tab-24h', 'tab-7d', 'tab-30d', 'tab-custom'].forEach(id => {
         const b = document.getElementById(id);
         if (!b) return;
+        b.classList.remove('text-stone-600', 'text-white');
         if (id === targetBtnId) {
-          b.classList.remove('text-stone-600');
-          b.classList.add('text-white');
+          b.classList.add('is-active');
         } else {
-          b.classList.remove('text-white');
-          b.classList.add('text-stone-600');
+          b.classList.remove('is-active');
         }
       });
     }
@@ -1075,6 +1088,132 @@
       });
     }
 
+    let prevCountriesMap = new Map();
+
+    // 3. Географія відвідувачів з живою FLIP-анімацією, плавними смугами та лічильниками
+    function renderCountriesAnimated(countries) {
+      const container = document.getElementById('countries-list');
+      if (!container) return;
+
+      if (!countries || countries.length === 0) {
+        container.innerHTML = '<p class="text-xs text-stone-500 py-3 text-center">Немає даних за цей період</p>';
+        prevCountriesMap.clear();
+        return;
+      }
+
+      // Якщо раніше була заглушка "Немає даних", очищуємо її
+      if (container.querySelector('p.text-stone-500')) {
+        container.innerHTML = '';
+      }
+
+      const topCountries = countries.slice(0, 7);
+      const topKeys = new Set(topCountries.map(c => c.name.trim()));
+
+      // FLIP Step 1: запам'ятовуємо старі координати Y для кожної країни
+      const firstTops = new Map();
+      container.querySelectorAll('.country-row-item').forEach(row => {
+        firstTops.set(row.dataset.countryKey, row.getBoundingClientRect().top);
+      });
+
+      // Видаляємо елементи, яких більше немає в топ-7
+      container.querySelectorAll('.country-row-item').forEach(row => {
+        if (!topKeys.has(row.dataset.countryKey)) {
+          row.style.opacity = '0';
+          row.style.transform = 'scale(0.95)';
+          setTimeout(() => row.remove(), 250);
+        }
+      });
+
+      // FLIP Step 2: створюємо або оновлюємо DOM-елементи у відсортованому порядку
+      topCountries.forEach(c => {
+        const key = c.name.trim();
+        let row = container.querySelector(`[data-country-key="${CSS.escape(key)}"]`);
+
+        if (!row) {
+          row = document.createElement('div');
+          row.className = 'country-row-item relative overflow-hidden p-2 sm:p-2.5 rounded-xl bg-linen/50 border border-craft text-xs will-change-transform';
+          row.dataset.countryKey = key;
+          row.innerHTML = `
+            <div class="country-bar absolute inset-y-0 left-0 bg-amber-600/10 rounded-xl" style="width: 0%; transition: width 500ms cubic-bezier(0.23, 1, 0.32, 1);"></div>
+            <div class="relative z-10 flex items-center justify-between">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-base flex-shrink-0 select-none">${c.flag || '🌐'}</span>
+                <span class="font-medium text-stoneDark truncate">${c.name}</span>
+              </div>
+              <div class="text-right flex-shrink-0 ml-2 font-mono">
+                <span class="font-semibold text-stoneDark country-visits">0</span>
+                <span class="text-stone-500 text-[11px] ml-1 font-sans">(<span class="country-pct">0</span>%)</span>
+              </div>
+            </div>
+          `;
+          container.appendChild(row);
+        }
+
+        // Анімація ширини прогрес-смуги
+        const bar = row.querySelector('.country-bar');
+        if (bar) {
+          requestAnimationFrame(() => {
+            bar.style.width = `${Math.min(c.percent || 0, 100)}%`;
+          });
+        }
+
+        // Анімація чисел
+        const visitsEl = row.querySelector('.country-visits');
+        const pctEl = row.querySelector('.country-pct');
+        const prev = prevCountriesMap.get(key) || { visits: 0, pct: 0 };
+
+        if (visitsEl && pctEl) {
+          animateCount(visitsEl, prev.visits, c.visits, 450);
+          animateCount(pctEl, prev.pct, c.percent, 450);
+        }
+
+        prevCountriesMap.set(key, { visits: c.visits, pct: c.percent });
+        container.appendChild(row); // гарантує правильний DOM-порядок
+      });
+
+      // Оновлюємо або створюємо футер "+ ще X країн"
+      let extraEl = container.querySelector('.country-extra-footer');
+      if (countries.length > 7) {
+        if (!extraEl) {
+          extraEl = document.createElement('p');
+          extraEl.className = 'country-extra-footer text-[11px] text-stoneMuted text-center pt-1';
+          container.appendChild(extraEl);
+        }
+        extraEl.innerText = `+ ще ${countries.length - 7} країн з меншою кількістю візитів`;
+        container.appendChild(extraEl); // тримати в кінці
+      } else if (extraEl) {
+        extraEl.remove();
+      }
+
+      // FLIP Step 3: обчислюємо зміщення Y та анімуємо рух
+      requestAnimationFrame(() => {
+        container.querySelectorAll('.country-row-item').forEach(row => {
+          const key = row.dataset.countryKey;
+          const firstTop = firstTops.get(key);
+          if (firstTop !== undefined) {
+            const lastTop = row.getBoundingClientRect().top;
+            const deltaY = firstTop - lastTop;
+            if (deltaY !== 0) {
+              row.style.transform = `translateY(${deltaY}px)`;
+              row.style.transition = 'none';
+              requestAnimationFrame(() => {
+                row.style.transition = 'transform 450ms cubic-bezier(0.23, 1, 0.32, 1)';
+                row.style.transform = 'translateY(0)';
+              });
+            }
+          } else {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(8px)';
+            requestAnimationFrame(() => {
+              row.style.transition = 'opacity 350ms ease-out, transform 350ms cubic-bezier(0.23, 1, 0.32, 1)';
+              row.style.opacity = '1';
+              row.style.transform = 'translateY(0)';
+            });
+          }
+        });
+      });
+    }
+
     // Відмалювання інтерфейсу
     function renderDashboard(data) {
       const totals = data.totals || {};
@@ -1103,37 +1242,8 @@
       // 2. Джерела трафіку (плавна анімація смуг, зміна порядку FLIP та лічильники)
       renderSourcesAnimated(data.sources || [], totals.visits);
 
-      // 3. Країни
-      const countriesList = document.getElementById('countries-list');
-      countriesList.innerHTML = '';
-      const countries = data.countries || [];
-
-      if (countries.length === 0) {
-        countriesList.innerHTML = '<p class="text-xs text-stone-500">Немає даних за цей період</p>';
-      } else {
-        countries.slice(0, 7).forEach(c => {
-          const item = document.createElement('div');
-          item.className = 'flex items-center justify-between p-2 rounded-xl bg-linen/50 border border-craft text-xs';
-          item.innerHTML = `
-            <div class="flex items-center gap-2">
-              <span class="text-base">${c.flag}</span>
-              <span class="font-medium text-stoneDark">${c.name}</span>
-            </div>
-            <div class="text-right">
-              <span class="font-semibold text-stoneDark">${c.visits}</span>
-              <span class="text-stone-500 text-[11px] ml-1">(${c.percent}%)</span>
-            </div>
-          `;
-          countriesList.appendChild(item);
-        });
-
-        if (countries.length > 7) {
-          const extra = document.createElement('p');
-          extra.className = 'text-[11px] text-stoneMuted text-center pt-1';
-          extra.innerText = `+ ще ${countries.length - 7} країн з меншою кількістю візитів`;
-          countriesList.appendChild(extra);
-        }
-      }
+      // 3. Країни (жива анімація FLIP, плавні лічильники та смуги)
+      renderCountriesAnimated(data.countries || []);
 
       // 4. Графік динаміки (Chart.js)
       renderChart(data.timeline || []);
@@ -1230,22 +1340,31 @@
       });
     }
 
-    // 4.1 Теплова карта активності (Heatmap)
+    let prevHeatmapSlots = new Map();
+
+    // 4.1 Теплова карта активності (Heatmap) з плавними переходами без руйнування DOM
     function renderHeatmap(heatmap) {
+      if (!heatmap) return;
+
       const recText = document.getElementById('heatmap-recommendation-text');
       const timeSlotsContainer = document.getElementById('heatmap-time-slots');
       const gridContainer = document.getElementById('heatmap-grid');
-      
-      if (!heatmap) return;
 
-      // Текстова порада для публікацій
+      // Текстова порада для публікацій з м'яким crossfade
       if (recText) {
-        recText.innerText = heatmap.recommendation || 'Аналізуємо активність аудиторії...';
+        const newText = heatmap.recommendation || 'Аналізуємо активність аудиторії...';
+        if (recText.innerText !== newText) {
+          recText.style.transition = 'opacity 200ms ease';
+          recText.style.opacity = '0.3';
+          setTimeout(() => {
+            recText.innerText = newText;
+            recText.style.opacity = '1';
+          }, 200);
+        }
       }
 
-      // 4 часові інтервали доби
+      // 4 часові інтервали доби (ніч, ранок, день, вечір)
       if (timeSlotsContainer && heatmap.time_slots) {
-        timeSlotsContainer.innerHTML = '';
         const slotIcons = {
           night: '🌙',
           morning: '🌅',
@@ -1255,83 +1374,158 @@
 
         const maxSlotPercent = Math.max(...heatmap.time_slots.map(s => s.percent || 0));
 
+        // Створюємо картки якщо їх ще немає в DOM
+        if (timeSlotsContainer.children.length === 0) {
+          heatmap.time_slots.forEach(slot => {
+            const icon = slotIcons[slot.id] || '🕒';
+            const card = document.createElement('div');
+            card.dataset.slotId = slot.id;
+            card.className = 'slot-card p-2.5 sm:p-3 rounded-xl border bg-linen/50 border-craft/80 transition-all duration-400 ease-out';
+            card.innerHTML = `
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="font-medium text-stoneDark flex items-center gap-1.5">
+                  <span class="text-sm select-none">${icon}</span>
+                  <span>${slot.name}</span>
+                  <span class="slot-top-badge hidden text-[9px] px-1.5 py-0.2 rounded-full bg-amber-200/70 text-amber-900 font-semibold transition-opacity duration-300">ТОП</span>
+                </span>
+                <span class="text-[10px] font-mono text-stone-400">${slot.hours}</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base sm:text-lg font-bold font-serif slot-percent-text text-stoneDark">
+                  <span class="slot-percent-val">0</span>%
+                </span>
+                <span class="text-[11px] text-stone-500">
+                  <span class="slot-visits-val">0</span> <span class="slot-visits-label">візитів</span>
+                </span>
+              </div>
+              <div class="w-full bg-stone-200/60 h-1.5 rounded-full overflow-hidden mt-2">
+                <div class="slot-bar h-full rounded-full bg-stoneDark/70" style="width: 0%; transition: width 500ms cubic-bezier(0.23, 1, 0.32, 1), background-color 400ms ease;"></div>
+              </div>
+            `;
+            timeSlotsContainer.appendChild(card);
+          });
+        }
+
+        // Оновлюємо дані в існуючих 4 картках
         heatmap.time_slots.forEach(slot => {
+          const card = timeSlotsContainer.querySelector(`[data-slot-id="${slot.id}"]`);
+          if (!card) return;
+
           const isTopSlot = slot.percent === maxSlotPercent && slot.percent > 0;
-          const icon = slotIcons[slot.id] || '🕒';
-          const card = document.createElement('div');
-          card.className = `p-2.5 sm:p-3 rounded-xl border transition-all ${
-            isTopSlot 
-              ? 'bg-amber-50/70 border-amber-300/80 shadow-xs' 
-              : 'bg-linen/50 border-craft/80 hover:bg-linen'
-          }`;
-          card.innerHTML = `
-            <div class="flex items-center justify-between text-xs mb-1">
-              <span class="font-medium text-stoneDark flex items-center gap-1.5">
-                <span>${icon}</span>
-                <span>${slot.name}</span>
-                ${isTopSlot ? '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-200/60 text-amber-900 font-semibold">ТОП</span>' : ''}
-              </span>
-              <span class="text-[10px] font-mono text-stone-400">${slot.hours}</span>
-            </div>
-            <div class="flex items-baseline justify-between mt-1">
-              <span class="text-base sm:text-lg font-bold font-serif ${isTopSlot ? 'text-amber-950' : 'text-stoneDark'}">${slot.percent}%</span>
-              <span class="text-[11px] text-stone-500">${slot.visits} ${slot.visits === 1 ? 'візит' : 'візитів'}</span>
-            </div>
-            <div class="w-full bg-stone-200/60 h-1.5 rounded-full overflow-hidden mt-2">
-              <div class="h-full rounded-full transition-all duration-500 ${isTopSlot ? 'bg-amberCraft' : 'bg-stoneDark/70'}" style="width: ${slot.percent}%"></div>
-            </div>
-          `;
-          timeSlotsContainer.appendChild(card);
+          const badge = card.querySelector('.slot-top-badge');
+          const pctVal = card.querySelector('.slot-percent-val');
+          const visitsVal = card.querySelector('.slot-visits-val');
+          const visitsLabel = card.querySelector('.slot-visits-label');
+          const bar = card.querySelector('.slot-bar');
+          const percentText = card.querySelector('.slot-percent-text');
+
+          // Стилізація картки (ТОП чи стандартна)
+          if (isTopSlot) {
+            card.classList.remove('bg-linen/50', 'border-craft/80');
+            card.classList.add('bg-amber-50/80', 'border-amber-300/80', 'shadow-xs');
+            if (badge) badge.classList.remove('hidden');
+            if (percentText) {
+              percentText.classList.remove('text-stoneDark');
+              percentText.classList.add('text-amber-950');
+            }
+            if (bar) {
+              bar.classList.remove('bg-stoneDark/70');
+              bar.classList.add('bg-amberCraft');
+            }
+          } else {
+            card.classList.add('bg-linen/50', 'border-craft/80');
+            card.classList.remove('bg-amber-50/80', 'border-amber-300/80', 'shadow-xs');
+            if (badge) badge.classList.add('hidden');
+            if (percentText) {
+              percentText.classList.add('text-stoneDark');
+              percentText.classList.remove('text-amber-950');
+            }
+            if (bar) {
+              bar.classList.add('bg-stoneDark/70');
+              bar.classList.remove('bg-amberCraft');
+            }
+          }
+
+          // Анімація смуги
+          if (bar) {
+            requestAnimationFrame(() => {
+              bar.style.width = `${slot.percent}%`;
+            });
+          }
+
+          // Анімація лічильників
+          const prev = prevHeatmapSlots.get(slot.id) || { percent: 0, visits: 0 };
+          if (pctVal) animateCount(pctVal, prev.percent, slot.percent, 450);
+          if (visitsVal) animateCount(visitsVal, prev.visits, slot.visits, 450);
+          if (visitsLabel) {
+            visitsLabel.innerText = slot.visits === 1 ? 'візит' : 'візитів';
+          }
+
+          prevHeatmapSlots.set(slot.id, { percent: slot.percent, visits: slot.visits });
         });
       }
 
       // Матриця 7x24
       if (gridContainer && heatmap.matrix) {
-        gridContainer.innerHTML = '';
         const days = heatmap.days || ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
         const dayFullNames = heatmap.day_full_names || ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'];
         const maxV = heatmap.max_visits || 1;
 
-        heatmap.matrix.forEach((row, dayIdx) => {
-          const rowEl = document.createElement('div');
-          rowEl.className = 'grid grid-cols-[36px_repeat(24,_1fr)] gap-1 items-center';
-          
-          let cellsHtml = `<span class="text-[11px] font-medium text-stone-600 text-center py-1 rounded bg-stone-200/40 select-none">${days[dayIdx]}</span>`;
+        // Якщо сітка ще не згенерована, будуємо DOM один раз
+        if (gridContainer.children.length === 0) {
+          heatmap.matrix.forEach((_, dayIdx) => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'grid grid-cols-[36px_repeat(24,_1fr)] gap-1 items-center';
+            
+            let cellsHtml = `<span class="text-[11px] font-medium text-stone-600 text-center py-1 rounded bg-stone-200/40 select-none">${days[dayIdx]}</span>`;
 
+            for (let h = 0; h < 24; h++) {
+              cellsHtml += `
+                <div 
+                  id="hm-cell-${dayIdx}-${h}"
+                  class="hm-cell h-6 sm:h-7 rounded-sm flex items-center justify-center text-[9px] font-mono hover:scale-125 hover:z-20 cursor-pointer shadow-2xs select-none bg-[#F4EFEA]/80 border border-craft/40 text-transparent"
+                ></div>
+              `;
+            }
+
+            rowEl.innerHTML = cellsHtml;
+            gridContainer.appendChild(rowEl);
+          });
+        }
+
+        // Оновлюємо кожну клітинку на місці (CSS hm-cell плавно анімує зміну кольору)
+        heatmap.matrix.forEach((row, dayIdx) => {
           row.forEach((cell, hour) => {
+            const cellEl = document.getElementById(`hm-cell-${dayIdx}-${hour}`);
+            if (!cellEl) return;
+
             const v = cell.visits || 0;
             const w = cell.views || 0;
             const ratio = maxV > 0 ? (v / maxV) : 0;
 
-            let bgClass = 'bg-[#F4EFEA]/80 border border-craft/40 text-transparent';
-            if (v > 0) {
+            // Знімаємо старі класи інтенсивності
+            cellEl.className = 'hm-cell h-6 sm:h-7 rounded-sm flex items-center justify-center text-[9px] font-mono hover:scale-125 hover:z-20 cursor-pointer shadow-2xs select-none';
+
+            if (v === 0) {
+              cellEl.classList.add('bg-[#F4EFEA]/80', 'border', 'border-craft/40', 'text-transparent');
+              cellEl.innerText = '';
+            } else {
               if (ratio <= 0.25) {
-                bgClass = 'bg-[#E8DFD5] border border-[#DFD5C8] text-stone-600 hover:ring-2 hover:ring-amberCraft/50';
+                cellEl.classList.add('bg-[#E8DFD5]', 'border', 'border-[#DFD5C8]', 'text-stone-600', 'hover:ring-2', 'hover:ring-amberCraft/50');
               } else if (ratio <= 0.5) {
-                bgClass = 'bg-[#D9C3AA] text-stone-800 font-medium hover:ring-2 hover:ring-amberCraft/50';
+                cellEl.classList.add('bg-[#D9C3AA]', 'text-stone-800', 'font-medium', 'hover:ring-2', 'hover:ring-amberCraft/50');
               } else if (ratio <= 0.75) {
-                bgClass = 'bg-[#C28E5C] text-white font-semibold hover:ring-2 hover:ring-stoneDark';
+                cellEl.classList.add('bg-[#C28E5C]', 'text-white', 'font-semibold', 'hover:ring-2', 'hover:ring-stoneDark');
               } else {
-                bgClass = 'bg-[#2C2825] text-white font-bold ring-1 ring-amber-400/50 hover:ring-2 hover:ring-amberCraft';
+                cellEl.classList.add('bg-[#2C2825]', 'text-white', 'font-bold', 'ring-1', 'ring-amber-400/50', 'hover:ring-2', 'hover:ring-amberCraft');
               }
+              cellEl.innerText = v;
             }
 
             const nextH = (hour + 1) % 24;
             const hourLabel = `${String(hour).padStart(2, '0')}:00–${String(nextH).padStart(2, '0')}:00`;
-            const tooltipTitle = `${dayFullNames[dayIdx]}, ${hourLabel}\n${v} ${v === 1 ? 'візит' : 'візитів'}, ${w} ${w === 1 ? 'перегляд' : 'переглядів'}`;
-
-            cellsHtml += `
-              <div 
-                class="h-6 sm:h-7 rounded-sm flex items-center justify-center text-[9px] font-mono transition-transform hover:scale-125 hover:z-20 cursor-pointer shadow-2xs select-none ${bgClass}"
-                title="${tooltipTitle}"
-              >
-                ${v > 0 ? v : ''}
-              </div>
-            `;
+            cellEl.title = `${dayFullNames[dayIdx]}, ${hourLabel}\n${v} ${v === 1 ? 'візит' : 'візитів'}, ${w} ${w === 1 ? 'перегляд' : 'переглядів'}`;
           });
-
-          rowEl.innerHTML = cellsHtml;
-          gridContainer.appendChild(rowEl);
         });
       }
     }
