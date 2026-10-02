@@ -658,7 +658,7 @@ async function handleAnalyticsApi(context, url) {
           last_added_at: f.last_added_at,
           image_url: prodImagesMap[f.product_id] || ''
         };
-      }).filter(f => f.total_adds > 0 || f.active_count > 0);
+      }).filter(f => (f.active_count || 0) > 0);
 
       const recentFavs = (Array.isArray(favEventsRes) ? favEventsRes : []).map(ev => ({
         id: ev.id,
