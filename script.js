@@ -83,6 +83,74 @@ function copyToClipboard(text) {
     });
 }
 
+// --- ANIME.JS АНІМАЦІЙНИЙ ДВИГУН (Emil Kowalski Physics & Zero-Jank Helpers) ---
+function runAnimation(targets, params) {
+    if (!targets) return null;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return null;
+    }
+    if (window.anime) {
+        if (typeof window.anime.animate === 'function') {
+            return window.anime.animate(targets, params);
+        } else if (typeof window.anime === 'function') {
+            return window.anime({ targets, ...params });
+        }
+    }
+    return null;
+}
+
+function getStagger(step = 35, options = {}) {
+    if (window.anime && typeof window.anime.stagger === 'function') {
+        return window.anime.stagger(step, options);
+    }
+    return (el, i) => (options.start || 0) + i * step;
+}
+
+function removeAnimation(targets) {
+    if (!targets) return;
+    if (window.anime && typeof window.anime.remove === 'function') {
+        window.anime.remove(targets);
+    }
+}
+
+let currentCatalogCount = 0;
+function animateCatalogCounter(newCount) {
+    const desktopCount = document.getElementById('items-count');
+    const mobileCount = document.getElementById('items-count-mobile');
+    const loadMoreTotal = document.getElementById('load-more-total');
+    if (!desktopCount && !mobileCount) return;
+
+    const isReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced || !window.anime || currentCatalogCount === 0) {
+        currentCatalogCount = newCount;
+        if (desktopCount) desktopCount.innerText = `Знайдено робіт: ${newCount}`;
+        if (mobileCount) mobileCount.innerText = `Знайдено робіт: ${newCount}`;
+        if (loadMoreTotal) loadMoreTotal.innerText = newCount;
+        return;
+    }
+
+    const startVal = currentCatalogCount;
+    const counterObj = { count: startVal };
+    removeAnimation(counterObj);
+    runAnimation(counterObj, {
+        count: newCount,
+        duration: 380,
+        ease: 'outCubic',
+        onUpdate: () => {
+            const val = Math.round(counterObj.count);
+            if (desktopCount) desktopCount.innerText = `Знайдено робіт: ${val}`;
+            if (mobileCount) mobileCount.innerText = `Знайдено робіт: ${val}`;
+            if (loadMoreTotal) loadMoreTotal.innerText = val;
+        },
+        onComplete: () => {
+            currentCatalogCount = newCount;
+            if (desktopCount) desktopCount.innerText = `Знайдено робіт: ${newCount}`;
+            if (mobileCount) mobileCount.innerText = `Знайдено робіт: ${newCount}`;
+            if (loadMoreTotal) loadMoreTotal.innerText = newCount;
+        }
+    });
+}
+
 let allProducts = [];
 let currentFilteredProducts = [];
 const PRODUCTS_PER_PAGE = 12;
@@ -936,6 +1004,26 @@ function loadMoreProducts() {
     if (nextBatch.length > 0) {
         const nextBatchHtml = nextBatch.map((product, idx) => buildProductCardHtml(product, prevCount + idx)).join('');
         grid.insertAdjacentHTML('beforeend', nextBatchHtml);
+
+        const allCards = Array.from(grid.querySelectorAll('.product-card'));
+        const newCards = allCards.slice(prevCount);
+        if (newCards.length > 0 && window.anime && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            removeAnimation(newCards);
+            runAnimation(newCards, {
+                opacity: [0, 1],
+                translateY: [20, 0],
+                scale: [0.96, 1],
+                delay: getStagger(30, { start: 20 }),
+                duration: 400,
+                ease: 'outCubic',
+                onComplete: () => {
+                    newCards.forEach(c => {
+                        c.style.transform = '';
+                        c.style.opacity = '';
+                    });
+                }
+            });
+        }
     }
 
     updateLoadMoreUI(currentFilteredProducts.length);
@@ -943,9 +1031,9 @@ function loadMoreProducts() {
 
 function renderProducts(items) {
     const grid = document.getElementById('products-grid');
-    const countEl = document.getElementById('items-count');
     const loadMoreContainer = document.getElementById('load-more-container');
-    if (countEl) countEl.innerText = `Знайдено робіт: ${items.length}`;
+
+    animateCatalogCounter(items.length);
 
     if (items.length === 0) {
         if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
@@ -964,6 +1052,7 @@ function renderProducts(items) {
             return;
         }
 
+        const searchQuery = (document.getElementById('search-input-desktop')?.value || document.getElementById('search-input-mobile')?.value || '').trim();
         if (searchQuery) {
             grid.innerHTML = `
                 <div class="col-span-full py-16 text-center">
@@ -990,6 +1079,26 @@ function renderProducts(items) {
     const initialBatch = items.slice(0, currentVisibleCount);
     grid.innerHTML = initialBatch.map((product, index) => buildProductCardHtml(product, index)).join('');
     updateLoadMoreUI(items.length);
+
+    // Stagger-анімація Anime.js для каскадної появи карток каталогу
+    const cards = grid.querySelectorAll('.product-card');
+    if (cards.length > 0 && window.anime && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        removeAnimation(cards);
+        runAnimation(cards, {
+            opacity: [0, 1],
+            translateY: [16, 0],
+            scale: [0.97, 1],
+            delay: getStagger(30, { start: 20 }),
+            duration: 380,
+            ease: 'outCubic',
+            onComplete: () => {
+                cards.forEach(c => {
+                    c.style.transform = '';
+                    c.style.opacity = '';
+                });
+            }
+        });
+    }
 }
 
 // --- СИСТЕМА РЕКОМЕНДАЦІЙ («ІНШІ КОЛЬОРИ ТА СХОЖІ РОБОТИ») ---
@@ -1114,6 +1223,26 @@ function renderModalRecommendations(product) {
     }).join('');
 
     section.classList.remove('hidden');
+
+    // Плавна поява рекомендацій через Anime.js
+    const recCards = list.querySelectorAll('.group');
+    if (recCards.length > 0 && window.anime && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        removeAnimation(recCards);
+        runAnimation(recCards, {
+            opacity: [0, 1],
+            translateY: [8, 0],
+            scale: [0.97, 1],
+            delay: getStagger(35, { start: 40 }),
+            duration: 320,
+            ease: 'outCubic',
+            onComplete: () => {
+                recCards.forEach(c => {
+                    c.style.transform = '';
+                    c.style.opacity = '';
+                });
+            }
+        });
+    }
 }
 
 // --- КАРТКА ТОВАРУ ТА ШВИДКЕ ЗАМОВЛЕННЯ ---
@@ -1199,8 +1328,26 @@ function openModal(productId) {
     if (detailsCol) detailsCol.scrollTop = 0;
 
     const showModal = () => {
-        document.getElementById('product-modal').classList.remove('hidden');
+        const modal = document.getElementById('product-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+
+        const modalBox = modal.querySelector('.bg-linen');
+        if (modalBox && window.anime && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            removeAnimation(modalBox);
+            runAnimation(modalBox, {
+                opacity: [0, 1],
+                scale: [0.95, 1],
+                translateY: [14, 0],
+                duration: 320,
+                ease: 'outCubic',
+                onComplete: () => {
+                    modalBox.style.transform = '';
+                    modalBox.style.opacity = '';
+                }
+            });
+        }
     };
 
     if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -1396,6 +1543,22 @@ function renderModalCardMedia() {
     } else {
         thumbsContainer.classList.add('hidden');
     }
+
+    // М'який cross-fade для оновленого медіа
+    const activeMediaElement = mainContainer.firstElementChild;
+    if (activeMediaElement && window.anime && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        removeAnimation(activeMediaElement);
+        runAnimation(activeMediaElement, {
+            opacity: [0.4, 1],
+            scale: [0.985, 1],
+            duration: 240,
+            ease: 'outCubic',
+            onComplete: () => {
+                activeMediaElement.style.transform = '';
+                activeMediaElement.style.opacity = '';
+            }
+        });
+    }
 }
 
 function setActiveMedia(index) {
@@ -1415,12 +1578,31 @@ function closeModal() {
         window.history.pushState({}, '', window.location.pathname);
     }
 
+    const modal = document.getElementById('product-modal');
+    const modalBox = modal ? modal.querySelector('.bg-linen') : null;
+
     const hideModal = () => {
-        document.getElementById('product-modal').classList.add('hidden');
+        if (modal) modal.classList.add('hidden');
         document.body.style.overflow = '';
+        if (modalBox) {
+            modalBox.style.transform = '';
+            modalBox.style.opacity = '';
+        }
     };
 
-    if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (modal && !modal.classList.contains('hidden') && modalBox && window.anime && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        removeAnimation(modalBox);
+        runAnimation(modalBox, {
+            opacity: [1, 0],
+            scale: [1, 0.96],
+            translateY: [0, 10],
+            duration: 180,
+            ease: 'outCubic',
+            onComplete: () => {
+                hideModal();
+            }
+        });
+    } else if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         document.startViewTransition(hideModal);
     } else {
         hideModal();
