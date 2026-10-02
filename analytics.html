@@ -90,6 +90,20 @@
       z-index: 30;
       position: relative;
     }
+    .heatmap-scroll-container::-webkit-scrollbar {
+      height: 4px;
+    }
+    .heatmap-scroll-container::-webkit-scrollbar-track {
+      background: rgba(230, 221, 210, 0.35);
+      border-radius: 9999px;
+    }
+    .heatmap-scroll-container::-webkit-scrollbar-thumb {
+      background: #D9C3AA;
+      border-radius: 9999px;
+    }
+    .heatmap-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #C28E5C;
+    }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       20%, 60% { transform: translateX(-6px); }
@@ -514,7 +528,7 @@
         </div>
 
         <!-- Детальна теплова матриця (Дні тижня x Години) -->
-        <div class="overflow-x-auto pb-1 pt-1 -mx-2 px-2 sm:mx-0 sm:px-0">
+        <div class="overflow-x-auto heatmap-scroll-container pb-3.5 sm:pb-2.5 pt-1.5 -mx-2 px-2 sm:mx-0 sm:px-0">
           <div class="min-w-[540px]">
             <div class="grid grid-cols-[36px_repeat(24,_1fr)] gap-1 text-[10px] text-stone-400 text-center mb-1 select-none">
               <span></span>
@@ -528,7 +542,7 @@
         </div>
 
         <!-- Інтерактивна плашка точних даних при кліку / тапі на клітинку (Touch & Click Info) -->
-        <div id="heatmap-cell-detail" class="mt-3 p-2.5 sm:p-3 rounded-xl bg-linen border border-craft/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-xs transition-all duration-300">
+        <div id="heatmap-cell-detail" class="mt-4 sm:mt-5 p-2.5 sm:p-3 rounded-xl bg-linen border border-craft/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-xs transition-all duration-300">
           <div class="flex items-center gap-2 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#C28E5C] flex-shrink-0 animate-pulse"></span>
             <span id="hm-detail-label" class="font-medium text-stoneDark">
@@ -541,7 +555,7 @@
         </div>
 
         <!-- Легенда інтенсивності -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-2 border-t border-craft/60 text-[11px] text-stone-500">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3.5 sm:mt-4 pt-3 sm:pt-3.5 border-t border-craft/60 text-[11px] text-stone-500">
           <span class="flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-stone-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Час за Києвом. Наведіть курсор або торкніться клітинки для точних цифр</span>
